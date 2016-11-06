@@ -1,0 +1,357 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/cpp.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>For C programmers that hate C++</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">For C programmers that hate C++</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(March 2011, <a href="http://www.reddit.com/r/programming/comments/fzwlh/for_c_programmers_that_hate_c/">Reddit-ed</a>)</em>
+  <p>
+Over the years, I've seen way too many C programmers declare that they hate C++. They have their reasons, I'm sure. It is my humble opinion, however, that their hatred is... wrong. It took me quite some time (years) to slowly understand what is good and what is bad about C++, and I think the best way to consolidate my C++ experience is this:</p>
+
+<div class="shout">
+C++ allows you to write less code, with no run-time overhead, and with more safety, than C does.
+</div>
+
+<p>The less code you write, the better. As you gain experience by writing more and more code for your projects, you will inevitably realize that brevity is a virtue: You fix a bug in one place, not many - you express an algorithm once, and re-use it in many places, etc. (<em>Greeks even have a saying, traced back to the ancient Spartans: "to say something in less words, means that you are wise about it"</em>). And the fact of the matter is, that when used correctly, C++ allows you to express yourself in far less code than C does. </p>
+
+<p>Other languages offer this advantage, too - especially the ones from the functional programming world. But only C++ does this without costing you runtime speed. At all.</p>
+
+<p>Finally, compared to C, C++ is a lot more safe - that is, it catches more errors at compile-time.</p>
+
+<p>Let's look at a simplified version of a problem I faced with <a href="renderer.html">my renderer</a>: While drawing triangles on the screen, and depending on the currently selected drawing mode, the algorithm must interpolate <em>different</em> values across a triangle's scanline: It must start from an X coordinate x1, and reach an X coordinate x2 (from the left to the right side of a triangle), and across each step, that is, across each pixel it passes over, it must interpolate various "stuff".</p>
+
+<ul>
+<li>When interpolating the ambient light that reaches the pixel:</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">tagPixelDataAmbient</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> ambientLight</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="normal"> PixelDataAmbient</span><span class="symbol">;</span>
+
+<span class="symbol">...</span>
+<span class="comment">// inner loop</span>
+<span class="normal">currentPixel</span><span class="symbol">.</span><span class="normal">ambientLight </span><span class="symbol">+=</span><span class="normal"> dv</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<ul>
+<li>When interpolating the vertex colors (called "Gouraud" shading, where the "red", "green" and "blue" fields are interpolated by a step value at each pixel):</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">tagPixelDataGouraud</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> red</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> green</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> blue</span><span class="symbol">;</span><span class="normal">  </span><span class="comment">// The RGB color interpolated per pixel</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="normal"> PixelDataGouraud</span><span class="symbol">;</span>
+
+<span class="symbol">...</span>
+<span class="comment">// inner loop</span>
+<span class="normal">currentPixel</span><span class="symbol">.</span><span class="normal">red </span><span class="symbol">+=</span><span class="normal"> dred</span><span class="symbol">;</span>
+<span class="normal">currentPixel</span><span class="symbol">.</span><span class="normal">green </span><span class="symbol">+=</span><span class="normal"> dgreen</span><span class="symbol">;</span>
+<span class="normal">currentPixel</span><span class="symbol">.</span><span class="normal">blue </span><span class="symbol">+=</span><span class="normal"> dblue</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<ul>
+<li>When rendering in "Phong" shading, neither intensity (ambientLight) nor color (red/green/blue) is the target - instead, a normal vector (nx,ny,nz) is interpolated at each step, and the lighting equation is re-calculated at each pixel, based on the interpolated normal vector:</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">tagPixelDataPhong</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> nX</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> nY</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> nZ</span><span class="symbol">;</span><span class="normal"> </span><span class="comment">// The normal vector interpolated per pixel</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="normal"> PixelDataPhong</span><span class="symbol">;</span>
+
+<span class="symbol">...</span>
+<span class="comment">// inner loop</span>
+<span class="normal">currentPixel</span><span class="symbol">.</span><span class="normal">nX </span><span class="symbol">+=</span><span class="normal"> dx</span><span class="symbol">;</span>
+<span class="normal">currentPixel</span><span class="symbol">.</span><span class="normal">nY </span><span class="symbol">+=</span><span class="normal"> dy</span><span class="symbol">;</span>
+<span class="normal">currentPixel</span><span class="symbol">.</span><span class="normal">nZ </span><span class="symbol">+=</span><span class="normal"> dz</span><span class="symbol">;</span>
+
+<span class="comment">// lighting equation uses interpolated normal value...</span>
+</tt></pre>
+</div>
+
+<p>So, how would we continue in C?</p>
+
+<p>Well, some C programmers would go <em>"heck, lets write 3 functions that interpolate the values, and call them depending on the set mode"</em>. </p>
+
+<p>But that makes us realize that we have a type problem - what is the type we work with? Are the pixels <tt>PixelDataAmbient</tt>? <tt>PixelDataGouraud</tt>? <tt>PixelDataPhong</tt>? </p>
+
+<p>Oh, wait, the efficient C programmer says, use a union!</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">union</span><span class="normal"> tagSuperPixel </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="usertype">PixelDataAmbient</span><span class="normal"> a</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">PixelDataGouraud</span><span class="normal"> g</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">PixelDataPhong</span><span class="normal">   p</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="normal"> SuperPixel</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<p>..and then, you have a "poly"-function...
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">  </span><span class="function">RasterizeTriangleScanline</span><span class="symbol">(</span>
+<span class="normal">    </span><span class="keyword">enum</span><span class="normal"> mode</span><span class="symbol">,</span><span class="normal"> </span><span class="comment">// { ambient, gouraud, phong }</span>
+<span class="normal">    </span><span class="usertype">SuperPixel</span><span class="normal"> left</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="usertype">SuperPixel</span><span class="normal"> right</span><span class="symbol">)</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> i</span><span class="symbol">,</span><span class="normal">j</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">mode </span><span class="symbol">==</span><span class="normal"> ambient</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="comment">// handle pixels as ambient...</span>
+<span class="normal">      </span><span class="type">int</span><span class="normal"> steps </span><span class="symbol">=</span><span class="normal"> right</span><span class="symbol">.</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">x </span><span class="symbol">-</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="type">float</span><span class="normal"> dv </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">right</span><span class="symbol">.</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">ambientLight </span><span class="symbol">-</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">ambientLight</span><span class="symbol">)/</span><span class="normal">steps</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="type">float</span><span class="normal"> currentIntensity </span><span class="symbol">=</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">ambientLight</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="normal">left</span><span class="symbol">.</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">right</span><span class="symbol">.</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">WorkOnPixelAmbient</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> dv</span><span class="symbol">);</span>
+<span class="normal">        currentIntensity</span><span class="symbol">+=</span><span class="normal">dv</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">mode </span><span class="symbol">==</span><span class="normal"> gouraud</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">      </span><span class="comment">// handle pixels as gouraud...</span>
+<span class="normal">      </span><span class="type">int</span><span class="normal"> steps </span><span class="symbol">=</span><span class="normal"> right</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">x </span><span class="symbol">-</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="type">float</span><span class="normal"> dred </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">right</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">red </span><span class="symbol">-</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">red</span><span class="symbol">)/</span><span class="normal">steps</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="type">float</span><span class="normal"> dgreen </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">right</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">green </span><span class="symbol">-</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">green</span><span class="symbol">)/</span><span class="normal">steps</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="type">float</span><span class="normal"> dblue </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">right</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">blue </span><span class="symbol">-</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">blue</span><span class="symbol">)/</span><span class="normal">steps</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="type">float</span><span class="normal"> currentRed </span><span class="symbol">=</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">red</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="type">float</span><span class="normal"> currentGreen </span><span class="symbol">=</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">green</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="type">float</span><span class="normal"> currentBlue </span><span class="symbol">=</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">blue</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">=</span><span class="normal">left</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">right</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">WorkOnPixelGouraud</span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">,</span><span class="normal"> currentRed</span><span class="symbol">,</span><span class="normal"> currentBlue</span><span class="symbol">,</span><span class="normal"> currentGreen</span><span class="symbol">);</span>
+<span class="normal">        currentRed</span><span class="symbol">+=</span><span class="normal">dred</span><span class="symbol">;</span>
+<span class="normal">        currentGreen</span><span class="symbol">+=</span><span class="normal">dgreen</span><span class="symbol">;</span>
+<span class="normal">        currentBlue</span><span class="symbol">+=</span><span class="normal">dblue</span><span class="symbol">;</span>
+<span class="normal">      </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">mode </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">...</span>
+</tt></pre>
+
+</div>
+
+<p>The code above must make the hairs on your neck stand up. Can you feel the chaos slipping in?</p>
+
+<p>First of all, one typo is all that is needed to crash this code, since the compiler will never stop us in the "Gouraud" section of the function, from actually accessing the ".a." (ambient) values. A bug not caught by the type system (i.e. during compilation), means a bug that manifests at run-time, one that will require debugging. Did you notice that I am accessing <tt>left.a.x</tt> in the calculation of "steps"? The compiler surely didn't say anything.</p>
+
+<p>Then, there is repetition everywhere - the for loop is there for as many times as there are rendering modes, we keep doing "right minus left divided by steps". Ugly, and error-prone. Did you notice I compare using "i" in the Gouraud loop, when I should have used "j"? The compiler is again, silent.</p>
+
+<p>And about the if/else/ ladder for the modes... What if I add a new rendering mode, in 3 weeks? Will I remember to handle the new mode in all the "if mode==" in all my source files? (<em>in case it's not clear, think: "in all 15 places in various .cpp files"</em>)</p>
+
+<p>Now compare the above ugliness, with this set of C++ structs and a template function:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">  </span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">CommonPixelData</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">AmbientPixelData</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> CommonPixelData </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> ambientLight</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">GouraudPixelData</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> CommonPixelData </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> red</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> green</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> blue</span><span class="symbol">;</span><span class="normal">  </span><span class="comment">// The RGB color interpolated per pixel</span>
+<span class="normal">  </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">  </span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">PhongPixelData</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> CommonPixelData </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> nX</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> nY</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> nZ</span><span class="symbol">;</span><span class="normal"> </span><span class="comment">// The normal vector interpolated per pixel</span>
+<span class="normal">  </span><span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="normal">  </span><span class="keyword">template</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="keyword">class</span><span class="normal"> </span><span class="classname">PixelData</span><span class="symbol">&gt;</span>
+<span class="normal">  </span><span class="type">void</span><span class="normal"> </span><span class="function">RasterizeTriangleScanline</span><span class="symbol">(</span>
+<span class="normal">    </span><span class="usertype">PixelData</span><span class="normal"> left</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="usertype">PixelData</span><span class="normal"> right</span><span class="symbol">)</span>
+<span class="normal">  </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="usertype">PixelData</span><span class="normal"> interpolated </span><span class="symbol">=</span><span class="normal"> left</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">PixelData</span><span class="normal"> step </span><span class="symbol">=</span><span class="normal"> right</span><span class="symbol">;</span>
+<span class="normal">    step </span><span class="symbol">-=</span><span class="normal"> left</span><span class="symbol">;</span>
+<span class="normal">    step </span><span class="symbol">/=</span><span class="normal"> </span><span class="type">int</span><span class="symbol">(</span><span class="normal">right</span><span class="symbol">.</span><span class="normal">x </span><span class="symbol">-</span><span class="normal"> left</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">);</span><span class="normal"> </span><span class="comment">// divide by pixel span</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">=</span><span class="normal">left</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">right</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">      WorkOnPixel</span><span class="symbol">&lt;</span><span class="normal">PixelData</span><span class="symbol">&gt;(</span><span class="normal">interpolated</span><span class="symbol">);</span>
+<span class="normal">      interpolated </span><span class="symbol">+=</span><span class="normal"> step</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">  </span><span class="cbracket">}</span>
+</tt></pre>
+
+</div>
+
+<p>Be objective, now. Look at the code above, calmly, and notice some things.</p>
+
+<p>We no longer make a union type-soup: we have specific types per each mode. They re-use their common stuff (the "x" field) by inheriting from a base class (CommonPixelData). And the template makes the compiler CREATE (that is, code-generate) the 3 different functions we would have written ourselves in C, but at the same time, being very strict about the usage of the types! We can't mess up like we did before - accessing non-existing fields will trigger a compile-time error.</p>
+
+<p>Our loop in the template cannot goof and access invalid fields - the compiler will bark if we do.</p>
+
+<p>The template performs the common work in one place (the loop, increasing by "step" in each time). The interpolation per type (AmbientPixelData, GouraudPixelData, PhongPixelData) is done with the operator+=() that we will add in the structs - which basically dictate how each type is interpolated. Clear separation of concerns - the loop is one thing, the "delta" logic for each type is another.</p>
+
+<p>And do you see what we did with <tt>WorkOnPixel</tt>? We want to do different work per type - so we simply call a template specialization:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">template</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="keyword">class</span><span class="normal"> </span><span class="classname">T</span><span class="symbol">&gt;</span>
+<span class="type">void</span><span class="normal"> </span><span class="function">WorkOnPixel</span><span class="symbol">(</span><span class="normal">T</span><span class="symbol">&amp;</span><span class="normal"> p</span><span class="symbol">);</span>
+
+<span class="keyword">template</span><span class="symbol">&lt;&gt;</span>
+<span class="type">void</span><span class="normal"> </span><span class="function">WorkOnPixel</span><span class="symbol">(</span><span class="normal">AmbientPixelData</span><span class="symbol">&amp;</span><span class="normal"> p</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">// use the p.ambientLight field</span>
+<span class="cbracket">}</span>
+
+<span class="keyword">template</span><span class="symbol">&lt;&gt;</span>
+<span class="type">void</span><span class="normal"> </span><span class="function">WorkOnPixel</span><span class="symbol">(</span><span class="normal">GouraudPixelData</span><span class="symbol">&amp;</span><span class="normal"> p</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">  </span><span class="comment">// use the p.red/green/blue fields</span>
+<span class="cbracket">}</span>
+<span class="symbol">...</span>
+</tt></pre>
+
+</div>
+
+<p>The function to call, is decided based on the type. At compile-time!</p>
+
+<p>So, to summarize:</p>
+
+<p>We minimize the code (via the template), by re-using common parts, we don't use ugly hacks, we keep a strict type system, so that the compiler can help us as much as possible, by detecting errors at compile-time.</p>
+
+<p>And best of all: none of what we did has ANY run-time speed impact. This code will run JUST as fast as the equivalent C code - in fact, if the C code was "smart", and used function pointers to call the various WorkOnPixel versions, the C++ code will be FASTER than C, because the compiler will inline the type-specific WorkOnPixel template specialization calls!</p>
+
+<p>Less code, no run-time overhead, more safety.
+<hr>
+Does this mean that C++ is the be-all and end-all of languages? Of course not. You still have to measure your trade-offs and choose wisely from your arsenal of weapons (which implies that you <em>need</em> an arsenal, not just one hammer). Ignorant people will use C++ when they should have written a bash/Perl/Python script. And staying within the language, you need restraint: Trigger-happy C++ newbies will create deep nested classes with virtual multiple inheritance before you can stop them and send them packing. On the other end of the spectrum, nasty "gurus" will use complex Boost-like meta-programming for very simple things, thus creating "write-only" code (i.e. code that is impossible to read and maintain). Or, to re-visit our original premise, recent immigrants from the world of C will STILL use char*,strcmp and macros, instead of std::string and templates.
+<p>
+But this says nothing about C++. 
+It only says... watch who you work with. There is no language to shield you from incompetent developers (no, not even Java).
+<p>
+I can only think of one reason to choose C over C++: that of a platform without a decent C++ compiler (in embedded development for micro-controllers, for example).
+<p>
+So keep studying and using C++ - just don't overdesign.
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sun Nov 17 14:06:51 2013</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/cpp.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

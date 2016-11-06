@@ -1,0 +1,266 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/Offline-rsync.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Offline rsync</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Offline rsync</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+              <em>(March 2007)</em>
+
+  <h2>The problem statement</h2>Picture this:
+
+  <p>A lowly developer splits his working time between home and the
+  company premises. He uses the following routine: at the end of
+  the working day at home/company, he compresses the source tree
+  and picks it up on his USB stick. At company/home, he
+  decompresses the package and hacks on.</p>
+
+  <p>This procedure is starting to show some issues, however. For
+  one, the data barely fit in the USB stick, even compressed. He is
+  contemplating a bigger USB stick (maybe one of the new USB hard
+  drives), but even if he uses that, the problem is that the
+  procedure takes too long: the repository snapshot he works on is huge,
+  and compressing it and taking it with him simply takes too
+  long.</p>
+
+  <p>Of course, if this developer had a fast Internet access at
+  home, he could use <a href=
+  "http://www.samba.org/rsync">rsync</a>; that is, provided that
+  the company allows remote access at all - but does it?</p>
+
+  <p>And, naturally, the changes he makes daily couldn't
+  <em>possibly</em> be <em>that</em> big - why should he take a
+  whole source tree every time?</p>
+
+  <p>He defends himself, saying that he must be absolutely certain
+  that everything is updated, and that he couldn't just take
+  <em>patch</em> files for his work, since other parts of the tree
+  are updated by others. What else could he do?</p>
+
+  <p>Well, there is something...</p>
+
+  <h2>Hello, rdiff</h2>Obviously, rsync can't be used unless both
+  the work machine and the home machine are connected on a network.
+  The rsync algorithm, however, is quite ingenious. You can read
+  all about it 
+  <a href="http://www.samba.org/rsync/tech_report/">here</a>. The
+  amazing thing is, that <b>simultaneous access to both "files to
+  synchronize" is not necessary</b>. The algorithm takes a
+  "snapshot" of file A stored in machine 1, in terms of block-based
+  CRCs. It then sends these CRCs over the network to machine 2,
+  where they are used to compute the differences with file B.
+  Finally, the differences are sent in the opposite direction, to
+  update file A.
+
+  <p>What if we didn't use the network to send the CRCs and the
+  differences?<br>
+  What if we just stored them, inside, say, a USB stick?</p>
+
+  <p>That's exactly the idea that rdiff implements. You can
+  download the source code and compile it for yourself 
+  <a href="http://librsync.sourceforge.net/">here</a> (as part of
+  librsync), or get it pre-compiled for your platform (under
+  Debian, <tt>apt-get install rdiff</tt> is enough).</p>
+
+  <p>Here is a simple example of its usage, to update a single
+  file:</p>
+  <pre class="o">
+(At home)
+<b>/home/jdoe/code$</b> rdiff signature SrcFileA.c SrcFileA.c.signature
+(The CRCs of the blocks in file SrcFileA.c are now stored 
+ in SrcFileA.c.signature. You take the .signature file to work)
+
+(At work)
+<b>/home/JohnDoe/code$</b> rdiff delta SrcFileA.c.signature \
+	SrcFileA.c SrcFileA.c.delta
+(Using the CRCs calculated at home, find the differences of the 
+ work file and store them in SrcFileA.c.delta)
+
+(Back home)
+<b>/home/jdoe/code$</b> rdiff patch SrcFileA.c SrcFileA.c.delta \
+	SrcFileA.c.new
+(update SrcFileA.c to SrcFileA.c.new using the deltas)
+</pre>Right!<br>
+  It works, but... do we really have to go through all this, just to
+  synchronize a single file? The source tree has thousands of files,
+  inside a huge tree!
+
+  <h2>Automation scripts</h2>Naturally, no-one in
+  their right mind would ever attempt to go through this procedure manually
+  for a large tree of files. The lowly developer I described above is 
+  actually me, so at some point (during a very boring series of 
+  presentations I had to attend) I wrote 3 perl scripts to automate 
+  the process.
+
+  <p>The results are depicted in the "screenshot" below:</p>
+  <pre class="o">
+(At home)
+<b>/home/jdoe/code$</b> snapOldData.pl SrcTree/
+<b>/home/jdoe/code$</b> ls -lF
+drwxr-xr-x     7 jdoe coder 0 Mar 24 13:07 SrcTree/
+-rw-r--r-- 12345 jdoe coder 0 Mar 24 13:07 SrcTree.signs.tar.bz2
+<b>/home/jdoe/code$</b> cp SrcTree.signs.tar.bz2 /mnt/usbstick/
+
+(At work)
+<b>/home/JohnDoe/code$</b> cp /mnt/usbstick/SrcTree.signs.tar.bz2 .
+<b>/home/JohnDoe/code$</b> createDeltas.pl work/ SrcTree.signs.tar.bz2
+<b>/home/JohnDoe/code$</b> ls -lF
+drwxr-xr-x     7 jdoe coder 0 Mar 24 13:07 work/
+-rw-r--r-- 12345 jdoe coder 0 Mar 24 13:07 work.deltas.tar.bz2
+-rw-r--r-- 12345 jdoe coder 0 Mar 24 13:07 SrcTree.signs.tar.bz2
+<b>/home/JohnDoe/code$</b> rm /mnt/usbstick/SrcTree.signs.tar.bz2
+<b>/home/JohnDoe/code$</b> cp work.deltas.tar.bz2 /mnt/usbstick/
+
+(Back home)
+<b>/home/jdoe/code$</b> cp /mnt/usbstick/work.deltas.tar.bz2 .
+<b>/home/jdoe/code$</b> applyDeltas.pl work.deltas.tar.bz2 SrcTree/
+</pre>The scripts will also update the home work tree with all the
+new files that have appeared, and they will keep a backup of the
+files changed (with the extension .rdiff_oldVersion) so that you
+can revert to your old versions if you so wish.
+
+  <p>You can download them here:</p>
+
+  <ul>
+    <li><a href="snapOldData.pl">snapOldData</a><br></li>
+
+    <li><a href="createDeltas.pl">createDeltas</a><br></li>
+
+    <li><a href="applyDeltas.pl">applyDeltas</a><br></li>
+  </ul>I hope you will find them useful...<p>
+  <b>Some stats from a Pentium D at 2.8 GHz, running a Debian Linux 
+  VMWARE image:</b><p>
+  The source tree weighs in at 350MB.<br>
+  (At home) Size of signature file: 3.9MB<br>
+  (At work) Time it takes to generate deltas: 5min<br>
+  (At work) Size of generated "deltas" file: 6.5MB<br>
+  (Back home) Time it takes to apply the deltas: 6min<p>
+  (<em>Looks like I won't be replacing my 256MB USB stick 
+  any time soon.</em>)
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Wed Oct 22 13:47:23 2008</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/Offline-rsync.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

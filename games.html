@@ -1,0 +1,468 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/games.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>SDL hacks</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">SDL hacks</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <b><em>Summer 2009:</em></b> <A href="http://science.slashdot.org/story/09/08/16/189257/Simple-Portable-Physics-Simulations">Slashdotted!</A><br>
+<b><em>Xmas 2013:</em></b> I added a <a href="wavePhysics.html">Javascript port</a> of my wave simulation.<p>
+I want to "lure" my nephews and nieces towards science and engineering, and one of
+the things I've done towards that goal is to code some real-time physics simulators.
+  <table summary="2D waves" align="center">
+  <tr>
+  <td>
+<center>
+<!--object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/0FrAZis6Wfk&hl=en_US&fs=1&rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/0FrAZis6Wfk&hl=en_US&fs=1&rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object-->
+<object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="https://www.youtube.com/v/0FrAZis6Wfk&amp;hl=en_US&amp;fs=1&amp;rel=0">
+    <param name="movie" value="https://www.youtube.com/v/0FrAZis6Wfk">
+    <param name="allowFullScreen" value="true">
+    <!-- Fallback content -->
+    <a href="https://www.youtube.com/watch?v=0FrAZis6Wfk">
+    <img src="waves-video.jpg" width="480" height="360" alt="Waves simulation">
+    </a>
+</object>
+<p><em>Modelling waves...</em>
+</center>
+  </td></tr></table>
+  All the code I wrote is available below, and compiles under Linux, 
+  Free/Net/OpenBSD, Mac OS/x and Windows (with GCC/MinGW), with the usual...
+
+<pre class="o">
+<b>bash$</b> ./configure
+<b>bash$</b> make
+</pre>
+
+I have also made Win32 binaries available (cross-compiled with GCC-MinGW32)
+for the people that don't know how to compile the code, but would like to
+use it anyway...
+<p>
+For the specifics of each "demo", check the README inside each source package.
+<h1>Download</h1>
+  <h2>Explosion/fireworks simulator</h2>
+  Download <a href="explosions-1.0a.tar.bz2">source code</a>, and <a href="explosions-1.0a-win32.7z">Win32 binary</a> (compressed <a href="http://www.7-zip.org/">with 7-zip</a>).<p>Click and hold-down the left mouse button to create a never ending supply of "debris".
+
+  <h2>One-dimensional wave simulator</h2>
+  Download <a href="wave-1.0a.tar.bz2">source code</a>, and <a href="wave-1.0a-win32.7z">Win32 binary</a> (compressed <a href="http://www.7-zip.org/">with 7-zip</a>).<p>
+  Hit SPACE to pull down the string at a distance of 1/4 its full length (from the left). See if you can hit SPACE at the proper frequency (natural structural frequency) to maximize the wave amplitude... Can you make it reach the right side?
+
+  <h2>Two-dimensional waves simulator - a.k.a. "water"</h2>
+  <div class="scrollableContainer rightFloat">
+  <img hspace="10" vspace="10" alt="2D waves" src="waves.png"><br>
+  <em>Waves... (they look much better<br>when they move :&#x2011;)</em>
+</div>
+  Download <a href="waves-1.0a.tar.bz2">source code</a>, and <a href="waves-1.0a-win32.7z">Win32 binary</a> (compressed <a href="http://www.7-zip.org/">with 7-zip</a>).<p>
+  Click (and hold) the left mouse button to "pull" the water at the point where you click. Draging the mouse makes for nice waves that reflect around the borders of the "pool"...
+
+  <h2>Snow "generator"</h2>
+  Download the <a href="snow.exe">Win32 binary</a>, the code was too embarassing to share :&#x2011;)<p>
+  And yes, what you see there getting covered in snow is my... name... in Greek :&#x2011;) Hey, my nephews loved it! :&#x2011;)
+<h1>Theory</h1>
+The "snow" and "fireworks" simulations are easy to implement: we just add random horizontal noise to the falling snow 
+flakes, and we make sure every firework particle is falling with a constant vertical acceleration.
+<p>
+The theory behind real-time wave simulation is a little more complex.
+<P>
+Assume we have a wave, <IMG
+ WIDTH="38" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img1.png"
+ ALT="$ f_n(i)$">
+, where <IMG
+ WIDTH="10" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="waves_img2.png"
+ ALT="$ i$">
+ refers to the horizontal screen
+axis (i.e. the X-pixel coordinate). <IMG
+ WIDTH="38" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img1.png"
+ ALT="$ f_n(i)$">
+ provides the pixel <IMG
+ WIDTH="13" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img3.png"
+ ALT="$ y$">
+-coordinate
+at frame <IMG
+ WIDTH="14" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="waves_img4.png"
+ ALT="$ n$">
+; we want to find what the values will change to, at frame <IMG
+ WIDTH="41" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img5.png"
+ ALT="$ n+1$">
+.
+
+<P>
+Consider the individual pixels to represent the water molecules, and
+assume that each molecule is influenced only by its two neighbours
+(left and right), as if they are connected to it with springs. That is, 
+assume that a given pixel's value, <IMG
+ WIDTH="38" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img1.png"
+ ALT="$ f_n(i)$">
+, is only influenced by the attractive
+force of its two neighbours, the left pixel, <!-- MATH
+ $f_{nL} = f_n(i-1)$
+ -->
+<IMG
+ WIDTH="112" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img6.png"
+ ALT="$ f_{nL} = f_n(i-1)$">
+, and the right
+pixel, <!-- MATH
+ $f_{nR} = f_n(i+1)$
+ -->
+<IMG
+ WIDTH="113" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img7.png"
+ ALT="$ f_{nR} = f_n(i+1)$">
+.
+
+<P>
+With <IMG
+ WIDTH="14" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img8.png"
+ ALT="$ f$">
+ the position, <IMG
+ WIDTH="13" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="waves_img9.png"
+ ALT="$ v$">
+ the velocity and <IMG
+ WIDTH="13" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="waves_img10.png"
+ ALT="$ a$">
+ the acceleration,
+the laws governing motion tell us the following (using dt=1):
+
+<P>
+First: the pixel's position in the new frame is equal to the position in this frame, plus the vertical velocity:
+<DIV ALIGN="CENTER"><A NAME="eq:main"></A><!-- MATH
+ \begin{equation}
+f_{n+1} = f_n  + v_n
+\end{equation}
+ -->
+<TABLE summary="1st equation" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><IMG
+ WIDTH="110" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img11.png"
+ ALT="$\displaystyle f_{n+1} = f_n + v_n$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+(1)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL">
+
+The velocity is equal to the old velocity plus the acceleration:<p>
+<!-- MATH
+ \begin{displaymath}
+v_n = v_{n-1} + a_{n-1}\nonumber\\
+\end{displaymath}
+ -->
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="127" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img12.png"
+ ALT="$\displaystyle v_n = v_{n-1} + a_{n-1}\nonumber\\
+$">
+</DIV>
+
+And since springs cause acceleration that is linear to the "pulled" distance:<p>
+
+<!-- MATH
+ \begin{displaymath}
+a_{n-1} = k (f_{nL} - f_{n-2}) + k (f_{nR} - f_{n-2}) \nonumber\\
+\end{displaymath}
+ -->
+<DIV ALIGN="CENTER">
+<IMG
+ WIDTH="276" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img13.png"
+ ALT="$\displaystyle a_{n-1} = k (f_{nL} - f_{n-2}) + k (f_{nR} - f_{n-2}) \nonumber\\
+$">
+</DIV>
+(where <IMG
+ WIDTH="13" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="waves_img14.png"
+ ALT="$ k$">
+ is the spring's coefficient - the larger it is, the more 
+acceleration is caused by the spring).
+
+<P>
+These equations can be used to perform the simulation, and they would work fine.
+There is one problem, though: the simulation would be slow, since there's quite 
+a lot of calculations going on per pixel...
+
+<P>
+Instead, we will use the acceleration at time <IMG
+ WIDTH="41" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img5.png"
+ ALT="$ n+1$">
+ (instead of <IMG
+ WIDTH="41" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img15.png"
+ ALT="$ n-1$">
+),
+which basically means that we will approximate the current acceleration 
+rate with the one we would have in two frames' time. We will also set <IMG
+ WIDTH="13" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="waves_img14.png"
+ ALT="$ k$">
+ to 1,
+to further simplify the calculation.
+
+<P>
+Replacing <IMG
+ WIDTH="21" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img16.png"
+ ALT="$ v_n$">
+ in <A HREF="#eq:main">1</A> leads to the following:
+
+<DIV ALIGN="CENTER"><TABLE summary="Simplifications" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="37" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img17.png"
+ ALT="$\displaystyle f_{n+1}$"></TD>
+<TD NOWRAP ALIGN="LEFT"><IMG
+ WIDTH="142" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img18.png"
+ ALT="$\displaystyle = f_n + v_{n-1} + a_{n-1}\nonumber$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+&nbsp;&nbsp;&nbsp;</TD></TR>
+<TR VALIGN="MIDDLE">
+<TD>&nbsp;</TD>
+<TD NOWRAP ALIGN="LEFT"><IMG
+ WIDTH="191" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img19.png"
+ ALT="$\displaystyle = f_n + (f_n - f_{n-1}) + a_{n+1}\nonumber$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+&nbsp;&nbsp;&nbsp;</TD></TR>
+<TR VALIGN="MIDDLE">
+<TD>&nbsp;</TD>
+<TD NOWRAP ALIGN="LEFT"><IMG
+ WIDTH="260" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img20.png"
+ ALT="$\displaystyle = 2 f_n - f_{n-1} + f_{nL} - f_n + f_{nR} - f_n\nonumber$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+&nbsp;&nbsp;&nbsp;</TD></TR>
+<TR VALIGN="MIDDLE">
+<TD>&nbsp;</TD>
+<TD NOWRAP ALIGN="LEFT"><IMG
+ WIDTH="144" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img21.png"
+ ALT="$\displaystyle = f_{nL} + f_{nR} - f_{n-1}$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+&nbsp;&nbsp;&nbsp;</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL">
+So the end result is amazingly simple: we add the <IMG
+ WIDTH="13" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img3.png"
+ ALT="$ y$">
+-coordinates of the two
+neighbouring pixels, and subtract the old value we used to have!
+Since the springs are losing power with each iteration, we will finally scale
+the output of the last equation so that it diminishes over time (e.g.
+multiply by 0.99):<br>&nbsp;<br>
+
+<DIV ALIGN="CENTER"><!-- MATH
+ \begin{equation}
+\boxed{
+f_{n+1}(i) = 0.99 (f_n(i-1) + f_n(i+1) - f_{n-1}(i))
+}
+\end{equation}
+ -->
+<TABLE summary="Final equation for 1D waves" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><IMG
+ WIDTH="340" HEIGHT="42" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img22.png"
+ ALT="$\displaystyle \boxed{ f_{n+1}(i) = 0.99 (f_n(i-1) + f_n(i+1) - f_{n-1}(i)) }$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+(2)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL">
+And that is the only equation we need, to simulate one-dimensional waves in real-time.
+
+<P>
+For the corresponding two-dimensional problem, we just average the
+effects of the X- and Y- coordinate waves:
+<DIV ALIGN="CENTER"><TABLE summary="2D waves" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="108" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img23.png"
+ ALT="$\displaystyle f_{n+1}(i,j) = \frac{1}{2} ($"></TD>
+<TD NOWRAP ALIGN="LEFT"><IMG
+ WIDTH="283" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img24.png"
+ ALT="$\displaystyle f_{n+1,HorizontalWave} + f_{n+1,VerticalWave})\nonumber$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+&nbsp;&nbsp;&nbsp;</TD></TR>
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="39" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img25.png"
+ ALT="$\displaystyle = \frac{1}{2} ($"></TD>
+<TD NOWRAP ALIGN="LEFT"><IMG
+ WIDTH="314" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img26.png"
+ ALT="$\displaystyle 0.99 (f_n(i-1,j) + f_n(i+1,j) - f_{n-1}(i,j)) + \nonumber$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+&nbsp;&nbsp;&nbsp;</TD></TR>
+<TR VALIGN="MIDDLE">
+<TD>&nbsp;</TD>
+<TD NOWRAP ALIGN="LEFT"><IMG
+ WIDTH="307" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img27.png"
+ ALT="$\displaystyle 0.99 (f_n(i,j-1) + f_n(i,j+1) - f_{n-1}(i,j)))\nonumber$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+&nbsp;&nbsp;&nbsp;</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL">
+So, for real-time simulation of two-dimensional waves, we only need this equation:<br>&nbsp;<br>
+
+<DIV ALIGN="CENTER"><!-- MATH
+ \begin{equation}
+\boxed{
+f_{n+1}(i,j) = 0.99 ( \frac{f_n(i-1,j) + f_n(i+1,j) + f_n(i,j-1) + f_n(i,j+1)}{2} - f_{n-1}(i,j) ) 
+}
+\end{equation}
+ -->
+<TABLE summary="Final equation for 2D waves" CELLPADDING="0" WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE">
+<TD NOWRAP ALIGN="CENTER"><IMG
+ WIDTH="593" HEIGHT="64" ALIGN="MIDDLE" BORDER="0"
+ SRC="waves_img28.png"
+ ALT="$\displaystyle \boxed{ f_{n+1}(i,j) = 0.99 ( \frac{f_n(i-1,j) + f_n(i+1,j) + f_n(i,j-1) + f_n(i,j+1)}{2} - f_{n-1}(i,j) ) }$"></TD>
+<TD NOWRAP WIDTH="10" ALIGN="RIGHT">
+(3)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL">
+<em>Hmm, Coding "semi-scientific" models of natural processes can quickly become addictive... I better stop now... :&#x2011;)</em>
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:35:19 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/games.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

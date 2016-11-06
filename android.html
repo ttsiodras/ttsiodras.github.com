@@ -1,0 +1,1292 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/android.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Freeing my tablet (Android hacking, SW and HW)</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Freeing my tablet (Android hacking, SW and HW)</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(October 2016)</em></p>
+
+<h2>Freeing my tablet (Android hacking, SW and HW)</h2>
+
+<div style="float:right; text-align:right; margin-bottom:1em">
+<small><em>Born free, and life is worth living; <a target="_blank" href="https://www.youtube.com/watch?v=ISWOrI0WaLs">but only worth living, cause you're born free</a></em></small><br><b>Matt Monro</b></div>
+<div class="tldr">
+<b>For the TL;DR crowd:</b>
+I wanted to run a Debian chroot in my tablet; and there was no open-source rooting
+process for it. That triggered me enough to have a deeper look at Android,
+and eventually completely dominate my tablet.
+<p>
+<center>
+<em>Caveat - a long read... involving both HW and SW;<br>
+...but you'll probably learn a thing or two. </em>
+</center>
+</div>
+
+<h2>The backstory...</h2>
+
+<p>Two years ago, I left my country. There's a sad story there, but let's
+just say that I chose to spend some time in Malta, working remotely for a
+nice Irish startup - while living in an apartment 30 meters by the sea :-)</p>
+
+<p>After finishing my work everyday at 16:00, 15 minutes later I would go
+for a swim.</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="SanPawl.jpg" alt="Malta">
+<p>
+<em>I miss the glorious Mediterranean sun...</em>
+</div>
+
+<p>I would then enjoy long afternoon walks by the beach,
+<a href="https://www.youtube.com/watch?v=9_7loz-HWUM" target="_blank">listening to music</a>
+and catching up on my favorite online forums <em>(Reddit/programming, Hacker
+News, Slashdot, etc)</em> - using my tablet.</p>
+
+<p>Until my tablet died. Suddenly.</p>
+
+<p>A cruel and unusual death that involved noise, a bad smell
+<em>(electrolytic capacitor bidding farewell?)</em> and then... total silence.</p>
+
+<p>I <em>could</em> have had a look into it - but I knew it was high time I got a new
+one anyway. </p>
+
+<p>I started looking at the various offerings, and being a nerd of a frugal
+nature, decided to only look at the best HW bang for the buck, completely
+ignoring the SW aspects.</p>
+
+<p><em>"Software? Bah, I'll sort that out later" - Famous Last Words (TM)</em></p>
+
+<h2>The main actor...</h2>
+
+<p>I ended up with this:</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="memopad.jpg" alt="My tablet">
+<p>
+<em>Asus MemoPad 10" ME103K</em>
+</div>
+
+<p>In August of 2015, 175 Euros got me a tablet with a 10 inch screen,
+1GB of RAM, a quad-core Qualcomm Snapdragon, and 16GB of storage -
+with more space available if one needed it via an SD card slot.</p>
+
+<p>In my preliminary use, the tablet was quite fast in web browsing 
+<em>(with ad blocking of course - otherwise the ads bring down
+even desktop browsers to their knees)</em>. That's what I mostly expect from my
+tablet - adequate browsing, and reading PDFs while listening to music.</p>
+
+<p>Oh, and running Debian in a <a href="https://wiki.debian.org/ArmHardFloatChroot"
+target="_blank">chroot</a> of course. Many benefits there;
+I am a Linux/Unix/BSD/embedded guy, living my life in the command
+line - and I need to be able to do everything that I do with my main
+computers, on my tablet as well <em>(like running Privoxy, dictd,
+tunneling via local SSH's SOCKS tunnels to tether beyond the idiocy
+of providers, running my local Flask servers that are accessible
+only from the tablet... you get the idea).</em></p>
+
+<p>And I trust Debian. Far more than I trust the Android ecosystem.</p>
+
+<p>That was when it hit me; I searched, and searched, and searched...</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="pain.jpg" alt="Pain">
+</div>
+
+<p>...there was no open <a href="#note1">[2]</a> rooting process for this tablet.</p>
+
+<p>No TWRP, no CyanogenMod, nothing.</p>
+
+<p>Nowhere.</p>
+
+<p><em>(Gulp)</em></p>
+
+<p>...</p>
+
+<p>I spent my free time over the next weeks studying Android. Not from an application
+developer standpoint, mind you; only from the low-level aspects that
+an embedded software engineer cares about.</p>
+
+<h2>Understanding the Android boot process</h2>
+
+<p>An Android device boots from a soldered-in flash chip, that acts as a
+"hard disk". The kernel sees it usually as device <code>/dev/mmcblk0</code>,
+and it is split in various partitions.</p>
+
+<p>In my tablet, after starting an <code>adb shell</code>, I can see this...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ ls -l /dev/block/platform/msm_sdcc</span><span class="symbol">.</span><span class="number">1</span><span class="normal">/by-name</span>
+
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">20</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> ADF -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p9</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">20</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> APD -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p8</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> DDR -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p28</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> aboot -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p14</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> abootb -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p20</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> abootu -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p23</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> boot -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p16</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> cache -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p25</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> fsg -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p10</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">20</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> m9kefs1 -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p5</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">20</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> m9kefs2 -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p6</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">20</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> m9kefs3 -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p7</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> m9kefsc -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p30</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> metadata -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p31</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> misc -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p26</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">20</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> modemst1 -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p2</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">20</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> modemst2 -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p3</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">20</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> persist -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p4</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">20</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> radio -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p1</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> recovery -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p27</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> rpm -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p15</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> rpmb -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p21</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> sbl1 -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p11</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> sbl2 -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p12</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> sbl2b -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p18</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> sbl3 -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p13</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> sbl3b -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p19</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> ssd -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p29</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> system -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p24</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> tz -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p17</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> tzb -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p22</span>
+<span class="normal">lrwxrwxrwx</span><span class="symbol">.</span><span class="normal"> </span><span class="number">1</span><span class="normal"> root root </span><span class="number">21</span><span class="normal"> Oct  </span><span class="number">8</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">11</span><span class="normal"> userdata -</span><span class="symbol">&gt;</span><span class="normal"> /dev/block/mmcblk0p32</span>
+</tt></pre>
+</div>
+
+<p><center><em>Golly gee, Mr Google, that's a lot of partitions</em></center>
+<p>
+My ME103K starts it's booting process by verifying the <code>aboot</code> partition is not tampered
+with. There's some sort of signature verification going on there, so
+even if you obtained root access and <code>dd</code>-ed over a tweaked version
+of the <code>aboot</code> partition data, you'd end up with a 175 Euro brick
+<em>(unless you can desolder the flash chip, extract it from the PCB, re-program it,
+and solder it again.  Not my cup of tea - huge respect to those that can, though)</em>.</p>
+
+<p><em><code>aboot</code></em> is what is officially called the <em>bootloader</em>. Once it is
+verified and starts running, it will perform the same song and dance 
+for the <em><code>boot</code></em> partition; checking that it is nice and proper, 
+loading its contents and executing them.</p>
+
+<h2>fastboot oem unlock</h2>
+
+<p>In principle, this is where Android vendors are supposed to allow
+you to hijack the process, and boot your own <code>boot</code> image, using...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ adb reboot bootloader</span>
+
+<span class="normal">host$ </span><span class="comment"># tablet reboots into aboot, and pauses just BEFORE</span>
+<span class="normal">host$ </span><span class="comment"># loading the boot partition data</span>
+</tt></pre>
+</div>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="bootloader.png" alt="Bootloader snapshot">
+</div>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ </span><span class="comment"># Actually, please load my own bootable image</span>
+<span class="normal">host$ fastboot boot myDamnImage</span><span class="symbol">.</span><span class="normal">img</span>
+</tt></pre>
+</div>
+
+<p>But to be able to do that, the bootloader must be <em>unlocked</em>; that
+is, it must allow you to load your own boot images.</p>
+
+<p>Some - but not all - devices, allow you to do this:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ fastboot oem unlock</span>
+</tt></pre>
+</div>
+
+<p>Mine did (thank god).</p>
+
+<p>I do believe though that when you do this,
+the tablet is supposed to be wiped automatically... since by allowing
+booting of a custom image, an external entity can pretty much gather
+every data residing inside the tablet - and completely violate your
+privacy.</p>
+
+<p>My MemoPad didn't.</p>
+
+<p>Hmm.</p>
+
+<h2>Creating my own boot image</h2>
+
+<p>It was time to create my own boot image. I wish I could <code>dd</code> the <code>boot</code>
+partition over from the flash chip and start from there - but I was not root,
+and therefore not allowed to <code>dd</code> from partitions.</p>
+
+<p>Looking for a fallback, I checked the last Over-The-Air update sent by Asus to these
+tablets. I was quickly able to extract the boot image and the accompanying
+file system from inside it <em>(initrd, in Linux terms)</em>:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ ls -l</span>
+<span class="normal">total </span><span class="number">803592</span>
+<span class="normal">drwxr-xr-x </span><span class="number">2</span><span class="normal"> ttsiod ttsiod      </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">21</span><span class="normal"> </span><span class="number">01</span><span class="symbol">:</span><span class="number">22</span><span class="normal"> </span><span class="symbol">./</span>
+<span class="normal">drwxr-xr-x </span><span class="number">6</span><span class="normal"> ttsiod ttsiod      </span><span class="number">4096</span><span class="normal"> Sep </span><span class="number">25</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">34</span><span class="normal"> </span><span class="symbol">../</span>
+<span class="normal">-rw-rw-r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod </span><span class="number">822861864</span><span class="normal"> Aug  </span><span class="number">7</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> UL-K01E-WW-</span><span class="number">12.16</span><span class="symbol">.</span><span class="number">1.12</span><span class="normal">-user</span><span class="symbol">.</span><span class="normal">zip</span>
+
+<span class="normal">host$ unzip -l UL-K01E-WW-</span><span class="number">12.16</span><span class="symbol">.</span><span class="number">1.12</span><span class="normal">-user</span><span class="symbol">.</span><span class="normal">zip </span><span class="symbol">|</span><span class="normal"> grep boot</span><span class="symbol">.</span><span class="normal">img</span>
+<span class="normal">  </span><span class="number">7368704</span><span class="normal">  </span><span class="number">2011</span><span class="normal">-</span><span class="number">03</span><span class="normal">-</span><span class="number">22</span><span class="normal"> </span><span class="number">11</span><span class="symbol">:</span><span class="number">21</span><span class="normal">   boot</span><span class="symbol">.</span><span class="normal">img</span>
+
+<span class="normal">host$ unzip UL-K01E-WW-</span><span class="number">12.16</span><span class="symbol">.</span><span class="number">1.12</span><span class="normal">-user</span><span class="symbol">.</span><span class="normal">zip boot</span><span class="symbol">.</span><span class="normal">img</span>
+<span class="normal">Archive</span><span class="symbol">:</span><span class="normal">  UL-K01E-WW-</span><span class="number">12.16</span><span class="symbol">.</span><span class="number">1.12</span><span class="normal">-user</span><span class="symbol">.</span><span class="normal">zip</span>
+<span class="normal">signed by SignApk</span>
+<span class="normal">  inflating</span><span class="symbol">:</span><span class="normal"> boot</span><span class="symbol">.</span><span class="normal">img                </span>
+
+<span class="normal">host$ mkdir contents</span>
+<span class="normal">host$ cd contents</span>
+<span class="normal">host$ abootimg -x </span><span class="symbol">..</span><span class="normal">/boot</span><span class="symbol">.</span><span class="normal">img </span>
+
+<span class="normal">writing boot image config </span><span class="keyword">in</span><span class="normal"> bootimg</span><span class="symbol">.</span><span class="normal">cfg</span>
+<span class="normal">extracting kernel </span><span class="keyword">in</span><span class="normal"> zImage</span>
+<span class="normal">extracting ramdisk </span><span class="keyword">in</span><span class="normal"> initrd</span><span class="symbol">.</span><span class="normal">img</span>
+
+<span class="normal">host$ mkdir rootfs</span>
+<span class="normal">host$ cd  rootfs</span>
+<span class="normal">host$ zcat </span><span class="symbol">..</span><span class="normal">/initrd</span><span class="symbol">.</span><span class="normal">img </span><span class="symbol">|</span><span class="normal"> cpio -ivd</span>
+<span class="number">4040</span><span class="normal"> blocks</span>
+
+<span class="normal">host$ ls -l</span>
+
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> ttsiod ttsiod     </span><span class="number">13</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> charger -</span><span class="symbol">&gt;</span><span class="normal"> /sbin/healthd</span>
+<span class="normal">drwxrwx--x </span><span class="number">2</span><span class="normal"> ttsiod ttsiod   </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> data</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod    </span><span class="number">350</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> default</span><span class="symbol">.</span><span class="normal">prop</span>
+<span class="normal">drwxr-xr-x </span><span class="number">2</span><span class="normal"> ttsiod ttsiod   </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> dev</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod  </span><span class="number">37014</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> file_contexts</span>
+<span class="normal">-rw-r----- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">1242</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> fstab</span><span class="symbol">.</span><span class="normal">qcom</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod </span><span class="number">235904</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">2614</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">class_main</span><span class="symbol">.</span><span class="normal">sh</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">1284</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">environ</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">6758</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">qcom</span><span class="symbol">.</span><span class="normal">class_core</span><span class="symbol">.</span><span class="normal">sh</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod     </span><span class="number">88</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">qcom</span><span class="symbol">.</span><span class="normal">diag</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">5604</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">qcom</span><span class="symbol">.</span><span class="normal">early_boot</span><span class="symbol">.</span><span class="normal">sh</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod  </span><span class="number">24602</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">qcom</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">3563</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">qcom</span><span class="symbol">.</span><span class="normal">sh</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">2838</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">qcom</span><span class="symbol">.</span><span class="normal">syspart_fixup</span><span class="symbol">.</span><span class="normal">sh</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod  </span><span class="number">38327</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">qcom</span><span class="symbol">.</span><span class="normal">usb</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod  </span><span class="number">22527</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">8346</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">target</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">1927</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">trace</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">3902</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">usb</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="normal">-rwxr-x--- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod    </span><span class="number">301</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> init</span><span class="symbol">.</span><span class="normal">zygote32</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="normal">drwxr-xr-x </span><span class="number">2</span><span class="normal"> ttsiod ttsiod   </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> proc</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">3138</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> property_contexts</span>
+<span class="normal">drwxr-xr-x </span><span class="number">3</span><span class="normal"> ttsiod ttsiod   </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> res</span>
+<span class="normal">drwxr-x--- </span><span class="number">2</span><span class="normal"> ttsiod ttsiod   </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> sbin</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod    </span><span class="number">746</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> seapp_contexts</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod     </span><span class="number">76</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> selinux_version</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod </span><span class="number">177701</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> sepolicy</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod  </span><span class="number">10468</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> service_contexts</span>
+<span class="normal">drwxr-xr-x </span><span class="number">2</span><span class="normal"> ttsiod ttsiod   </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> sys</span>
+<span class="normal">drwxr-xr-x </span><span class="number">2</span><span class="normal"> ttsiod ttsiod   </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> system</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">8349</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> ueventd</span><span class="symbol">.</span><span class="normal">qcom</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">4617</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> ueventd</span><span class="symbol">.</span><span class="normal">rc</span>
+</tt></pre>
+</div>
+
+<p>Hello - lots of stuff here.</p>
+
+<p>The Linux kernel starts <code>/init</code>, which in the case of Android reads
+what actions to perform from <code>init.rc</code> - which includes other
+<code>init.*</code> to setup the various SW and HW subsystems.</p>
+
+<p><code>init.rc</code> includes actions like spawning <code>adbd</code> - allowing us to connect to
+the tablet over <code>adb</code>:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ less init</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="symbol">...</span>
+<span class="comment"># adbd is controlled via property triggers in init.&lt;platform&gt;.usb.rc</span>
+<span class="normal">service adbd /sbin/adbd --root</span><span class="variable">_seclabel</span><span class="symbol">=</span><span class="normal">u</span><span class="symbol">:</span><span class="normal">r</span><span class="symbol">:</span><span class="normal">su</span><span class="symbol">:</span><span class="normal">s0</span>
+<span class="normal">    class core</span>
+<span class="normal">    socket adbd stream </span><span class="number">660</span><span class="normal"> system system</span>
+<span class="normal">    disabled</span>
+<span class="normal">    seclabel u</span><span class="symbol">:</span><span class="normal">r</span><span class="symbol">:</span><span class="normal">adbd</span><span class="symbol">:</span><span class="normal">s0</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>And what we usually have in <code>/etc/fstab</code> in other Unixes, resides
+inside <code>fstab.deviceName</code> in Android (in my case, <code>fstab.qcom</code>):</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ cat fstab</span><span class="symbol">.</span><span class="normal">qcom</span>
+<span class="normal">/dev/block/platform/msm_sdcc</span><span class="symbol">.</span><span class="number">1</span><span class="normal">/by-name/system   /system           ext4 </span><span class="symbol">...</span>
+<span class="normal">/dev/block/platform/msm_sdcc</span><span class="symbol">.</span><span class="number">1</span><span class="normal">/by-name/userdata /data             ext4 </span><span class="symbol">...</span>
+<span class="normal">/devices/platform/msm_sdcc</span><span class="symbol">.</span><span class="number">3</span><span class="normal">/mmc_host           /storage/MicroSD  vfat </span><span class="symbol">...</span>
+<span class="normal">/devices/platform/msm_hsusb_host                /storage/USBdisk</span><span class="number">1</span><span class="normal"> vfat </span><span class="symbol">...</span>
+<span class="normal">/devices/platform/msm_ehci_host</span><span class="symbol">.</span><span class="number">0</span><span class="normal">               /storage/USBdisk</span><span class="number">2</span><span class="normal"> vfat </span><span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>This part looks interesting as well; in principle, I can edit
+this file and have e.g. the <code>/system</code> partition point to my external
+SD card, which I CAN control (i.e. plug it in my laptop, write
+anything I want in it, then plug it in the tablet and reboot).</p>
+
+<p>But I can't read the current <code>/system</code> partition to do this - since
+I am not root, I can't take a snap, and store it in an external SD card.</p>
+
+<p>Not yet :-)</p>
+
+<p>Anyway - since the filesystem in the boot image is being modified, might
+as well cross-compile <code>busybox</code> and add it in. I copied it under <code>/sbin</code>
+and created all the symlinks:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ cd sbin</span>
+<span class="normal">host$ ls -l </span>
+<span class="symbol">...</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> addgroup -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> add-shell -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> adduser -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> adjtimex -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> ar -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> arp -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> arping -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> ash -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> awk -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="symbol">...</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> telnet -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> telnetd -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="symbol">...</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> xz -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> xzcat -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> yes -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> zcat -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> root root       </span><span class="number">9</span><span class="normal"> Sep </span><span class="number">28</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> zcip -</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">/busybox</span>
+</tt></pre>
+</div>
+
+<p>Busybox is very useful - allowing running tons of stuff from inside the tablet,
+even without chrooting.</p>
+
+<p>This modified filesystem needs to be placed back in a boot image:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ cd rootfs</span><span class="symbol">/</span>
+<span class="normal">host$ find </span><span class="symbol">.</span><span class="normal"> </span><span class="symbol">|</span><span class="normal"> cpio --create --format</span><span class="symbol">=</span><span class="string">'newc'</span><span class="normal"> </span><span class="symbol">|</span><span class="normal">  </span><span class="symbol">\</span>
+<span class="normal">    gzip </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">..</span><span class="normal">/initrd_busybox</span><span class="symbol">.</span><span class="normal">cpio</span><span class="symbol">.</span><span class="normal">gz</span>
+<span class="normal">host$ cd </span><span class="symbol">..</span>
+<span class="normal">host$ abootimg --create </span><span class="symbol">..</span><span class="normal">/new_boot</span><span class="symbol">.</span><span class="normal">img -f bootimg</span><span class="symbol">.</span><span class="normal">cfg  </span><span class="symbol">\</span>
+<span class="normal">    -k zImage -r initrd_busybox</span><span class="symbol">.</span><span class="normal">cpio</span><span class="symbol">.</span><span class="normal">gz</span>
+</tt></pre>
+</div>
+
+<p>Now, since busybox was added in, this image is bigger than the
+original one - so <code>abootimg</code> will fail here, with...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">updated is too big for the Boot Image (8441856 vs 7393280 bytes)</span>
+</tt></pre>
+</div>
+
+<p>Editing bootimg.cfg and updating the expected length in field <code>bootsize</code>
+is simple enough - but since I will be doing lots of experiments with
+many attempted boot images, I had to automate this a bit:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ cat bootimg</span><span class="symbol">.</span><span class="normal">cfg </span><span class="symbol">|</span><span class="normal"> grep bootsize</span>
+<span class="normal">bootsize </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0xDEAD</span>
+
+<span class="normal">host$ cat autoboot</span><span class="symbol">.</span><span class="normal">sh</span>
+<span class="comment">#!/bin/bash</span>
+<span class="normal">cd rootfs</span><span class="symbol">/</span>
+<span class="normal">find </span><span class="symbol">.</span><span class="normal"> </span><span class="symbol">|</span><span class="normal"> cpio --create --format</span><span class="symbol">=</span><span class="string">'newc'</span><span class="normal"> </span><span class="symbol">|</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">    gzip </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">..</span><span class="normal">/initrd_busybox</span><span class="symbol">.</span><span class="normal">cpio</span><span class="symbol">.</span><span class="normal">gz</span>
+<span class="normal">cd </span><span class="symbol">..</span>
+<span class="normal">abootimg --create </span><span class="symbol">..</span><span class="normal">/new_boot</span><span class="symbol">.</span><span class="normal">img -f bootimgBig</span><span class="symbol">.</span><span class="normal">cfg </span><span class="symbol">\</span>
+<span class="normal">    -k zImage -r initrd_busybox</span><span class="symbol">.</span><span class="normal">cpio</span><span class="symbol">.</span><span class="normal">gz </span><span class="symbol">&gt;</span><span class="normal">log </span><span class="number">2</span><span class="symbol">&gt;&amp;</span><span class="number">1</span>
+<span class="keyword">if</span><span class="normal"> grep </span><span class="string">'updated is too big'</span><span class="normal"> log </span><span class="symbol">;</span><span class="normal"> </span><span class="keyword">then</span>
+<span class="normal">    </span><span class="variable">SIZE</span><span class="symbol">=</span><span class="variable">$(</span><span class="normal">grep </span><span class="string">'updated is too big'</span><span class="normal"> log </span><span class="symbol">|</span><span class="normal"> awk </span><span class="string">'{print substr($10,2,7);}'</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="variable">HEX</span><span class="symbol">=</span><span class="variable">$(</span><span class="normal">echo -e </span><span class="string">"obase=16</span><span class="specialchar">\n</span><span class="string">$SIZE</span><span class="specialchar">\n</span><span class="string">"</span><span class="normal"> </span><span class="symbol">|</span><span class="normal"> bc -l</span><span class="symbol">)</span>
+<span class="normal">    cat bootimg</span><span class="symbol">.</span><span class="normal">cfg </span><span class="symbol">|</span><span class="normal"> sed </span><span class="string">"s/DEAD/$HEX/"</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> bootimgBig</span><span class="symbol">.</span><span class="normal">cfg</span>
+<span class="normal">    rm -f log</span>
+<span class="normal">    abootimg --create </span><span class="symbol">..</span><span class="normal">/new_boot</span><span class="symbol">.</span><span class="normal">img -f bootimgBig</span><span class="symbol">.</span><span class="normal">cfg </span><span class="symbol">\</span>
+<span class="normal">         -k zImage -r initrd_busybox</span><span class="symbol">.</span><span class="normal">cpio</span><span class="symbol">.</span><span class="normal">gz </span><span class="symbol">|</span><span class="normal"> tee log</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> grep </span><span class="string">'updated is too big'</span><span class="normal"> log </span><span class="symbol">;</span><span class="normal"> </span><span class="keyword">then</span>
+<span class="normal">        echo Failure</span><span class="symbol">...</span>
+<span class="normal">        </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    </span><span class="keyword">fi</span>
+<span class="keyword">fi</span>
+<span class="normal">echo Rebooting</span><span class="symbol">...</span>
+<span class="normal">fastboot boot </span><span class="symbol">..</span><span class="normal">/new_boot</span><span class="symbol">.</span><span class="normal">img</span>
+<span class="keyword">exit</span><span class="normal"> </span><span class="number">0</span>
+</tt></pre>
+</div>
+
+<p>And there it was, the 1st step - the tablet was now "equipped" with software that
+I provided myself:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ </span><span class="symbol">.</span><span class="normal">/autoboot</span><span class="symbol">.</span><span class="normal">sh</span>
+<span class="symbol">...</span>
+<span class="normal">host$ adb shell</span>
+
+<span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ telnet</span>
+<span class="normal">Usage</span><span class="symbol">:</span><span class="normal"> telnet </span><span class="symbol">[</span><span class="normal">-a</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">-l USER</span><span class="symbol">]</span><span class="normal"> HOST </span><span class="symbol">[</span><span class="normal">PORT</span><span class="symbol">]</span>
+
+<span class="normal">Connect to telnet server</span>
+
+<span class="normal">        -a      Automatic login with </span><span class="variable">$USER</span><span class="normal"> variable</span>
+<span class="normal">        -l USER Automatic login as USER</span>
+</tt></pre>
+</div>
+
+<p>Almost there! Right?</p>
+
+<h2>Nope, not quite</h2>
+
+<p>At that point, I noticed something.</p>
+
+<p>I was able to boot my custom images just fine - issueing <code>adb
+reboot bootloader</code> afterwards, and once my tablet reached fastboot stage,
+preparing and booting my next image... Always trying to become root.</p>
+
+<p>But I noticed that when I tried rebooting
+the tablet ON ITS OWN, it ended up in the bootloader menu.</p>
+
+<p>I believe the Android community calls this "stuck in fastboot".</p>
+
+<p>Oh-oh - <strong>the tablet was no longer bootable on its own!</strong> 
+It needed to be tethered to a PC, where a <code>fastboot boot whatever.img</code>
+would solve the issue. </p>
+
+<p>Not that I take my tablet on long trips or anything, but I found it rather
+annoying. Why did this happen? I didn't do anything wrong, did I?</p>
+
+<p>I needed a way to see what the tablet was saying during it's boot process.
+But... there's no way to do that in the Android world. No standard
+way, that is - every OEM has some method of its own.</p>
+
+<p>Why Google didn't mandate logging the boot messages via some form
+of the fastboot protocol (e.g. <code>fastboot logcat</code>), I will never know.</p>
+
+<p>What I <em>do</em> know, is that after Googling some more, I found out
+that <a href="https://www.optiv.com/blog/building-a-nexus-4-uart-debug-cable"
+target="_blank">Nexus devices have a serial port in their headphone jack</a>.</p>
+
+<p>And Asus manufactured some Nexus devices. Just as it manufactures
+ME103Ks (which are NOT Nexus, mind you).</p>
+
+<p>Say, maybe they re-used the same hardware in my tablet...</p>
+
+<p><a name="serialport"></a></p>
+
+<h2>Diving into hardware</h2>
+
+<p>In Nexuses, if you feed 3.3V in the microphone input of your headphone's
+TRRS plug, the left and right channels switch to carrying
+the serial port's TX and RX channels.</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="feeding3V.png" alt="Sending 3.3V to the MIC input">
+</div>
+
+<p>I used my Raspberry PI TRRS-to-TV cable to get access to the 4 places
+I needed: GND, MIC, L and R. The cable was not supposed to be doing
+anything else except exposing the 3 signals (MIC,L,R - each one paired
+with GND) in the three corresponding cables (red, white, yellow).</p>
+
+<p>I then used my recently acquired BitScope to probe between the TX (tip of
+white cable in picture) and the common GND (brown probe at the bottom
+of picture). I also used two probes (red and blue one) to
+"feed" 3.3V from my USB/TTL chip (a PL2303HX plugged in my laptop)
+to the MIC (red) tip.</p>
+
+<p>Upon rebooting the tablet, I indeed saw what was unmistakably a
+serial signal at 115200 (peak-to-peak of 8 to 9us), but with lots of
+capacitance:</p>
+
+<div>
+<center>
+<script type="text/javascript">
+// Apple devices (e.g. iPhone 3GS) need HW-accelerated MP4, which must
+// also be baseline encoded (translation: fat) and can only have
+// a height up to 496 pixels (translation: blurry). Sigh.
+var element = document.createElement('video');
+var hasWebM = element.canPlayType('video/webm');
+var hasMP4 = element.canPlayType('video/mp4');
+if (hasWebM || hasMP4) {
+    var format = hasWebM?'webm':'mp4';
+    var width = hasWebM?320:320;
+    var height = hasWebM?240:240;
+    document.write("<video controls poster='capacitance.jpg' " + 
+                   "width='" + width + "' " +
+                   "height='" + height + "'" +
+                   "src='serialsignal." + format + "'" +
+                   "type='video/" + format + "'><" +
+                   "/video>");
+} else {
+    // For the old generation, throw up a Flash control,
+    // offering the same MP4 content.
+    document.write(
+        "<embed src='flvplayer.swf' width='320' height='240' " +
+        "       bgcolor='#FFFFFF' type='application/x-shockwave-flash'" +
+        "       pluginspage='http://www.macromedia.com/go/getflashplayer' " +
+        "       flashvars='file=serialsignal.mp4&autostart=false' />");
+}
+</script>
+<p>
+<em>There you are! Come out, little serial...</em>
+</center>
+</div>
+
+<p>BitScope also told me that the signal was at 1.8V - so my PL2303HX
+(a 3.3V USB/TTL) could not possibly decode it. I needed a shifter.</p>
+
+<p>The signal also looked indecipherable, to my <em>"amateur at electronics"</em> eyes;
+the edges were surely too slow for any UART to pick up.
+<a href="http://electronics.stackexchange.com/questions/262853/noise-capacitance-related-in-serial-signal/"
+target="_blank">I asked the Electronics Stack Exchange</a> guys what they thought,
+ and they recommended probing on the jack itself - so I stripped the tablet down to its PCB, and probed
+all over... Nope, same capacitance-riddled signal, and I couldn't
+find it anywhere else on the PCB.</p>
+
+<p>But if <em>after booting</em>, I used <code>stty</code> to lower the speed to 9600 baud,
+then all was crystal clear - nice square pulses:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ stty -F /dev/ttyHSL</span><span class="number">0</span><span class="normal"> </span><span class="number">9600</span>
+<span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ </span><span class="keyword">while</span><span class="normal"> </span><span class="keyword">true</span><span class="normal"> </span><span class="symbol">;</span><span class="normal"> </span><span class="keyword">do</span><span class="normal"> echo UUUUUUU </span><span class="symbol">&gt;</span><span class="normal"> /dev/ttyHSL</span><span class="number">0</span><span class="normal"> </span><span class="symbol">;</span><span class="normal"> sleep </span><span class="number">0.1</span><span class="normal"> </span><span class="symbol">;</span><span class="normal"> </span><span class="keyword">done</span>
+</tt></pre>
+</div>
+
+<p><p></p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="9600.jpg" alt="Much better at low frequencies">
+</div>
+
+<p>I considered giving up, but Chris Stratton, in one of the few Stack
+Exchange comments I got, claimed that <em>"...a good shifter can cope
+even with this kind of capacitance-riddled signal"</em>. </p>
+
+<p>Might as well try!</p>
+
+<p>As good an opportunity as ever to start rebuilding
+my electronics "war chest"... In the meantime, I had left Malta and
+gotten a job at the European Space Agency in the Netherlands,
+so I made my first on-line order from Dutch electronics' shops.</p>
+
+<p>3 days later, I got a bunch of cables, a breadboard, a soldering iron
+and a level shifter: a BSS138.</p>
+
+<p>After a bit of lousy soldering and jungle-cable-breadboarding, with my
+heart beating unusually fast, I tried spawning <code>minicom</code>...</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="breadboard.jpg" alt="Adding a shifter">
+</div>
+
+<p>...and to my utter amazement, I saw this:</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="serialdata.jpg" alt="Data at last">
+</div>
+
+<p>Unbelievable - after BSS138 "lifted" the signal from 1.8 up to 3.3V,
+that miserable, capacitance-riddled signal was actually decoded!
+I could finally see why my tablet was stuck at fastboot.</p>
+
+<h2>Back to software hacking</h2>
+
+<p>And this is the complete transcript of what I saw <em>(if you are using 
+a slow device, you may want to use your desktop/laptop to watch this)</em>:</p>
+
+<script src="asciinema-player.js" type="text/javascript"></script>
+<div id="player-container"></div>
+<script type="text/javascript">
+asciinema.player.js.CreatePlayer('player-container', 'tabletStuckInFastBoot.json');
+</script>
+
+<p>Now after watching this ASCII cast
+(thanks, <a href="https://asciinema.org/" target="_blank">asciinema</a>!),
+I am sure you are wondering where the
+heck I found those "magic" oem-specific commands <em>(in this case, ME103K-specific)</em>:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ sudo fastboot fastboot oem device-info</span>
+<span class="symbol">...</span>
+<span class="symbol">(</span><span class="normal">bootloader</span><span class="symbol">)</span><span class="normal"> Device tampered</span><span class="symbol">:</span><span class="normal"> </span><span class="keyword">true</span>
+<span class="symbol">...</span>
+<span class="normal">host$ sudo fastboot oem reset-dev_info</span>
+<span class="normal">host$ sudo fastboot fastboot oem device-info</span>
+<span class="symbol">...</span>
+<span class="symbol">(</span><span class="normal">bootloader</span><span class="symbol">)</span><span class="normal"> Device tampered</span><span class="symbol">:</span><span class="normal"> </span><span class="keyword">false</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>Well...</p>
+
+<p>"Normal" firmware (for various values of "normal") can be asked to actually
+list the oem commands it supports - but...</p>
+
+<ul>
+<li>in my case it just got stuck when I did, and </li>
+<li>it can always choose to not report, erm, some interesting commands.</li>
+</ul>
+
+<p>So I went back to that Over-The-Air update...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ ls -l</span>
+<span class="normal">total </span><span class="number">803592</span>
+<span class="normal">drwxr-xr-x </span><span class="number">2</span><span class="normal"> ttsiod ttsiod      </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">21</span><span class="normal"> </span><span class="number">01</span><span class="symbol">:</span><span class="number">22</span><span class="normal"> </span><span class="symbol">./</span>
+<span class="normal">drwxr-xr-x </span><span class="number">6</span><span class="normal"> ttsiod ttsiod      </span><span class="number">4096</span><span class="normal"> Sep </span><span class="number">25</span><span class="normal"> </span><span class="number">23</span><span class="symbol">:</span><span class="number">34</span><span class="normal"> </span><span class="symbol">../</span>
+<span class="normal">-rw-rw-r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod </span><span class="number">822861864</span><span class="normal"> Aug  </span><span class="number">7</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> UL-K01E-WW-</span><span class="number">12.16</span><span class="symbol">.</span><span class="number">1.12</span><span class="normal">-user</span><span class="symbol">.</span><span class="normal">zip</span>
+
+<span class="normal">host$ unzip -l UL-K01E-WW-</span><span class="number">12.16</span><span class="symbol">.</span><span class="number">1.12</span><span class="normal">-user</span><span class="symbol">.</span><span class="normal">zip </span><span class="symbol">|</span><span class="normal"> grep aboot</span>
+<span class="normal">  </span><span class="number">1471540</span><span class="normal">  </span><span class="number">2011</span><span class="normal">-</span><span class="number">03</span><span class="normal">-</span><span class="number">22</span><span class="normal"> </span><span class="number">11</span><span class="symbol">:</span><span class="number">21</span><span class="normal">   bootloader</span><span class="symbol">.</span><span class="normal">aboot</span><span class="symbol">.</span><span class="normal">img</span>
+<span class="normal"> </span>
+<span class="normal">host$ unzip UL-K01E-WW-</span><span class="number">12.16</span><span class="symbol">.</span><span class="number">1.12</span><span class="normal">-user</span><span class="symbol">.</span><span class="normal">zip bootloader</span><span class="symbol">.</span><span class="normal">aboot</span><span class="symbol">.</span><span class="normal">img</span>
+<span class="normal">Archive</span><span class="symbol">:</span><span class="normal">  UL-K01E-WW-</span><span class="number">12.16</span><span class="symbol">.</span><span class="number">1.12</span><span class="normal">-user</span><span class="symbol">.</span><span class="normal">zip</span>
+<span class="normal">signed by SignApk</span>
+<span class="normal">  inflating</span><span class="symbol">:</span><span class="normal"> bootloader</span><span class="symbol">.</span><span class="normal">aboot</span><span class="symbol">.</span><span class="normal">img </span>
+
+<span class="normal">host$ strings bootloader</span><span class="symbol">.</span><span class="normal">aboot</span><span class="symbol">.</span><span class="normal">img </span><span class="symbol">|</span><span class="normal"> grep </span><span class="symbol">^</span><span class="normal">oem</span>
+<span class="normal">oem reboot-recovery is called</span><span class="symbol">!</span>
+<span class="normal">oem unlock</span>
+<span class="normal">oem device-info</span>
+<span class="normal">oem lock</span>
+<span class="normal">oem gpt-info</span>
+<span class="normal">oem fuse_blow</span>
+<span class="normal">oem check-fuse</span>
+<span class="normal">oem reset-dev_info</span>
+<span class="normal">oem grant</span>
+<span class="normal">oem off-mode-charge </span><span class="number">1</span>
+<span class="normal">oem off-mode-charge </span><span class="number">0</span>
+<span class="normal">oem uart-on</span>
+<span class="normal">oem uart-off</span>
+</tt></pre>
+</div>
+
+<p>I wouldn't touch those <em>'fuse'</em> things with a ten-foot pole; I don't want to
+brick my tablet.</p>
+
+<p>But <code>reset-dev_info</code>?</p>
+
+<p>Come on, I just <em>had</em> to try that :-)</p>
+
+<h2>No longer in a fastboot-loop, time to become root</h2>
+
+<p>So, what did we learn, Palmer?</p>
+
+<ul>
+<li>We CAN boot our own boot images on the tablet, but ASUS keeps a note somewhere:
+"this is a bad person, booting his own boot image. We will no longer boot for him
+normally."</li>
+<li>We CAN clear our record afterwards and make the tablet "normal" again.</li>
+</ul>
+
+<p>If I can only temporarily become root with a custom boot image, so be it - I will
+do so, and then try to exploit something
+on the <code>/system</code> partition; and finally "re-brand" myself as "an ASUS-compliant, good guy".</p>
+
+<h2>Flashing a boot image and then resetting dev-info?</h2>
+
+<p>But just in case... could one, say, flash a boot image...
+and then pretend it never happened?...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ sudo fastboot flash boot new_boot</span><span class="symbol">.</span><span class="normal">img</span>
+<span class="normal">host$ sudo fastboot oem reset-dev_info</span>
+<span class="normal">host$ sudo fastboot reboot</span>
+</tt></pre>
+</div>
+
+<p>Nope - same 'stuck in fastboot' behaviour. </p>
+
+<p><em>NOTE: I already had a backup of the boot partition when I tried this - I did it AFTER I became 
+root and was able to <code>dd</code> a pristine copy of the full <code>boot</code> partition for restoring.
+It was also interesting to note that the <code>dd</code> copy of <code>boot</code> did NOT match the boot.img
+in the Over-The-Air update form - maybe there are signatures at the end of that partition
+that are checked for correctness. With closed-source systems, one never knows...</em></p>
+
+<h2>Spawning telnetd and also trying su</h2>
+
+<p>So, back to becoming root via a custom boot image.</p>
+
+<p>Some of my research told me that if you are in control of the boot image, all you need to do
+is spawn telnetd from within <code>init.rc</code> - it would be spawned with root privileges,
+so anyone telnet-ing inside it is the equivalent of a Digital God.</p>
+
+<p>I tried various forms of this, but to no avail...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ cat init</span><span class="symbol">.</span><span class="normal">rc</span>
+<span class="symbol">...</span>
+<span class="normal">service telnetd /sbin/telnetd -l /sbin/bash</span>
+<span class="normal">    oneshot</span>
+</tt></pre>
+</div>
+
+<p><center>
+<em>(Remember that I had placed busybox and all its symlinks (including <code>bash</code>) under <code>/sbin</code>)</em>
+</center>
+<p>Nothing - there was no <code>telnetd</code> in the <code>ps</code> output after the boot. </p>
+
+<p>And no log of this failure anywhere... Nothing in <code>dmesg</code>, no logs under <code>/var/log/</code>.</p>
+
+<p>Silence.</p>
+
+<p>(sigh)</p>
+
+<p>I tried another form of spawning <code>telnetd</code>, suggested by <a href="https://github.com/metalx1000/Moto-G-root-tricks/blob/master/telnet_local.sh" target="_blank">an awesome fireman</a> - kudos, Kris!</p>
+
+<p>But that one failed as well.</p>
+
+<p>Hmm...</p>
+
+<p>Maybe I can try one of the classics, and place an <code>su</code> under <code>/sbin</code>?
+Cross-compiled it, and placed it (with the proper <code>setuid</code> bit set) under <code>/sbin</code>...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ adb shell</span>
+
+<span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ /sbin/su</span>
+<span class="normal">Permission denied</span><span class="symbol">.</span>
+</tt></pre>
+</div>
+
+<p>Oh?</p>
+
+<p>Denied by whom?</p>
+
+<h2>The 800-pound gorilla</h2>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="bouncer.jpg" alt="SELinux - the 800 pound gorilla">
+</div>
+
+<p>Reading some more, I realized that SELinux was standing in my way:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ adb shell</span>
+
+<span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ getenforce</span>
+<span class="normal">Enforcing</span>
+
+<span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ setenforce </span><span class="number">0</span><span class="normal">                                                  </span>
+<span class="normal">setenforce</span><span class="symbol">:</span><span class="normal">  Could not </span><span class="keyword">set</span><span class="normal"> enforcing status</span><span class="symbol">:</span><span class="normal">  Permission denied</span>
+</tt></pre>
+</div>
+
+<p>I clearly couldn't disable it - not in the default state of my tablet.</p>
+
+<p>But since I control the filesystem bundled in my boot image, maybe 
+there was a way to tell SELinux to get off my lawn? That is, to allow
+my <code>shell</code> user to control its state?</p>
+
+<p>In the root folder of my boot image's root filesystem, I eventually
+found this:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ ls -l sepolicy</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod  </span><span class="number">177701</span><span class="normal"> Oct </span><span class="number">23</span><span class="normal"> </span><span class="number">08</span><span class="symbol">:</span><span class="number">30</span><span class="normal"> sepolicy</span>
+</tt></pre>
+</div>
+
+<p>And - this took me ages to find - Joshua Brindle provides the source code
+of <a href="https://bitbucket.org/joshua_brindle/sepolicy-inject">sepolicy-inject</a>;
+a tool that allowed me to tell Android that the SELinux policy I want
+is one where my <code>shell</code> user has the power to <strong>kill the gorilla</strong>:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ ls -l</span>
+<span class="normal">drwxr-xr-x </span><span class="number">2</span><span class="normal"> ttsiod ttsiod   </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">22</span><span class="normal"> </span><span class="number">16</span><span class="symbol">:</span><span class="number">05</span><span class="normal"> </span><span class="symbol">./</span>
+<span class="normal">drwxr-xr-x </span><span class="number">4</span><span class="normal"> ttsiod ttsiod   </span><span class="number">4096</span><span class="normal"> Oct  </span><span class="number">4</span><span class="normal">  </span><span class="number">2015</span><span class="normal"> </span><span class="symbol">../</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod    </span><span class="number">349</span><span class="normal"> Oct </span><span class="number">22</span><span class="normal"> </span><span class="number">15</span><span class="symbol">:</span><span class="number">42</span><span class="normal"> Makefile</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">1088</span><span class="normal"> Jul </span><span class="number">17</span><span class="normal">  </span><span class="number">2013</span><span class="normal"> README</span><span class="symbol">.</span><span class="normal">txt</span>
+<span class="normal">-rw-r--r-- </span><span class="number">1</span><span class="normal"> ttsiod ttsiod   </span><span class="number">5851</span><span class="normal"> Jul </span><span class="number">17</span><span class="normal">  </span><span class="number">2013</span><span class="normal"> sepolicy-inject</span><span class="symbol">.</span><span class="normal">c</span>
+<span class="normal">-rwxr-xr-x </span><span class="number">1</span><span class="normal"> ttsiod ttsiod </span><span class="number">293912</span><span class="normal"> Oct </span><span class="number">22</span><span class="normal"> </span><span class="number">15</span><span class="symbol">:</span><span class="number">42</span><span class="normal"> sepolicy-inject</span><span class="symbol">*</span>
+
+<span class="normal">host$ </span><span class="symbol">.</span><span class="normal">/sepolicy-inject -Z shell -P /path/to/original/sepolicy </span><span class="symbol">\</span>
+<span class="normal">        -o /path/to/custom</span><span class="symbol">.</span><span class="normal">rootfs/sepolicy</span><span class="symbol">.</span><span class="normal">jean</span><span class="symbol">.</span><span class="keyword">let</span><span class="symbol">.</span><span class="normal">me</span><span class="symbol">.</span><span class="keyword">in</span>
+</tt></pre>
+</div>
+
+<p>I packaged this new <code>sepolicy</code> in my root filesystem, packed a new boot image,
+and after <code>fastboot</code>-ing with it, I saw this:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ adb shell</span>
+
+<span class="normal">shell@K01E_2:/ $ /sbin/su</span>
+
+<span class="normal">shell@K01E_2:/ # id</span>
+
+<span class="normal">uid=0(root) gid=0(root) groups=1004(input),1007(log),1011(adb),</span>
+<span class="normal">    1015(sdcard_rw),1028(sdcard_r),3001(net_bt_admin),3002(net_bt),</span>
+<span class="normal">    3003(inet),3006(net_bw_stats) context=u:r:shell:s0</span>
+</tt></pre>
+</div>
+
+<p>YES! I am (G)ROOT! </p>
+
+<p>And I can chroot - right?</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">shell@K01E_2:/ # chroot /data/local/tmp</span>
+
+<span class="normal">chroot: can't change root directory to '/data/local/tmp': Operation not permitted</span>
+<span class="normal">1|shell@K01E_2:/ # ls -l /data/local/tmp</span>
+<span class="normal">opendir failed, Permission denied</span>
+</tt></pre>
+</div>
+
+<p>What?!?!</p>
+
+<p>What kind of a root user can't list a folder?!</p>
+
+<p>I <a href="http://android.stackexchange.com/questions/124857/selinux-and-chroot-system-call" target="_blank">
+asked the Gods again for inspiration</a> - but as usual, the Gods don't respond to mortals.</p>
+
+<h2>The capabilities bounding set</h2>
+
+<p>FINE.</p>
+
+<p>Remember this part?</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ abootimg -x </span><span class="symbol">..</span><span class="normal">/boot</span><span class="symbol">.</span><span class="normal">img </span>
+
+<span class="normal">writing boot image config </span><span class="keyword">in</span><span class="normal"> bootimg</span><span class="symbol">.</span><span class="normal">cfg</span>
+<span class="normal">extracting kernel </span><span class="keyword">in</span><span class="normal"> zImage</span>
+<span class="normal">extracting ramdisk </span><span class="keyword">in</span><span class="normal"> initrd</span><span class="symbol">.</span><span class="normal">img</span>
+</tt></pre>
+</div>
+
+<p>So far the only modifications were applied on the root filesystem contained inside
+the boot image (that is, in <code>initrd.img</code>) - the kernel (<code>zImage</code>) was left as-is.</p>
+
+<p>To debug why the chroot system call (and the listing one!) fail, 
+I decided to compile the kernel (ASUS thankfully provided the source code), and then
+sprinkle it with <code>printk</code> statements to see EXACTLY where the system calls fail.</p>
+
+<p>After a LOT of work, I found out about the 'capabilities bounding set'.</p>
+
+<p>To cut a long story short, the kernel allows you now to limit the kind of things
+<em>("the amount of damage")</em> you can do from a process. The children spawned by it,
+can only limit things further - they can't get BACK what they (or their parents) lost.</p>
+
+<p>Then again, I controlled the kernel code - so I went all in, guns blazing:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">static</span><span class="normal"> </span><span class="type">long</span><span class="normal"> </span><span class="function">cap_prctl_drop</span><span class="symbol">(</span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">cred</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">new</span><span class="symbol">,</span><span class="normal"> </span><span class="type">unsigned</span><span class="normal"> </span><span class="type">long</span><span class="normal"> cap</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">capable</span><span class="symbol">(</span><span class="normal">CAP_SETPCAP</span><span class="symbol">))</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">EPERM</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">cap_valid</span><span class="symbol">(</span><span class="normal">cap</span><span class="symbol">))</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">EINVAL</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">// ttsiodras: come in, everyone, the water's fine!</span>
+<span class="normal">    </span><span class="comment">//cap_lower(new-&gt;cap_bset, cap);</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p><em>(Yes, yes - I know, this is basically allowing everyone and their grandmother
+to do anything; capabilities are NEVER droped.
+But I don't care - remember, the plan is that I will use my temporary
+root powers to mess with my <code>/system</code> partition, and then revert back to 
+a pristine boot image).</em></p>
+
+<p>After building this kernel and packaging it in...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ adb shell</span>
+
+<span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ /sbin/su</span>
+
+<span class="normal">root@K01E_2</span><span class="symbol">:/</span><span class="normal"> </span><span class="comment"># chroot /data/debian/ /bin/bash</span>
+
+<span class="normal">root@localhost</span><span class="symbol">:/</span><span class="comment"># cat /etc/issue</span>
+<span class="normal">Debian GNU/Linux </span><span class="number">8</span><span class="normal"> </span><span class="symbol">\</span><span class="normal">n </span><span class="symbol">\</span><span class="normal">l</span>
+</tt></pre>
+</div>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="finally.jpg" alt="Root at last">
+</div>
+
+<p>If you are wondering how the <code>/data/debian</code> came to be, I first created
+the relevant folder in my host machine (via <a href="https://wiki.debian.org/ArmHardFloatChroot"
+target="_blank">Debian's instructions</a>) and then used ADB's 
+port forwarding powers - and netcat:</p>
+
+<p>In the tablet:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ adb shell</span>
+
+<span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ /sbin/su</span>
+
+<span class="normal">root@K01E_2</span><span class="symbol">:/</span><span class="normal"> </span><span class="comment"># cd /data</span>
+<span class="normal">root@K01E_2</span><span class="symbol">:/</span><span class="normal"> </span><span class="comment"># mkdir debian</span>
+<span class="normal">root@K01E_2</span><span class="symbol">:/</span><span class="normal"> </span><span class="comment"># cd debian</span>
+<span class="normal">root@K01E_2</span><span class="symbol">:/</span><span class="normal"> </span><span class="comment"># nc -l -p 9999 | tar xpvf -</span>
+</tt></pre>
+</div>
+
+<p>In the host:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ adb forward tcp</span><span class="symbol">:</span><span class="number">9999</span><span class="normal"> tcp</span><span class="symbol">:</span><span class="number">9999</span>
+<span class="normal">host$ sudo -i</span>
+<span class="normal">host</span><span class="comment"># cd /opt/chroot-armie</span>
+<span class="normal">host</span><span class="comment"># tar cpf - ./* | nc localhost 9999</span>
+</tt></pre>
+</div>
+
+<h2>Cameras - and doing it properly</h2>
+
+<p>I enjoyed my newfound powers by setting up the chroot-ed Debian to do my 
+bidding - and as it always does, Debian worked perfectly. I did some
+bind-mounting before chrooting to make sure it had access to everything
+in the tablet (and not just under the chroot-ed folder), which allowed 
+me to e.g. process my recorded videos and images from within the tablet
+with ImageMagick and <code>ffmpeg</code> and <code>mkvmerge</code>, and...</p>
+
+<p>Oh wait a moment.</p>
+
+<p>The camera isn't working?!?!</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="cameraoff.jpg" alt="What?! No camera?!?!">
+</div>
+
+<p>Googling about it... and look, I am not alone: tons of people all over the world
+are reporting a common thing about rooting their Android devices...</p>
+
+<p><em>"I don't use rooting because afterwards the camera isn't working"</em>.</p>
+
+<p>Now I know more than enough about this to be 100% sure: rooting has NOTHING to do
+with the camera! The simple thing is, the kernel sources that I just compiled
+obviously have no device drivers for the camera in them!</p>
+
+<p>Why?</p>
+
+<p>I am guessing the answer is closely related to patents and NDAs and
+similar (expletive).</p>
+
+<p>(sigh)</p>
+
+<p>BTW, this means there is no chance to compile a CyanogenMod distribution
+for my tablet; best-case scenario, I would succeed but lose the camera
+functionality in the process. And God knows what else - the GPS, etc :-(</p>
+
+<p>I have to go back to my original plan - boot from the pristine boot
+image burned in the tablet, and become root ONLY through modifications
+to my <code>/system</code> partition.</p>
+
+<p>Which I can modify now - but modify what?</p>
+
+<h2>Game over</h2>
+
+<p>Accomplishing rooting with the pristine boot image, means doing so
+with full SELinux and capability bounding sets in place.</p>
+
+<p>Which can only mean one thing - I needed to find a way to run something
+as root BEFORE the parent process that spawns me ends up severely limited.</p>
+
+<p>Where?</p>
+
+<p>This took me even more time to find... but eventually, I noticed that the
+tablet upgrade (the Over-The-Air update from Asus that moved the tablet
+from KitKat (Android 4.4) to Lollipop (Android 5.1), left behind...
+a gift for me:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ adb shell</span>
+
+<span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ /sbin/su</span>
+<span class="normal">root@K01E_2</span><span class="symbol">:/</span><span class="normal"> </span><span class="comment"># cd /system/bin</span>
+<span class="normal">root@K01E_2</span><span class="symbol">:</span><span class="normal">/system/bin </span><span class="comment"># cat install-recovery.sh </span>
+
+<span class="comment">#!/system/bin/sh</span>
+<span class="keyword">if</span><span class="normal"> </span><span class="symbol">!</span><span class="normal"> applypatch -c EMMC</span><span class="symbol">:</span><span class="normal">/dev/block/platform/msm_sdcc</span><span class="symbol">.</span><span class="number">1</span><span class="normal">/by-name</span><span class="symbol">/\</span>
+<span class="normal">        recovery</span><span class="symbol">:</span><span class="number">7847936</span><span class="symbol">:</span><span class="normal">c8bd9025173cb3ab0f467f11291b10f517e95791</span><span class="symbol">;</span><span class="normal"> </span><span class="keyword">then</span>
+<span class="normal">  applypatch -b /system/etc/recovery-resource</span><span class="symbol">.</span><span class="normal">dat </span><span class="symbol">\</span>
+<span class="normal">    EMMC</span><span class="symbol">:</span><span class="normal">/dev/block/platform/msm_sdcc</span><span class="symbol">.</span><span class="number">1</span><span class="normal">/by-name/boot</span><span class="symbol">:</span><span class="number">7368704</span><span class="symbol">:\</span>
+<span class="normal">        9c5998b970de2449b4c73b890c44f8e68b2a84da </span><span class="symbol">\</span>
+<span class="normal">    EMMC</span><span class="symbol">:</span><span class="normal">/dev/block/platform/msm_sdcc</span><span class="symbol">.</span><span class="number">1</span><span class="normal">/by-name/recovery </span><span class="symbol">\</span>
+<span class="normal">        c8bd9025173cb3ab0f467f11291b10f517e95791 </span><span class="number">7847936</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">        9c5998b970de2449b4c73b890c44f8e68b2a84da</span><span class="symbol">:\</span>
+<span class="normal">            /system/recovery-from-boot</span><span class="symbol">.</span><span class="normal">p </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">            log -t recovery </span><span class="string">"Installing new recovery image: succeeded"</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">||</span><span class="normal"> log -t recovery </span><span class="string">"Installing new recovery image: failed"</span>
+
+<span class="keyword">else</span>
+<span class="normal">  log -t recovery </span><span class="string">"Recovery image already installed"</span>
+<span class="keyword">fi</span>
+</tt></pre>
+</div>
+
+<p>Hello - what's this?</p>
+
+<p>This code clearly needs to run with god-like privileges - it is supposed to
+patch the recovery partition with the new recovery image contained in the update,
+and it obviously needs to do this rather early in the boot time.</p>
+
+<p>Can I hook stuff in here?</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">root@K01E_2</span><span class="symbol">:</span><span class="normal">/system/bin </span><span class="comment"># vi install-recovery.sh </span>
+<span class="symbol">...</span>
+<span class="normal">root@K01E_2</span><span class="symbol">:</span><span class="normal">/system/bin </span><span class="comment"># cat install-recovery.sh </span>
+<span class="symbol">...</span>
+<span class="normal">  log -t recovery </span><span class="string">"Recovery image already installed"</span>
+<span class="keyword">fi</span>
+<span class="normal">/system/xbin/telnetd -b </span><span class="number">127.0</span><span class="symbol">.</span><span class="number">0.1</span><span class="symbol">:</span><span class="number">2323</span><span class="normal"> -l /system/xbin/bash</span>
+</tt></pre>
+</div>
+
+<p><em>(Notice that I copied all the busybox stuff from under /sbin - that is,
+from the modified boot image - to under /system/xbin ; since the plan
+is to boot from a normal boot image, that won't have anything under /sbin
+except what Asus placed in there).</em></p>
+
+<p>And there it was - I added the proper 
+<a href="https://www.youtube.com/watch?v=s2Uo5kcDpyg" target="_blank">music in the background</a>
+and rebooted:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">host$ adb reboot bootloader</span>
+<span class="symbol">...</span>
+<span class="normal">host$ sudo fastboot oem reset-dev_info</span>
+<span class="normal">host$ sudo fastboot reboot</span>
+<span class="symbol">...</span>
+<span class="normal">host$ adb shell</span>
+<span class="normal">shell@K01E_2</span><span class="symbol">:/</span><span class="normal"> $ telnet </span><span class="number">127.0</span><span class="symbol">.</span><span class="number">0.1</span><span class="normal"> </span><span class="number">2323</span>
+
+<span class="normal">Entering character mode</span>
+<span class="normal">Escape character is </span><span class="string">'^]'</span><span class="symbol">.</span>
+
+
+<span class="symbol">/</span><span class="normal"> </span><span class="comment"># </span>
+</tt></pre>
+</div>
+
+<p>Finally!</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="MacGyverClass.jpg" alt="I WIN">
+<br>&nbsp;
+<br><em>Oh God, no one will get the reference - I am too old... :-)</em>
+<br>&nbsp;
+</div>
+
+<p>Finally, I streamlined the process with a fake 'su' that I placed under /system/xbin:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="symbol">/</span><span class="normal"> </span><span class="comment"># cat /system/xbin/su</span>
+<span class="comment">#!/system/bin/sh</span>
+<span class="normal">echo </span><span class="string">"========================================================="</span>
+<span class="normal">echo </span><span class="string">"Feel free to run 'r' to get to a full Debian."</span>
+<span class="normal">echo </span><span class="string">""</span>
+<span class="normal">echo </span><span class="string">"Telneting into the tunnel..."</span>
+<span class="normal">echo </span><span class="string">"========================================================="</span>
+<span class="normal">/system/xbin/telnet </span><span class="number">127.0</span><span class="symbol">.</span><span class="number">0.1</span><span class="normal"> </span><span class="number">2323</span>
+</tt></pre>
+</div>
+
+<p>So my tablet, in pristine boot condition, with no tethering requirements
+whatsoever, was finally rooted; in an open-source way, with no mysterious dependencies
+on external servers <a href="#note1">[2]</a>, and with the camera still working.</p>
+
+<p>And is now proudly running a Debian chroot, of course :-)</p>
+
+<h2>Conclusion</h2>
+
+<p>There were many points during this journey that I felt really sad. It was as if
+Android creators absolutely HATED people like me, and did their best to make us
+suffer; because they group us together with malware authors; and add multiple
+layers of checks that don't distinguish between the <strong>owner of the machine</strong> and
+the developers of applications <strong>that run</strong> in the machine.</p>
+
+<p>I am <em>NOT</em> a bad guy!... I just want to remain in full control of <em>my OWN</em> hardware...</p>
+
+<p>What makes this sad is that "security" and "freedom" are not mutually exclusive - and
+Google already knows that this dichotomy is a false one. Their Chromebooks used to
+have hardware switches that the user <em>had to set by hand</em>, in order to enter
+"developer mode". This meant the owners of the machines had the freedom to root them,
+install chroots or native Linux distros, and generally do whatever they want with
+the hardware they purchased - if they chose to do so and accept the risks involved.</p>
+
+<p>While malware authors still had to face pains like those I described above.</p>
+
+<p><em>(Not that it stops them, BTW...)</em></p>
+
+<p>I shudder to think what I will face the next time the HW of my Android tablet or phone
+dies. The way things are going in the Android ecosystem, "freedom to tinker" will be gone;
+sacrificed forever in the delusionary altar of "safety-uber-alles".</p>
+
+<p>And if we are going that way... Android might as well be called iOS.</p>
+
+<hr>
+
+<p><font color="red"><b>Discussions in</b></font>
+<a target="_blank" href="https://redd.it/58z4zg">Reddit/programming</a> -
+<a target="_blank" href="https://redd.it/58z52z">Reddit/Linux</a> -
+<a target="_blank" href="https://redd.it/58z4s8">Reddit/ReverseEngineering</a></p>
+
+<h2>Notes</h2>
+
+<ol>
+<li><p>I wish the process was as smooth as I described it in the storyline above. In reality,
+as you can see in
+<a href="http://android.stackexchange.com/questions/124344/trying-to-flash-a-system-img-i-took-with-dd-failing">my</a>
+two
+<a href="http://android.stackexchange.com/questions/124857/selinux-and-chroot-system-call">questions</a>
+to Android Stack Exchange, and the
+<a href="http://electronics.stackexchange.com/questions/262853/noise-capacitance-related-in-serial-signal/">one</a>
+in Electronics Stack Exchange, the process is completely chaotic - there
+is no plan; you just try to make sense of all the complex factors that
+affect what is happening. As far as mental exercises go, <strong>this one was
+just as hard as the toughest ones I've ever met</strong>, and stretched my
+debugging muscles to their breaking point (which is good; that's how they
+get stronger). Huge thanks go out to the many people out there that work
+on this kind of thing and offer the resulting open-source tools and rooting
+instructions to mere mortals like me - probably without ever
+getting a "thank you" in return. I hope this page will act as my way
+of saying: "I now <strong>know</strong> what you guys go through - thank you <strong>so</strong> much!"</p></li>
+<li><p><a name="note1"></a>Well, there are some closed-source "one-click roots" that seem to, er, communicate with servers in China; supposedly to obtain the "proper" kernel exploit. Much as I respect the hacking power behind this... I am sorry, but I can't trust that you guys won't install a keylogger, or steal my GMail credentials, or make my tiny tablet a part of the ARMies of Mordor that have been known to recently be used in DoS attacks.</p></li>
+<li><p>The details of Android rooting keep changing of course, as versions of Android constantly
+evolve. What I described above is most likely no longer applicable to any tablet or phone running
+Android 6.x.</p></li>
+</ol>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sun Nov 6 19:13:21 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/android.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

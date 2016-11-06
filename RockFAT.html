@@ -1,0 +1,338 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/RockFAT.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Rock-solid diskettes with error correcting codes</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Rock-solid diskettes with error correcting codes</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <em>(October 2000)</em>
+<p>&nbsp;
+  <table border="1" frame="box" cellpadding="20" 
+  summary="A time before USB sticks" bgcolor="#CCDDCC"><tr><td>
+<em>This was written in an era before the USB sticks... When 
+floppies were still in use, and CDs had just started to replace 
+them... Still, it could be adapted and made useful for today's
+technology... I still have a large percentage of read failures when 
+it comes to my burned CDs/DVDs, and would very much like to find
+some time and apply another layer of Reed-Solomon over the
+ones already used by normal recording tech...</em>
+  </td></tr></table>
+
+  <h2>Introduction</h2>
+  I make a living writing code. There is no
+  simpler way of putting it. And living a life messed up with bits
+  and bytes, I am bound to face the inevitable need to transfer
+  them. Be it from work to home, from the company labs to the
+  client's machines or just copying them for backup purposes, the
+  time comes when I have to move them somehow.
+
+  <p>In the Internet age, these transfers are mostly done through
+  e-mail attachments or ftp/www servers. Which means that both
+  source and destination machines must have access to the Web.</p>
+
+  <p>What do you do when this isn't the case?</p>
+
+  <p>You could burn CD-Rs for your files - even though most of the
+  time, your data amounts to less than 5 MB (assuming of course
+  that you have the necessary equipment inside your computer). If
+  you don't (like me), you could kindly ask your company's sysadmin
+  to do it for you. But what if this happens on a daily basis? You
+  can't constantly bother your sysadmin (unless you want to
+  suddenly see that your computer's web access became rather...
+  slow :&#x2011;) So you do the brave thing, you just compress your files
+  in a couple of disks, and take them with you. Right?</p>
+
+  <p>Sadly, this world is governed by Murphy's law. 9 times out of
+  10, one of your diskettes will have a defective sector or two,
+  which ruins the whole set. Even if you use archivers that employ
+  some kind of error correction (like <i>rar</i>, from Eugene
+  Roshal) you basically cross your fingers and hope for the
+  best.</p>
+
+  <p>Until now.</p>
+
+  <h2>Algorithm</h2>To be honest, I had this idea about
+  strengthening diskettes for more than a couple of years, but as
+  always, there never was enough time to code this.
+
+  <p>The basic plot is that with error correcting codes, like for
+  example <b>Reed-Solomon</b>, one can use <i>parity</i> bytes to
+  protect a block of data. For my needs, I chose a block of 232
+  bytes, added 24 bytes of parity (totaling approximately 10% of
+  excess information), and was able to correct up to 12 erroneous
+  bytes inside the 232-byte block. You'd argue of course that a
+  diskette is a block device, that works or fails on 512-byte
+  sector boundaries. True. So all we have to do, is to simply
+  interleave the stream inside the diskette's sectors, in the
+  following way:</p>
+
+  <div align="center">
+    <table cellpadding="3" border="1" summary="Data interleaving">
+      <tr>
+        <td align="right">1st byte of stream</td>
+
+        <td align="left">first byte of first sector</td>
+      </tr>
+
+      <tr>
+        <td align="right">2nd byte of stream</td>
+
+        <td align="left">first byte of second sector</td>
+      </tr>
+
+      <tr>
+        <td align="right">...</td>
+
+        <td align="left">...</td>
+      </tr>
+
+      <tr>
+        <td align="right">2879th byte of stream</td>
+
+        <td align="left">first byte of last sector</td>
+      </tr>
+
+      <tr>
+        <td align="right">2880th byte of stream</td>
+
+        <td align="left">second byte of first sector</td>
+      </tr>
+
+      <tr>
+        <td align="right">2881st byte of stream</td>
+
+        <td align="left">second byte of second sector</td>
+      </tr>
+
+      <tr>
+        <td align="right">...</td>
+
+        <td align="left">...</td>
+      </tr>
+    </table>
+  </div>
+
+  <p>This way, if a sector is defective, you only lose <b>one</b>
+  byte inside your 232-byte block for each of the 512 blocks that
+  pass through that sector - and the algorithm can handle 12 of
+  those errors per block! Taking into account the fact that sector
+  errors are local events (in terms of diskette space), an even
+  better way to interleave is this:</p>
+
+  <div align="center">
+    <table cellpadding="3" border="1" summary=
+    "Error-locality counteracted">
+      <tr>
+        <td align="right">1st byte of stream</td>
+
+        <td align="left">first byte of first sector</td>
+      </tr>
+
+      <tr>
+        <td align="right">2nd byte of stream</td>
+
+        <td align="left">first byte of Nth sector</td>
+      </tr>
+
+      <tr>
+        <td align="right">...</td>
+
+        <td align="left">...</td>
+      </tr>
+
+      <tr>
+        <td align="right">(2880/N) byte of stream</td>
+
+        <td align="left">first byte of second sector</td>
+      </tr>
+
+      <tr>
+        <td align="right">((2880/N)+1) byte of stream</td>
+
+        <td align="left">first byte of (2+N)th sector</td>
+      </tr>
+
+      <tr>
+        <td align="right">...</td>
+
+        <td align="left">...</td>
+      </tr>
+    </table>
+  </div>
+
+  <p>...where N is a parameter (in my test implementation, I used
+  N=8).</p>
+
+  <h2>Results</h2>Since we use sectors directly, there is of course
+  no concept of a filesystem on the diskette (unless you regard my
+  scheme as one - lets name it RockFAT :&#x2011;) By the way, utilizing
+  this scheme you can use diskettes with bad sectors at the
+  beginning, which are quite useless with FAT ("Track 0 bad - Disk
+  unusable" is what you get when formating such disks). Anyway, we
+  use 232 out of 256 bytes for data, so we have <i>2880 sectors X
+  512 bytes X (232/256) = 1336320</i> bytes available. In my test
+  implementation, I also reserved 20 bytes at the beginning of the
+  stream for a 4-byte stream length, and a 16-byte filename.
+
+  <p>So, all you have to do when transferring your files, is to
+  instruct your compression utility (<b>rar</b> or <b>arj</b> or
+  whatever) to create 1336300-byte blocks. You then transfer these
+  files to your diskettes in the way I described, and you can stop
+  worrying about bad sectors - if it happens, you'll still get your
+  data, at a very high probability (To lose data, your diskette
+  must have 12 bad sectors on 8-sector intervals, for example:
+  sectors 0,8,16,..,96 must be bad. Quite unlikely, unless you play
+  baseball with your diskettes).</p>
+
+  <h2>Conclusion - Download</h2>Don't throw away your "Track 0 bad"
+  diskettes! Don't pest your company's sysadmin! Just use RockFAT
+  :&#x2011;)
+
+  <p>Seriously, this idea can obviously be implemented for other
+  mediums - even be a true filesystem, in the ext2 and NTFS sense.
+  Go ahead and implement it to your heart's desire.</p>
+
+  <p>A sample implementation for Windows (and Linux, through
+  <tt>dd</tt> usage) is available (.7z stands for <a href="http://www.7-zip.org/">7-zip</a>):</p>
+
+  <ul>
+    <li><a href="RockFATdoc.7z">Download Documentation in
+    PDF</a><br></li>
+
+    <li><a href="Win32RockFAT.7z">Download Win32 sources
+    here</a><br></li>
+
+    <li><a href="Win32RockFATexe.7z">Download Win32 binaries
+    here</a><br></li>
+
+    <li><a href="LinuxRockFAT.tgz">Download Linux sources
+    here</a><br></li>
+  </ul>Don't expect a GUI though :&#x2011;) It works as is for me, hope it
+  does for you too...
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/RockFAT.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

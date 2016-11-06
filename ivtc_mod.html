@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+  <link rel="canonical" href="https://www.thanassis.space/ivtc_mod.html" />
+  <meta name="generator" content=
+  "HTML Tidy for Linux/x86 (vers 12 April 2005), see www.w3.org" />
+  <title>modifications to IVTC filter made by Frederic Briere</title>
+</head>
+
+<body>
+  <pre>
+modifications made by Frederic Briere:fbriere at fbriere.net
+Date: Tue, 6 Jan 2004 11:35:37 -0500
+Subject: Tentative patch for ivtc
+
+Hiya!  Here's something I whipped out in trying to improve ivtc a bit.
+My motivation was that de-interlaced frames never look as good as "real"
+ones, and if you're working with material that was telecined the "other"
+way (repeating the top frame instead of the bottom frame, or vice versa,
+I forget), then you end up with only two good frames out of four,
+instead of three.
+
+The easiest solution is to patch filter_decimate.c to reject the second
+frame instead of the first, and that's what I've been doing for a few
+months.  However, it seemed that the smartest way would be to adjust
+filter_ivtc.c itself, which I finally got around to doing.
+
+
+The field parameter specifies whether you want to work on the top field
+(by default) or the bottom field.  Basically, when you enable
+verboseness, if you see lots of "using 0" and "using 1", then you stand
+to benefit from working on the opposite field instead.  (If ivtc is
+using 1s and 2s, you've got it right.)
+
+I also added a bit of "magic", to give ivtc a little nudge towards the
+current field instead of the previous/next one.  When looking at the
+verbose output, you'll see that ivtc often favors the "wrong" field, ie.
+if you work on the top field, and have the following frames:
+
+  Frame:          A  B  C  D  E
+  Top field:      1  2  3  3  4
+  Bottom field:   1  1  2  3  4
+
+Then there is a good chance that frame D will end up with C's top field,
+for reasons that are beyond me.
+
+The values I chose are completely arbitrary, but they seemed to yield
+good results for me.  Maybe they should be configurable, or maybe
+there's a much better way to do this.  In any case, I made it an option,
+so it's not in the way if you'd rather not use it.
+</pre>
+  <hr/>
+  <a href="ivtc.html">Back to IVTC/DECIMATE page</a>
+</body>
+</html>

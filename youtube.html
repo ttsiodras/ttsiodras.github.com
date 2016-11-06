@@ -1,0 +1,365 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/youtube.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Offline playback of Youtube videos and their annotations </title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Offline playback of Youtube videos and their annotations </div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(March 2012)</em></p>
+
+<h2>Offline playback of Youtube videos and their annotations </h2>
+
+<p><a href="https://github.com/ttsiodras/Youtube-Video-Annotations-Player"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a></p>
+
+<p>So you just watched a nifty video on Youtube... it's really cool, so you proceed
+to download it (via <a href="http://rg3.github.com/youtube-dl/">youtube-dl</a>) and keep it in your offline video library.
+But... the video is also annotated; i.e. it displays these "subtitle-like" text 
+balloons while it plays, and these are a big part of why it is actually worth watching...</p>
+
+<p>How can you save these, too? Resort to drastic measures, like recording your desktop while watching...?
+Surely there must be a better way - after all, these annotations are plain text that is
+"splashed on" during playback... Isn't there a way to keep both "sources" (i.e. the
+video and its annotations data) and play them back "in tandem"?</p>
+
+<p>Different scenario: you are careless, like me: </p>
+
+<ul>
+<li>I wrote a blog post about <a href="myvim.html">The Editor (TM)</a>.</li>
+<li>I recorded an XTerm/VIM session, and uploaded it to Youtube. </li>
+<li>I then used the annotation facilities of Youtube to add commentary</li>
+<li>and then I test it out... and turn white...</li>
+<li>...because I find out (the hard way) that Youtube's video quality, 
+even in HD, is not good enough for 1024x768 XTerm sessions with VIM...</li>
+</ul>
+
+<p>It's my fault, of course - I assumed that if <a href="http://vimeo.com/37875339">Vimeo</a> 
+can handle it, so would <a href="http://www.youtube.com/watch?v=o0BgAp11C9s">Youtube</a> - 
+but I was wrong. How can I salvage the effort I spent on my video annotations,
+and use it with my high-res video (which I still have on my hard drive)?</p>
+
+<p>Open source tools to the rescue...</p>
+
+<h2>Getting the annotations</h2>
+
+<p>Googling a bit, I soon find out about this:</p>
+
+<pre><code>$ wget -O annotations.xml \
+    'http://www.youtube.com/annotations_auth/read2?feat=TCS&amp;video_id=VIDEO_ID'
+</code></pre>
+
+<p>...where <code>VIDEO_ID</code> is the video identification part from Youtube videos, i.e. the part in red in the link below:</p>
+
+<div align="center">
+http://www.youtube.com/watch?v=<font color="red">o0BgAp11C9s</font>
+</div>
+
+<p><strong>Update, October 2013</strong>: <em>It seems this service has moved now to...</em></p>
+
+<pre><code>$ wget -O annotations.xml \
+    'https://www.youtube.com/annotations_invideo?features=0&amp;legacy=1&amp;video_id=VIDEO_ID'
+</code></pre>
+
+<p>So I try it; and review my video's annotation data...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">&lt;?xml</span><span class="normal"> </span><span class="type">version</span><span class="symbol">=</span><span class="string">"1.0"</span><span class="normal"> </span><span class="type">encoding</span><span class="symbol">=</span><span class="string">"utf-8"</span><span class="preproc">?&gt;</span>
+<span class="keyword">&lt;document</span><span class="normal"> </span><span class="type">latest_timestamp</span><span class="symbol">=</span><span class="string">"1330014529506131"</span><span class="normal"> </span><span class="type">polling_interval</span><span class="symbol">=</span><span class="string">"30"</span><span class="keyword">&gt;</span>
+<span class="normal">  </span><span class="keyword">&lt;requestHeader</span><span class="normal"> </span><span class="type">video_id</span><span class="symbol">=</span><span class="string">"o0BgAp11C9s"</span><span class="normal"> </span><span class="keyword">/&gt;</span>
+<span class="normal">  </span><span class="keyword">&lt;annotations&gt;</span>
+<span class="normal">    </span><span class="keyword">&lt;annotation</span><span class="normal"> </span><span class="type">author</span><span class="symbol">=</span><span class="string">"ttsiodras"</span><span class="normal"> </span><span class="type">id</span><span class="symbol">=</span><span class="string">"annotation_150202"</span><span class="normal"> </span>
+<span class="normal">        </span><span class="type">style</span><span class="symbol">=</span><span class="string">"anchored"</span><span class="normal"> </span><span class="type">type</span><span class="symbol">=</span><span class="string">"text"</span><span class="keyword">&gt;</span>
+<span class="normal">      </span><span class="keyword">&lt;TEXT&gt;</span><span class="normal">The most important parts for C/C++ coding...</span><span class="keyword">&lt;/TEXT&gt;</span>
+<span class="normal">      </span><span class="keyword">&lt;segment&gt;</span>
+<span class="normal">        </span><span class="keyword">&lt;movingRegion</span><span class="normal"> </span><span class="type">type</span><span class="symbol">=</span><span class="string">"anchored"</span><span class="keyword">&gt;</span>
+<span class="normal">          </span><span class="keyword">&lt;anchoredRegion</span><span class="normal"> </span><span class="type">d</span><span class="symbol">=</span><span class="string">"0"</span><span class="normal"> </span><span class="type">h</span><span class="symbol">=</span><span class="string">"47.77"</span><span class="normal"> </span><span class="type">sx</span><span class="symbol">=</span><span class="string">"17.68"</span><span class="normal"> </span><span class="type">sy</span><span class="symbol">=</span><span class="string">"54.72"</span><span class="normal"> </span>
+<span class="normal">            </span><span class="type">t</span><span class="symbol">=</span><span class="string">"0:02:42.1"</span><span class="normal"> </span><span class="type">w</span><span class="symbol">=</span><span class="string">"96.54"</span><span class="normal"> </span><span class="type">x</span><span class="symbol">=</span><span class="string">"2.64"</span><span class="normal"> </span><span class="type">y</span><span class="symbol">=</span><span class="string">"4.72"</span><span class="normal"> </span><span class="keyword">/&gt;</span>
+<span class="normal">          </span><span class="keyword">&lt;anchoredRegion</span><span class="normal"> </span><span class="type">d</span><span class="symbol">=</span><span class="string">"0"</span><span class="normal"> </span><span class="type">h</span><span class="symbol">=</span><span class="string">"47.77"</span><span class="normal"> </span><span class="type">sx</span><span class="symbol">=</span><span class="string">"17.68"</span><span class="normal"> </span><span class="type">sy</span><span class="symbol">=</span><span class="string">"54.72"</span><span class="normal"> </span>
+<span class="normal">            </span><span class="type">t</span><span class="symbol">=</span><span class="string">"0:02:51.7"</span><span class="normal"> </span><span class="type">w</span><span class="symbol">=</span><span class="string">"96.54"</span><span class="normal"> </span><span class="type">x</span><span class="symbol">=</span><span class="string">"2.64"</span><span class="normal"> </span><span class="type">y</span><span class="symbol">=</span><span class="string">"4.72"</span><span class="normal"> </span><span class="keyword">/&gt;</span>
+<span class="normal">        </span><span class="keyword">&lt;/movingRegion&gt;</span>
+<span class="normal">      </span><span class="keyword">&lt;/segment&gt;</span>
+<span class="normal">      ...</span>
+</tt></pre>
+</div>
+
+<p>This file contains all the annotation data I need:</p>
+
+<ul>
+<li>All the annotations are there, with their ASCII text inside the <tt>TEXT</tt> elements.</li>
+<li>Each annotation has coordinate information (i.e. where to display it)</li>
+<li>It also comes with information about when to display it - the "t" attributes of <tt>anchoredRegion</tt>s. There are two anchoredRegions, one for when to show the text, one for when to hide it. </li>
+</ul>
+
+<p><strong>Ingredient 1 for the soup: annotation data</strong> - check.</p>
+
+<p><em>(if my annotations were "subtitle-like" - i.e. small one liners, that can just be placed at the bottom of the screen - then this data would be enough; I would code a simple xml2srt filter, that would create an .srt subtitle for my video (MPlayer can use .srt during playback). Alas, my annotations are more complex; each one is to be displayed at a different rectangular area in the video, so more work is needed...)</em></p>
+
+<h2>Displaying text during playback</h2>
+
+<p>Opening up the manpage of the awesome <a href="http://www.mplayerhq.hu">MPlayer</a>, I review the list of video filters, looking for one that allows me to display stuff during playback - and I notice <tt>bmovl</tt>:</p>
+
+<pre><code>bmovl: The bitmap overlay filter reads bitmaps from a FIFO and displays
+       them on top of the movie...
+</code></pre>
+
+<p>Spot on! Time to try this out: I setup a FIFO, and try sending MPlayer a box of RGB noise, just to see it while playing:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ cp /path/to/snapshot</span><span class="symbol">.</span><span class="normal">png </span><span class="symbol">.</span><span class="normal"> </span><span class="comment"># this is a 1024x768 snapshot</span>
+<span class="normal">$ mkfifo bmovlFIFO</span>
+<span class="normal">$ </span><span class="comment"># Tell MPlayer to play the snapshot over and over (phony video)</span>
+<span class="normal">$ </span><span class="comment"># and to read bmovl overlay bitmap data from the bmovlFIFO</span>
+<span class="normal">$ mplayer -vf </span><span class="variable">bmovl</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">:</span><span class="number">0</span><span class="symbol">:</span><span class="normal">bmovlFIFO mf</span><span class="symbol">:</span><span class="normal">//snapshot</span><span class="symbol">.</span><span class="normal">png -loop </span><span class="number">0</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal">/dev/null </span><span class="number">2</span><span class="symbol">&gt;&amp;</span><span class="number">1</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal"> </span>
+<span class="normal">$ sleep </span><span class="number">3</span><span class="normal"> </span><span class="comment"># wait a bit for MPlayer to start</span>
+<span class="normal">$ </span><span class="comment"># Now prepare and send a rectangle of noise of 517x58x4 =</span>
+<span class="normal">$ </span><span class="comment"># (times 4, for RGBA: one byte for each component) 119944 bytes</span>
+<span class="normal">$ dd </span><span class="keyword">if</span><span class="symbol">=</span><span class="normal">/dev/urandom </span><span class="variable">of</span><span class="symbol">=</span><span class="normal">box</span><span class="symbol">.</span><span class="normal">rgba  </span><span class="variable">bs</span><span class="symbol">=</span><span class="number">1</span><span class="normal"> </span><span class="variable">count</span><span class="symbol">=</span><span class="number">119944</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal">/dev/null </span><span class="number">2</span><span class="symbol">&gt;&amp;</span><span class="number">1</span>
+<span class="normal">$ echo </span><span class="string">'RGBA32 517 58 100 100 0 1'</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> bmovlFIFO</span>
+<span class="normal">$ cat box</span><span class="symbol">.</span><span class="normal">rgba </span><span class="symbol">&gt;</span><span class="normal"> bmovlFIFO</span>
+<span class="normal">$ </span><span class="comment"># At this point, I should be seeing a rectangle</span>
+<span class="normal">$ sleep </span><span class="number">10</span>
+</tt></pre>
+</div>
+
+<p>Instead, I see this distorted image in the MPlayer window:</p>
+
+<div class="scrollableContainer">
+<img src="bmovl.png" alt="bmovl distortion in current MPlayer (2012/03)"><br>
+<em>bmovl distortion in current MPlayer (2012/03)</em>
+</div>
+
+<p>This looks like an off-by-one error - each new scanline moves one pixel to the left, so the box ends up "tilted". Surely this is a bug, <a href="http://lists.mplayerhq.hu/pipermail/mplayer-users/2012-March/084269.html">so I report it to the MPlayer folks</a> and <a href="http://bugzilla.mplayerhq.hu/show_bug.cgi?id=2051">open a Bugzilla ticket</a>.</p>
+
+<p>A day later, <a href="http://lists.mplayerhq.hu/pipermail/mplayer-users/2012-March/084300.html">a gentleman replies</a> - he indicates that a related <a href="patch.bmovl.gz">patch</a> is in the pipeline for inclusion in MPlayer... </p>
+
+<p>I checkout the latest MPlayer from the official repos, apply the patch on it...</p>
+
+<p>It works! A perfect rectangle is shown during playback!</p>
+
+<p><strong>Ingredient 2 for the soup: showing bitmaps inside MPlayer's window during playback:</strong> check.</p>
+
+<h2>Text to image</h2>
+
+<p>There's only one final ingredient missing: I need to convert my <tt>TEXT</tt> into nice bitmap rectangles, that will be sent to MPlayer over the bmovl FIFO... Well, I use ImageMagick for most of my image processing - it has never failed me before...</p>
+
+<pre><code>$ cat &gt; sampleText
+But that's not all - it is also vital to be able to navigate across 
+macro, variable, type, function and class declarations - by using ctags, 
+I can instantly jump to the relevant declarations by placing the cursor 
+on something and hitting "Ctrl-]" (going to the declaration of 
+CallTypeLevel1). I use it again to go deeper (to the declaration of BUF_TYPE) 
+and go back to where I was, by "Ctrl-t"
+(Ctrl-D)
+$ convert -trim -size 517x358 -pointsize 19 -depth 8 \
+    -fill black -background orange caption:@sampleText box.png
+</code></pre>
+
+<p>And as ever, it works its magic - giving me this:</p>
+
+<div class="scrollableContainer">
+<img src="box.png" alt="TEXT converted to bitmap"><br>
+<em>TEXT converted to bitmap</em>
+</div>
+
+<p>I improve the output a bit, using some ImageMagick-foo:</p>
+
+<pre><code>$ convert -bordercolor orange -border 15 box.png annotation.png
+$ convert annotation.png -fill gray50 -colorize '100%' -raise 8 \
+    -normalize -blur 0x4 light.png
+$ convert annotation.png light.png -compose hardlight \
+    -composite finalAnnotation.png
+</code></pre>
+
+<p>Now it gives me this:</p>
+
+<div class="scrollableContainer">
+<img src="boxFinal.png" alt="TEXT converted nicely to bitmap"><br>
+<em>TEXT converted nicely to bitmap</em>
+</div>
+
+<p><strong>Final ingredient for the soup: text to bitmap:</strong> check.</p>
+
+<p>Time to enter the Python kitchen... :&#x2011;)</p>
+
+<h2>Putting it all together in a Python script</h2>
+
+<p>The end-user steps:</p>
+
+<ol>
+<li><p>The user downloads his video from youtube (via <a href="http://rg3.github.com/youtube-dl/">youtube-dl</a> or whatever other Youtube downloader):</p>
+
+<p>$ youtube-dl -o vimPower.flv 'http://www.youtube.com/watch?v=o0BgAp11C9s'</p></li>
+<li><p>The video's annotation data are next:</p>
+
+<p>$ wget -O annotations.xml 'http://www.youtube.com/annotations<em>auth/read2?feat=TCS&amp;video</em>id=o0BgAp11C9s'</p></li>
+<li><p>Then he runs my tiny Python script:</p>
+
+<p>$ youtubeAnnotations.py annotations.xml vimPower.flv</p></li>
+</ol>
+
+<p>The script then...</p>
+
+<ul>
+<li>creates the FIFO</li>
+<li>spawns the patched (due to bmovl's bug) MPlayer as a child process, with the required arguments for the <tt>bmovl</tt> filter</li>
+<li>starts keeping track of playback time, and based on the anchoredRegions timestamps...</li>
+<li>creates bitmaps from the TEXT regions via ImageMagick</li>
+<li>and sends them over to the MPlayer's bmovl FIFO for displaying</li>
+</ul>
+
+<p>This is the core of my script's <tt>main()</tt> function:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="symbol">...</span>
+<span class="normal">width</span><span class="symbol">,</span><span class="normal"> height</span><span class="symbol">,</span><span class="normal"> fps </span><span class="symbol">=</span><span class="normal"> </span><span class="function">DetectVideoSizeAndLength</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">])</span>
+<span class="normal">childMPlayer </span><span class="symbol">=</span><span class="normal"> </span><span class="function">CreateFifoAndSpawnMplayer</span><span class="symbol">()</span>
+<span class="normal">annotations </span><span class="symbol">=</span><span class="normal"> </span><span class="function">parseAnnotations</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">])</span>
+<span class="normal">startTime </span><span class="symbol">=</span><span class="normal"> time</span><span class="symbol">.</span><span class="function">time</span><span class="symbol">()</span>
+<span class="normal">fifoToMplayer </span><span class="symbol">=</span><span class="normal"> </span><span class="function">open</span><span class="symbol">(</span><span class="string">"bmovl"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"w"</span><span class="symbol">)</span>
+<span class="keyword">for</span><span class="normal"> bt </span><span class="keyword">in</span><span class="normal"> </span><span class="function">sorted</span><span class="symbol">(</span><span class="normal">annotations</span><span class="symbol">.</span><span class="function">keys</span><span class="symbol">()):</span>
+<span class="normal">    annotation </span><span class="symbol">=</span><span class="normal"> annotations</span><span class="symbol">[</span><span class="normal">bt</span><span class="symbol">]</span>
+<span class="normal">    nextTimeInSeconds </span><span class="symbol">=</span><span class="normal"> </span><span class="function">getTime</span><span class="symbol">(</span><span class="normal">annotation</span><span class="symbol">.</span><span class="normal">_t0</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="function">CreateAnnotationImage</span><span class="symbol">(</span><span class="normal">annotation</span><span class="symbol">,</span><span class="normal"> width</span><span class="symbol">,</span><span class="normal"> height</span><span class="symbol">)</span>
+<span class="normal">    currentTime </span><span class="symbol">=</span><span class="normal"> time</span><span class="symbol">.</span><span class="function">time</span><span class="symbol">()</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="keyword">not</span><span class="normal"> </span><span class="function">SleepAndCheckMplayer</span><span class="symbol">(</span><span class="normal">childMPlayer</span><span class="symbol">,</span><span class="normal"> startTime</span><span class="symbol">+</span><span class="normal">nextTimeInSeconds</span><span class="symbol">-</span><span class="normal">currentTime</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="keyword">break</span>
+<span class="normal">    renderArea </span><span class="symbol">=</span><span class="normal"> </span><span class="function">SendAnnotationImageToFIFO</span><span class="symbol">(</span><span class="normal">annotation</span><span class="symbol">,</span><span class="normal"> width</span><span class="symbol">,</span><span class="normal"> height</span><span class="symbol">,</span><span class="normal"> fifoToMplayer</span><span class="symbol">)</span>
+<span class="normal">    nextTimeInSeconds </span><span class="symbol">=</span><span class="normal"> </span><span class="function">getTime</span><span class="symbol">(</span><span class="normal">annotation</span><span class="symbol">.</span><span class="normal">_t1</span><span class="symbol">)</span>
+<span class="normal">    currentTime </span><span class="symbol">=</span><span class="normal"> time</span><span class="symbol">.</span><span class="function">time</span><span class="symbol">()</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="keyword">not</span><span class="normal"> </span><span class="function">SleepAndCheckMplayer</span><span class="symbol">(</span><span class="normal">childMPlayer</span><span class="symbol">,</span><span class="normal"> startTime</span><span class="symbol">+</span><span class="normal">nextTimeInSeconds</span><span class="symbol">-</span><span class="normal">currentTime</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="keyword">break</span>
+<span class="normal">    </span><span class="function">SendClearBufferToFIFO</span><span class="symbol">(</span><span class="normal">fifoToMplayer</span><span class="symbol">,</span><span class="normal"> renderArea</span><span class="symbol">)</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p><a href="https://github.com/ttsiodras/Youtube-Video-Annotations-Player">Here's the script</a>: it works for my VIM video, and I have also tested it on a few other Youtube videos. You can see the results (a) in the <a href="myvim.html#vimeovim">Vimeo version of my VIM advocacy</a> or (b) download a <a href="http://www.mediafire.com/file/ge1imhbivswsixr/Vim.C.and.C++.flv">full-HD version of the same video</a>. If you do decide to use this script, remember that you must also <a href="patch.bmovl.gz">patch</a> your MPlayer, since the <tt>bmovl</tt> filter is currently (2012/03) broken.</p>
+
+<p>Enjoy!</p>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sun Feb 21 12:56:49 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/youtube.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

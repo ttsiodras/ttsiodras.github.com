@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="SGML-Tools 1.0.9" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+ <link type="text/css" rel="stylesheet" href="heapcheck.css" />
+ <link rel="canonical" href="https://www.thanassis.space/HeapCheck-6.html" />
+ <TITLE>HeapCheck 1.34: Debugging - Other tools</TITLE>
+</HEAD>
+<body background="book.jpg" bgcolor="white" text="black">
+<TABLE WIDTH="100%" summary="DTP table">
+<TR>
+<TD class="desktop-only" WIDTH="20%" VALIGN="top">
+<TABLE ALIGN="left" summary="index" bgcolor="#DDDDDD">
+<TR><TD><B><A NAME="toc0"></A> <A HREF="HeapCheck.html"><EM>HeapCheck:</EM></A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc1">1.</A> <A HREF="HeapCheck-1.html">Disclaimer/Authors</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc2">2.</A> <A HREF="HeapCheck-2.html">Features</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc3">3.</A> <A HREF="HeapCheck-3.html">Introduction</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc4">4.</A> <A HREF="HeapCheck-4.html">Usage</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc5">5.</A> <A HREF="HeapCheck-5.html">Configuration</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc6">6.</A> <A HREF="HeapCheck-6.html">Debugging tools</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc7">7.</A> <A HREF="HeapCheck-7.html">UNIX gurus</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc8">8.</A> <A HREF="HeapCheck-8.html">Stack techniques </A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc9">9.</A> <A HREF="HeapCheck-9.html">Known bugs</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc10">10.</A> <A HREF="HeapCheck-10.html">Contact me</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc11">11.</A> <A HREF="HeapCheck134.7z">Get 1.34</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc115">12.</A> <A HREF="HeapCheck12.7z">Get 1.2 (stable)</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc12">13.</A> <A HREF="HeapCheck12doc.7z">PDF manual</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc13">14.</A> <A HREF="hcdiff.html">WinCE patch for 1.2</A></B><br/></TD></TR>
+<TR><TD>&nbsp;</TD></TR>
+<TR><TD>
+<A HREF="index.html" TARGET="_top">Back to HomePage</A> 
+</TD>
+</TR>
+</TABLE>
+</TD>
+<TD>
+&nbsp;
+</TD>
+<TD VALIGN="top">
+<A HREF="HeapCheck-7.html">Next</A>
+<A HREF="HeapCheck-5.html">Previous</A>
+<hr/>
+<H2><A NAME="s6">6. Debugging - Other tools</A></H2>
+
+<OL>
+<LI> <B>Visual C++ 6.0 Runtime Heap Debugging</B>
+<br/>
+This only checks for heap corruption (i.e. destructive side-effects
+of <EM>writing</EM> outside the allocations) and even then, it only catches 
+writings in the
+<EM>NO_MANS_LAND_SIZE</EM> (default:4 bytes) on either side of the blocks.
+The detection of these errors is done whenever the system
+calls <CODE>_CrtCheckMemory()</CODE>. HeapCheck catches read accesses as well,
+at the EXACT place they are made, and in a much larger
+block (a page in i386 systems is 4096 bytes).
+</LI>
+<LI> <B>BoundsChecker</B>
+<br/>
+This is a very good debugging tool, capable of catching almost
+every bug. However, CPU cycles are used in order to perform 
+all these checks, and especially in
+<EM>instrumentation</EM> mode and <EM>maximum memory checking</EM>,
+the program runs really slow (some programs, like protocol stacks,
+won't run correctly if they run too slowly). HeapCheck can only 
+catch heap-related
+errors, but it uses the paging hardware to do the checking.
+The net result is that HeapCheck debug versions of programs
+run at almost the SAME speed as normal debug versions (you
+only get slower allocating and de-allocating functions,
+nothing more). 
+In other words you can leave it in your project and forget 
+about it (it will be automatically removed when you compile a 
+Release version).</LI>
+</OL>
+<hr/>
+<A HREF="HeapCheck-7.html">Next</A>
+<A HREF="HeapCheck-5.html">Previous</A>
+</TD>
+</TABLE>
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-746316-1";
+urchinTracker();
+</script>
+</BODY>
+</HTML>

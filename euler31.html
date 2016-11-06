@@ -1,0 +1,386 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/euler31.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Combining coins to form a sum - Project Euler, problem 31</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Combining coins to form a sum - Project Euler, problem 31</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+                <em>(December 2011, on <a href="http://news.ycombinator.com/item?id=3403756">Hacker News</a>)</em>
+    <p>
+I had some free time these past few days, so I got back
+to <a href="http://www.projecteuler.net">Project Euler</a>: I like fooling around with the problems there, 
+particularly because the process reminds me of what it felt like
+when I begun working with computers; the ecstasy of "pure" problem
+solving, without the nasty side-effects of dealing with clients :&#x2011;)
+<p>
+Hey, on occasion I am even known to <a href="stats_nostalgia.html">pretend to be a scientist</a> :&#x2011;)
+<p>
+The problem I've enjoyed most so far, is problem 31:
+<blockquote>
+<em>In England the currency is made up of pound, £, and pence, p, and there are eight coins in general circulation:
+1p, 2p, 5p, 10p, 20p, 50p, £1 (100p) and £2 (200p).</em>
+<p>
+<em>It is therefore possible to make £2 in the following way:</em><br>
+<b>1x£1, 1x50p, 2x20p, 1x5p, 1x2p, 3x1p</b><br>
+<em>How many different ways can £2 be made using any number of coins?</em>
+</blockquote>
+Hmm...
+<p>
+Being the trigger-happy engineer that I am, I quickly tried to 
+brute-force:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdio.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;signal.h&gt;</span>
+
+<span class="comment">// We want to accumulate 200 cents (2 pounds)</span>
+<span class="preproc">#define</span><span class="normal"> TARGET </span><span class="number">200</span>
+
+<span class="type">int</span><span class="normal"> coins</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="number">2</span><span class="symbol">,</span><span class="normal"> </span><span class="number">5</span><span class="symbol">,</span><span class="normal"> </span><span class="number">10</span><span class="symbol">,</span><span class="normal"> </span><span class="number">20</span><span class="symbol">,</span><span class="normal"> </span><span class="number">50</span><span class="symbol">,</span><span class="normal"> </span><span class="number">100</span><span class="symbol">,</span><span class="normal"> </span><span class="number">200</span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="type">long</span><span class="normal"> </span><span class="type">long</span><span class="normal"> total </span><span class="symbol">=</span><span class="normal"> 0LL</span><span class="symbol">;</span>
+
+<span class="type">int</span><span class="normal"> </span><span class="function">newCoin</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> s</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s </span><span class="symbol">==</span><span class="normal"> TARGET</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">	total </span><span class="symbol">++;</span><span class="normal"> </span><span class="comment">// landed right on 200 cents, increase total</span>
+<span class="normal">	</span><span class="keyword">return</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> </span><span class="comment">// and report "break out of the loop"</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">&gt;</span><span class="normal">TARGET</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">	</span><span class="comment">// we overflowed, go back and report "break out of the loop"</span>
+<span class="normal">	</span><span class="keyword">return</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal"> </span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">	</span><span class="comment">// recurse, adding each available coin in turn</span>
+<span class="normal">	</span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> idx</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> idx</span><span class="symbol">&lt;</span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">coins</span><span class="symbol">)/</span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">coins</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]);</span><span class="normal"> idx</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">	    </span><span class="type">int</span><span class="normal"> earlyAbort </span><span class="symbol">=</span><span class="normal"> </span><span class="function">newCoin</span><span class="symbol">(</span><span class="normal">s</span><span class="symbol">+</span><span class="normal">coins</span><span class="symbol">[</span><span class="normal">idx</span><span class="symbol">]);</span>
+<span class="normal">	    </span><span class="comment">// if the callee reported non-zero, we break</span>
+<span class="normal">	    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">earlyAbort</span><span class="symbol">)</span>
+<span class="normal">		</span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">	</span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="type">void</span><span class="normal"> </span><span class="function">pr</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// SIGINT (Ctrl-C) triggered reports</span>
+<span class="normal">    </span><span class="function">printf</span><span class="symbol">(</span><span class="string">"</span><span class="specialchar">\n</span><span class="string">%lld</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal">  total</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="type">int</span><span class="normal"> </span><span class="function">main</span><span class="symbol">()</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="function">signal</span><span class="symbol">(</span><span class="normal">SIGINT</span><span class="symbol">,</span><span class="normal"> pr</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function">newCoin</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">);</span><span class="normal"> </span><span class="comment">// start the game</span>
+<span class="normal">    </span><span class="function">printf</span><span class="symbol">(</span><span class="string">"%lld</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal">  total</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+
+</tt></pre>
+
+</div>
+The process starts with <tt>newCoin(0)</tt>, called from main.
+This function will recursively call itself, until it either grows
+the accumulated sum so far (its parameter) beyond 200 cents,
+or it will reach exactly 200 cents - at which point the <tt>total</tt>
+counter will record it as a successful combination.
+<p>
+Sure, sure, I am not handling the signals properly, printf is not re-entrant - but who cares,
+I just want to quickly see if this solves the problem or not; Ctrl-C
+will print how high <tt>total</tt> is, so trying it out...
+<pre class="o">
+ttsiod@elrond:tmp$ g++ -O2 problem31.brute.cc
+ttsiod@elrond:tmp$ ./a.out
+^C
+32378168
+^C
+51764088
+^C
+81886592
+^C
+168584448
+^C
+225451092
+^Z
+[1]+  Stopped                 ./a.out
+ttsiod@elrond:tmp$ kill %1
+[1]+  Killed                 ./a.out
+</pre>
+Ooops. This thing grows rapidly (too rapidly)! 
+<p>And it doesn't seem to finish. After 1 minute of running...
+<p>To make matters worse, the speed at which <tt>total</tt> goes up makes it clear
+that I am being an idiot: the blind recursion will obviously measure 1p+2p as a different combination
+to 2p+1p. Order is not supposed to count; the problem statement says "how many different ways",
+and this is clearly violating it.
+<h3>Breaking it down, target: 1 cent</h3>
+OK, thinking this through... <a href="fillupDVD.html">Re-applying past experience</a>, I build a table...
+<center>
+<table summary="dynamic programming" style="margin:1em; text-align:center;">
+<tr bgcolor="#BBBBBB"><td>Target in cents</td><td>Using only 1p</td><td>Using <= 2p</td><td>Using <= 5p</td><td>...</td></tr>
+<tr bgcolor="#CCCCCC"><td>1</td><td>1</td><td></td><td></td><td>...</td></tr>
+</table>
+</center>
+If I wanted to accumulate just 1 cent (column "Target in cents"), how many ways are there to do it, using coins less than or equal to 1p?
+<p>
+Only one way - so, fill up the cell of column "Using only 1p" with 1. 
+<p>
+Moving on - what if I could use coins less than or equal to 2p?
+<center><table summary="dynamic programming" style="margin:1em; text-align:center;">
+<tr bgcolor="#BBBBBB"><td>Target in cents</td><td>Using only 1p</td><td>Using <= 2p</td><td>Using <= 5p</td><td>...</td></tr>
+<tr bgcolor="#CCCCCC"><td>1</td><td>1</td><td>1</td><td></td><td>...</td></tr>
+</table></center>
+There is still only one way - using 1p. The 2p coins can't be used, since our target (a total of 1 cent for this line of the table) is less than 2p.
+<p>
+So all the first line fills up with 1s:
+<center><table summary="dynamic programming" style="margin:1em; text-align:center;">
+<tr bgcolor="#BBBBBB"><td>Target in cents</td><td>only 1p</td><td><= 2p</td><td><= 5p</td><td><= 10p</td><td><= 20p</td><td><= 50p</td><td><= 100p</td><td><= 200p</td></tr>
+<tr bgcolor="#CCCCCC"><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+</table></center>
+Only one way to reach the target of 1 cent, no matter what coins I use.
+<h3>Breaking it down, target: 2 cents</h3>
+What if we move to a target of 2 cents?
+<center><table summary="dynamic programming" style="margin:1em; text-align:center;">
+<tr bgcolor="#BBBBBB"><td>Target in cents</td><td>only 1p</td><td><= 2p</td><td><= 5p</td><td><= 10p</td><td><= 20p</td><td><= 50p</td><td><= 100p</td><td><= 200p</td></tr>
+<tr bgcolor="#CCCCCC"><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+<tr bgcolor="#CCCCCC"><td>2</td><td>1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table></center>
+Well, using only 1p there is only one way: 1p+1p.
+<p>
+When using coins less than or equal to 2p, however, we can also do it via a single 2p coin - so there are now 2 ways:
+<center><table summary="dynamic programming" style="margin:1em; text-align:center;">
+<tr bgcolor="#BBBBBB"><td>Target in cents</td><td>only 1p</td><td><= 2p</td><td><= 5p</td><td><= 10p</td><td><= 20p</td><td><= 50p</td><td><= 100p</td><td><= 200p</td></tr>
+<tr bgcolor="#CCCCCC"><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+<tr bgcolor="#CCCCCC"><td>2</td><td>1</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
+</table></center>
+Additional coins don't help any - the total number of ways remains 2 (1p+1p,2p) throughout the rest of the line.
+<h3>Breaking it down, target: 3,4,5,... cents</h3>
+Thinking the same way:
+<center><table summary="dynamic programming" style="margin:1em; text-align:center;">
+<tr bgcolor="#BBBBBB"><td>Target in cents</td><td>only 1p</td><td><= 2p</td><td><= 5p</td><td><= 10p</td><td><= 20p</td><td><= 50p</td><td><= 100p</td><td><= 200p</td></tr>
+<tr bgcolor="#CCCCCC"><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+<tr bgcolor="#CCCCCC"><td>2</td><td>1</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
+<tr bgcolor="#CCCCCC"><td>3</td><td>1</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
+<tr bgcolor="#CCCCCC"><td>4</td><td>1</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td></tr>
+<tr bgcolor="#CCCCCC"><td>5</td><td>1</td><td bgcolor="#CCFFCC">3</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td></tr>
+</table></center>
+<ul>
+<li>3 cents can be formed as (1p+1p+1p,1p+2p), so starting from column "<=2p", the number is 2
+<li>4 cents can be formed as (4x1p, 2x1p+1x2p, 2x2p), so starting from column "<=2p", the number is 3
+<li>5 cents can be formed as (5x1p, 3x1p+1x2p, 1x1p+2x2p, 1x5p), so starting from column "<=5p", the number is 4
+<li>etc...
+</ul>
+So, now that we've done this process manually, what do we notice?
+<ul>
+<li>We notice that when forming the values in a line, the first column is always 1. There is only one way to form any target N, if you just use 1p coins: Nx1p.
+<li>We also notice that when filling up a cell, we check to see if the corresponding coin "fits" in. If it doesn't, we just copy the value of the cell on the left - i.e. the number of ways to form a target sum doesn't change, since we can't use this column's coin.
+<li>If the coin *does* fit, however, we then form a number by adding two things: (a) the number of ways we can form the target WITHOUT using the coin (which is on the cell on our left) plus (b) the number of ways we can form the <tt>target-columnCoin</tt>, i.e. the number of ways to form the remainder, if we subtract (i.e. use) the coin from our target.
+</ul>
+For example, on line 5 (<em>target: 5 cents</em>) the highlighted cell of column "<=2p" is formed as 1+2:
+<ul>
+<li>There is 1 way to form a target of 5 cents using only 1p coins (the cell on the left has value 1)
+<li>If we use a coin of 2p, then the remainder is <tt>target-2p</tt>=<tt>5p-2p</tt>=<tt>3p</tt>,
+which we can <b>lookup</b> above, on line 3, and see that there are 2 ways to reach it, using "<=2p".
+</ul>
+This lookup is key - we basically reuse previous calculations with a single lookup.
+<p>
+OK, we can now write it down in Python...
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+
+<span class="comment"># the 8 coins correspond to 8 columns</span>
+<span class="normal">coins </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="number">2</span><span class="symbol">,</span><span class="normal"> </span><span class="number">5</span><span class="symbol">,</span><span class="normal"> </span><span class="number">10</span><span class="symbol">,</span><span class="normal"> </span><span class="number">20</span><span class="symbol">,</span><span class="normal"> </span><span class="number">50</span><span class="symbol">,</span><span class="normal"> </span><span class="number">100</span><span class="symbol">,</span><span class="normal"> </span><span class="number">200</span><span class="symbol">]</span>
+
+<span class="normal">TARGET</span><span class="symbol">=</span><span class="number">200</span>
+
+<span class="normal">matrix </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">{}</span>
+<span class="keyword">for</span><span class="normal"> y </span><span class="keyword">in</span><span class="normal"> </span><span class="function">xrange</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> TARGET</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="comment"># There is only one way to form a target sum N</span>
+<span class="normal">    </span><span class="comment"># via 1-cent coins: use N 1-cents!</span>
+<span class="normal">    matrix</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="normal">  </span><span class="comment"># equivalent to matrix[(y,0)]=1</span>
+
+<span class="keyword">for</span><span class="normal"> y </span><span class="keyword">in</span><span class="normal"> </span><span class="function">xrange</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> TARGET</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="normal"> y</span><span class="symbol">,</span><span class="normal"> </span><span class="string">":"</span><span class="symbol">,</span><span class="normal"> </span><span class="number">1</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> x </span><span class="keyword">in</span><span class="normal"> </span><span class="function">xrange</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">coins</span><span class="symbol">)):</span>
+<span class="normal">        matrix</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">,</span><span class="normal"> x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">        </span><span class="comment"># Is the target big enough to accomodate coins[x]?</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> y</span><span class="symbol">&gt;=</span><span class="normal">coins</span><span class="symbol">[</span><span class="normal">x</span><span class="symbol">]:</span>
+<span class="normal">            </span><span class="comment"># If yes, then the number of ways to form</span>
+<span class="normal">            </span><span class="comment"># the target sum are obtained via:</span>
+<span class="normal">            </span><span class="comment">#</span>
+<span class="normal">            </span><span class="comment"># (a) the number of ways to form this target</span>
+<span class="normal">            </span><span class="comment">#     using ONLY coins less than column x</span>
+<span class="normal">            </span><span class="comment">#     i.e. matrix[y][x-1]</span>
+<span class="normal">            matrix</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">,</span><span class="normal"> x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> matrix</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">,</span><span class="normal"> x</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">]</span>
+<span class="normal">            </span><span class="comment"># plus</span>
+<span class="normal">            </span><span class="comment"># (b) the number of ways to form this target</span>
+<span class="normal">            </span><span class="comment">#     when USING the coin of column x</span>
+<span class="normal">            </span><span class="comment">#     which means for a remainder of y-coins[x]</span>
+<span class="normal">            </span><span class="comment">#     i.e. matrix[y-coins[x]][x]</span>
+<span class="normal">            matrix</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">,</span><span class="normal"> x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> matrix</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">-</span><span class="normal">coins</span><span class="symbol">[</span><span class="normal">x</span><span class="symbol">],</span><span class="normal"> x</span><span class="symbol">]</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="comment"># if the target is not big enough to allow</span>
+<span class="normal">            </span><span class="comment"># usage of the coin in column x,</span>
+<span class="normal">            </span><span class="comment"># then just copy the number of ways from the</span>
+<span class="normal">            </span><span class="comment"># column to the left (i.e. with smaller coins)</span>
+<span class="normal">            matrix</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">,</span><span class="normal"> x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> matrix</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">,</span><span class="normal"> x</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">]</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> matrix</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">,</span><span class="normal"> x</span><span class="symbol">],</span>
+<span class="normal">    </span><span class="keyword">print</span>
+</tt></pre>
+
+</div>
+...and marvel at seeing it run infinitely faster than brute-force (finishes in less than 30 milliseconds):
+<pre class="o">
+ttsiod@elrond:tmp$ python code/problem31.py
+0 : 1 1 1 1 1 1 1 1
+1 : 1 1 1 1 1 1 1 1
+2 : 1 2 2 2 2 2 2 2
+3 : 1 2 2 2 2 2 2 2
+4 : 1 3 3 3 3 3 3 3
+5 : 1 3 4 4 4 4 4 4
+6 : 1 4 5 5 5 5 5 5
+7 : 1 4 6 6 6 6 6 6
+8 : 1 5 7 7 7 7 7 7
+9 : 1 5 8 8 8 8 8 8
+10 : 1 6 10 11 11 11 11 11
+11 : 1 6 11 12 12 12 12 12
+...
+195 : 1 98 1980 14140 43450 62156 65934 65934
+196 : 1 99 2000 14350 44275 63500 67425 67425
+197 : 1 99 2020 14560 45100 64844 68916 68916
+198 : 1 100 2040 14770 45925 66188 70407 70407
+199 : 1 100 2060 14980 46750 67532 71898 71898
+200 : 1 101 2081 15211 47696 69118 73681 73682
+</pre>
+<div class="scrollableContainer rightFloat">
+<img alt="my level" src="//projecteuler.net/profile/ttsiodras.png">
+</div>
+The right-most column tells us that there are 73682 ways to form a total of 2 pounds.
+<p>
+The above method, in case you've never seen it before, is called <a href="http://en.wikipedia.org/wiki/Dynamic_programming">dynamic programming</a> - and just as was done here, can be used to quickly solve problems that are impossible to brute force.
+<p>
+OK, project Euler... one more down, three hundred to go! :&#x2011;)
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sun Apr 13 15:14:09 2014</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/euler31.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,830 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/score4.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Programming AI using functional and imperative languages</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Programming AI using functional and imperative languages</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <a href="https://github.com/ttsiodras/Score4"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a>
+<p><em>(July 2011)</em><br>
+&nbsp;<br>
+Posted on <a href="http://www.reddit.com/r/programming/comments/imfqd/ai_playing_score4_in_functional_and_imperative/">Reddit</a> and <a href="http://news.ycombinator.com/item?id=2750894">Hacker News</a>.<br>&nbsp;<br>
+<h2>Implementing a Score4 (Connect Four) engine</h2>
+<div class="tldr">
+<b>For the TL;DR crowd:</b>
+<a href="#lessons">Lessons learned</a>, all the code described in this article <a href="https://github.com/ttsiodras/Score4">lives on Github</a>, and <a href="https://github.com/downloads/ttsiodras/Score4/Score4-win32.binary.zip">a Win32 binary package</a> is available for easy execution. You can <a href="score4js.html">play the game in the browser</a>, or you can just watch the video below.
+</div>
+<div class="scrollableContainer rightFloat">
+<img hspace="20" vspace="10" alt="Score4 - Connect4" src="connect-four.jpg"><br>
+<em>The Score 4 (Connect 4) game.</em>
+</div>
+<p>
+I recently took a one week vacation and went to my parent's village. My niece Theodora was there (she is 7 years old), spending a fortnight with her grandparents. Naturally, in my duties as her uncle, I read her fairy tales when she went to sleep; gave her my phone so she could snap photos and play mobile games; and when she got tired of running around in the garden, we played two-player board and card games. 
+<p>
+She particularly enjoyed playing <em>Score4</em>, a tic-tac-toe where you drop chips from the top: the goal is to align a series of 4 of the same color (horizontally, vertically or diagonally) to win. The game is also known as <a href="http://en.wikipedia.org/wiki/Connect_Four">Connect Four</a> in other countries.
+<p>
+Since I always try to find ways to "lure" my nephews and nieces <a href="games.html">towards science and engineering</a>, I saw an opportunity here: after a number of <em>Score4</em> rounds (seeing her brain adapt and learn patterns was quite a sight in itself), I told Theodora that by being an engineer, her uncle could create a "magical" program on her laptop: one that would play <em>Score4</em> so well, that it would beat her, me, and every other human she knows.
+<p>
+She smiled and said "<em>I'd like to see that, uncle!</em>"... and that's when this story started.
+<center>
+<!--object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="http://www.youtube.com/v/kHJRdHCSQLE&amp;hl=en_US&amp;fs=1&amp;rel=0"><param name="movie" value="http://www.youtube.com/v/kHJRdHCSQLE"><param name="allowFullScreen" value="true"></object-->
+<object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="https://www.youtube.com/v/kHJRdHCSQLE&amp;hl=en_US&amp;fs=1&amp;rel=0">
+    <param name="movie" value="https://www.youtube.com/v/kHJRdHCSQLE">
+    <param name="allowFullScreen" value="true">
+    <!-- Fallback content -->
+    <a href="https://www.youtube.com/watch?v=kHJRdHCSQLE">
+    <img src="score4video.png" width="574" height="519" alt="A video of my Score4 implementation">
+    </a>
+</object><br>
+<em>My Score4 Windows implementation (executed under Wine)</em>
+</center>
+<h2>Minimax</h2>
+One of the AI algorithms extensively used in two-player games is <a href="http://en.wikipedia.org/wiki/Minimax">Minimax</a>. The Wikipedia article has all the information one needs, but let's review the main idea:
+
+<div class="scrollableContainer">
+<img alt="Minimax algorithm" hspace="20" vspace="10" src="Minimax.png"><br>
+<div><em>The Minimax algorithm</em></div>
+</div>
+
+A "scoring function" is used: This function, given an input board, produces a number. The more positive the number, the better the board is in terms of player A; the more negative the number, the better the board is in terms of player B.
+<p>
+With (1) the scoring function, and (2) a way to "find the allowed moves for a particular board", one can create a tree like the one shown above. Each node represents a board state, with the root node representing the current state of the board. From the root, we recurse downwards, creating the possible boards that can happen by each of the allowed moves, and stop when we reach a specified depth.
+<p>
+When we reach the maximum depth level, we apply the scoring function. This creates scores for all the "leaf" nodes of the tree. We then apply a simple strategy: 
+<ul>
+<li>if the level corresponds to a move of the B player, we "distill" the minimum of the children scores to their parent (since the B player wants as negative values as possible)
+<li>if the level corresponds to a move of the A player, we "distill" the maximum of the children scores to their parent (since the A player wants as positive values as possible)
+</ul>
+This process creates the scores you see in the diagram above. When the recursion has calculated all the scores at depth 1 - right below the root - then the final decision is taken: the move is chosen that leads to the child with the optimum score.
+<h2>First attempt: Coding Minimax in functional languages (OCaml/F#)</h2>
+Functional languages (like LISP, OCaml, Haskell, etc) are reputed to allow concise, expressive solutions to artificial intelligence problems. Having little to no experience with these languages, I decided to verify this claim on my own little experiment, using <a href="http://caml.inria.fr/">OCaml</a> and <a href="http://research.microsoft.com/en-us/um/cambridge/projects/fsharp/">F#</a> on <em>Score4</em> and Minimax. In "Phase 2" below, I moved on to imperative constructs and languages, and the differences are indeed striking.
+<p>
+But let's take this one step at a time.
+<p>
+As we saw in the previous section, to implement Minimax we need to be able to represent the board:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">type</span><span class="normal"> mycell </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="symbol">|</span><span class="normal"> </span><span class="type">Orange</span>
+<span class="normal">    </span><span class="symbol">|</span><span class="normal"> </span><span class="type">Yellow</span>
+<span class="normal">    </span><span class="symbol">|</span><span class="normal"> </span><span class="type">Barren</span>
+
+<span class="keyword">type</span><span class="normal"> boardState </span><span class="symbol">=</span><span class="normal"> mycell </span><span class="type">array</span><span class="normal"> </span><span class="type">array</span>
+</tt></pre>
+
+</div>
+Each cell of the board can be empty (<tt>Barren</tt>), or carry one of the two colors. The board itself is a two-dimensional array of cells.
+<p>
+The problem has some parameters - the size of the board, the depth we will descend into, as well as the two "magic" return values of the scoring function, which indicate one of the two players has won:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">(* size of the board *)</span>
+<span class="keyword">let</span><span class="normal"> width </span><span class="symbol">=</span><span class="normal"> </span><span class="number">7</span>
+<span class="keyword">let</span><span class="normal"> height </span><span class="symbol">=</span><span class="normal"> </span><span class="number">6</span>
+
+<span class="comment">(* depth we will descend *)</span>
+<span class="keyword">let</span><span class="normal"> maxDepth </span><span class="symbol">=</span><span class="normal"> </span><span class="number">7</span>
+
+<span class="comment">(* scoring function magic constants *)</span>
+<span class="keyword">let</span><span class="normal"> orangeWins </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1000000</span>
+<span class="keyword">let</span><span class="normal"> yellowWins </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">orangeWins</span>
+</tt></pre>
+
+</div>
+Assuming that we have a <tt>scoreBoard</tt> function that returns a score for our board, and a <tt>dropDisk</tt> function that creates a new board from an existing one (by dropping a chip on a specified column), this is the "heart" of my <em>Score4</em> minimax algorithm, in functional-style OCaml:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">let</span><span class="normal"> scoreBoard board </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="symbol">...</span>
+
+<span class="keyword">let</span><span class="normal"> dropDisk board column color </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="symbol">...</span>
+
+<span class="keyword">let</span><span class="normal"> findValidMoves board </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="number">0</span><span class="symbol">--(</span><span class="normal">width</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">filter </span><span class="symbol">(</span><span class="keyword">fun</span><span class="normal"> column </span><span class="symbol">-&gt;</span><span class="normal"> board</span><span class="symbol">.(</span><span class="number">0</span><span class="symbol">).(</span><span class="normal">column</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="type">Barren</span><span class="symbol">)</span>
+
+<span class="keyword">let</span><span class="normal"> performMoves board validMoves color </span><span class="symbol">=</span>
+<span class="normal">    validMoves </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">map </span><span class="symbol">(</span><span class="keyword">fun</span><span class="normal"> column </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">column</span><span class="symbol">,</span><span class="normal">dropDisk board column color</span><span class="symbol">))</span>
+
+<span class="keyword">let</span><span class="normal"> </span><span class="keyword">rec</span><span class="normal"> minimax maximizeOrMinimize color depth board </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="keyword">match</span><span class="normal"> depth </span><span class="keyword">with</span>
+<span class="normal">    </span><span class="symbol">|</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="type">None</span><span class="symbol">,</span><span class="normal">scoreBoard board</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="symbol">|</span><span class="normal"> _ </span><span class="symbol">-&gt;</span>
+<span class="normal">        </span><span class="keyword">let</span><span class="normal"> validMoves </span><span class="symbol">=</span><span class="normal"> findValidMoves board </span><span class="keyword">in</span>
+<span class="normal">        </span><span class="keyword">match</span><span class="normal"> validMoves </span><span class="keyword">with</span>
+<span class="normal">        </span><span class="symbol">|</span><span class="normal"> </span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="type">None</span><span class="symbol">,</span><span class="normal">scoreBoard board</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="symbol">|</span><span class="normal"> _  </span><span class="symbol">-&gt;</span>
+<span class="normal">            </span><span class="keyword">let</span><span class="normal"> validMovesAndBoards </span><span class="symbol">=</span><span class="normal"> performMoves board validMoves color </span><span class="keyword">in</span>
+<span class="normal">            </span><span class="keyword">let</span><span class="normal"> killerMoves </span><span class="symbol">=</span>
+<span class="normal">                </span><span class="keyword">let</span><span class="normal"> targetScore </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">		    </span><span class="keyword">if</span><span class="normal"> maximizeOrMinimize </span><span class="keyword">then</span><span class="normal"> orangeWins </span><span class="keyword">else</span><span class="normal"> yellowWins </span><span class="keyword">in</span>
+<span class="normal">                validMovesAndBoards </span><span class="symbol">|&gt;</span><span class="normal"> </span>
+<span class="normal">		</span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">map </span><span class="symbol">(</span><span class="keyword">fun</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">column</span><span class="symbol">,</span><span class="normal">board</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">column</span><span class="symbol">,</span><span class="normal">scoreBoard board</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">|&gt;</span>
+<span class="normal">                </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">filter </span><span class="symbol">(</span><span class="keyword">fun</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">_</span><span class="symbol">,</span><span class="normal">score</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> score </span><span class="symbol">=</span><span class="normal"> targetScore</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">in</span>
+<span class="normal">            </span><span class="keyword">match</span><span class="normal"> killerMoves </span><span class="keyword">with</span>
+<span class="normal">            </span><span class="symbol">|</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">killerMove</span><span class="symbol">,</span><span class="normal">killerScore</span><span class="symbol">)::</span><span class="normal">rest </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="type">Some</span><span class="symbol">(</span><span class="normal">killerMove</span><span class="symbol">),</span><span class="normal"> killerScore</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="symbol">|</span><span class="normal"> </span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">-&gt;</span>
+<span class="normal">                </span><span class="keyword">let</span><span class="normal"> validBoards </span><span class="symbol">=</span><span class="normal"> validMovesAndBoards </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">map snd </span><span class="keyword">in</span>
+<span class="normal">                </span><span class="keyword">let</span><span class="normal"> bestScores </span><span class="symbol">=</span><span class="normal"> validBoards </span><span class="symbol">|&gt;</span>
+<span class="normal">                    </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">map </span><span class="symbol">(</span><span class="normal">minimax </span><span class="symbol">(</span><span class="normal">not maximizeOrMinimize</span><span class="symbol">)</span>
+<span class="normal">			</span><span class="symbol">(</span><span class="normal">otherColor color</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">depth</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">|&gt;</span>
+<span class="normal">                    </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">map snd </span><span class="keyword">in</span>
+<span class="normal">                </span><span class="keyword">let</span><span class="normal"> allData </span><span class="symbol">=</span><span class="normal"> myzip validMoves bestScores </span><span class="keyword">in</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">!</span><span class="normal">debug </span><span class="symbol">&amp;&amp;</span><span class="normal"> depth </span><span class="symbol">=</span><span class="normal"> maxDepth </span><span class="keyword">then</span>
+<span class="normal">                    </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">iter </span><span class="symbol">(</span><span class="keyword">fun</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">column</span><span class="symbol">,</span><span class="normal">score</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">-&gt;</span>
+<span class="normal">                        </span><span class="preproc">Printf</span><span class="symbol">.</span><span class="normal">printf </span><span class="string">"Depth %d, placing on %d, Score:%d\n%!"</span><span class="normal"> </span>
+<span class="normal">			    depth column score</span><span class="symbol">)</span><span class="normal"> allData </span><span class="symbol">;</span>
+<span class="normal">                </span><span class="keyword">let</span><span class="normal"> cmpScore </span><span class="symbol">(</span><span class="normal">_</span><span class="symbol">,</span><span class="normal">score1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">_</span><span class="symbol">,</span><span class="normal">score2</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> compare score1 score2 </span><span class="keyword">in</span>
+<span class="normal">                </span><span class="keyword">let</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">bestMove</span><span class="symbol">,</span><span class="normal">bestScore</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span>
+<span class="normal">                    </span><span class="keyword">match</span><span class="normal"> maximizeOrMinimize </span><span class="keyword">with</span>
+<span class="normal">                    </span><span class="symbol">|</span><span class="normal"> </span><span class="keyword">true</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> allData </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">fast_sort cmpScore </span><span class="symbol">|&gt;</span><span class="normal"> </span>
+<span class="normal">                        </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">rev </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">hd</span>
+<span class="normal">                    </span><span class="symbol">|</span><span class="normal"> _    </span><span class="symbol">-&gt;</span><span class="normal"> allData </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">fast_sort cmpScore </span><span class="symbol">|&gt;</span><span class="normal"> </span>
+<span class="normal">                        </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">hd </span><span class="keyword">in</span>
+<span class="normal">                </span><span class="symbol">(</span><span class="type">Some</span><span class="symbol">(</span><span class="normal">bestMove</span><span class="symbol">),</span><span class="normal">bestScore</span><span class="symbol">)</span>
+</tt></pre>
+
+</div>
+Let's see what is going on here:
+<p>
+First, we check to see what depth we are in. In this implementation, minimax's <tt>depth</tt> parameter starts from <tt>maxDepth</tt>, and is decreased at each recursive call. This means that when the value is 0, we are at the leaf level (see diagram above) - so we invoke the <tt>scoreBoard</tt> function, passing our input board to it. The function returns an integer value, which we return inside a tuple: (None, score).
+<p>Why a tuple, you ask? Simple: minimax will not only find the optimal score - it also needs to find the optimal move, the move that attains that score. The first member of the returned tuple will therefore be the move itself, followed by the score attained by the move.
+<p>You might ask: Why do we return <tt>None</tt>, then, in the place for the move? Well, at <tt>depth</tt> 0, we don't know what move lead us here (i.e. which column we placed the chip that lead to this board) - it is the parent <tt>minimax</tt> call that knows. We will see how we handle this below - keep reading.
+<p>If we are not at depth 0, we find the <tt>validMoves</tt>:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">let</span><span class="normal"> findValidMoves board </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="number">0</span><span class="symbol">--(</span><span class="normal">width</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">filter </span><span class="symbol">(</span><span class="keyword">fun</span><span class="normal"> column </span><span class="symbol">-&gt;</span><span class="normal"> board</span><span class="symbol">.(</span><span class="number">0</span><span class="symbol">).(</span><span class="normal">column</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="type">Barren</span><span class="symbol">)</span>
+
+<span class="symbol">...</span>
+<span class="normal">       	</span><span class="keyword">let</span><span class="normal"> validMoves </span><span class="symbol">=</span><span class="normal"> findValidMoves board </span><span class="keyword">in</span><span class="normal"> </span><span class="symbol">...</span>
+</tt></pre>
+
+</div>
+In <em>Score4</em>, you can drop a chip in any column, as long as that specific column is not full. The <tt>findValidMoves</tt> function, therefore, feeds the list of integers from 0 to width-1, to a simple filter: if the top-most chip in that column is empty (<tt>Barren</tt>) then the number passes.
+<p>This means that <tt>validMoves</tt> is a list of integers: the columns whose top cell is empty.
+<p>What were these <em>"--" and "|>"</em>? Well, OCaml allows creation of infix operators (by placing the operator name within parentheses), and I used "--" to emulate the ".." operator that other languages have: The construct <tt>N--M</tt> generates a list of numbers, starting with number N and ending on number M. In the same vein (i.e. syntactic sugar), "|>" is the "piping" operator: 
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">let</span><span class="normal"> </span><span class="symbol">(--)</span><span class="normal"> i j </span><span class="symbol">=</span><span class="normal"> </span><span class="comment">(* [X .. Y] construct of F# *)</span>
+<span class="normal">    </span><span class="keyword">let</span><span class="normal"> </span><span class="keyword">rec</span><span class="normal"> aux n acc </span><span class="symbol">=</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> n </span><span class="symbol">&lt;</span><span class="normal"> i </span><span class="keyword">then</span><span class="normal"> acc </span><span class="keyword">else</span><span class="normal"> aux </span><span class="symbol">(</span><span class="normal">n</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">n </span><span class="symbol">::</span><span class="normal"> acc</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">in</span><span class="normal"> aux j </span><span class="symbol">[]</span>
+
+<span class="keyword">let</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"> </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="symbol">)</span><span class="normal"> x fn </span><span class="symbol">=</span><span class="normal"> fn x </span><span class="comment">(* piping operator *)</span>
+</tt></pre>
+
+</div>
+<p>You see now the resemblance with UNIX shell pipes, in the <tt>validMoves</tt> calculation? We <em>piped</em> a list of 0 .. (width-1) to <tt>List.filter</tt>, and some of them "survived". Below you'll see lengthier pipes, but the premise is again the same: we pipe stuff from one "function layer" to the next. Infix operators allow us to create "chains" of processing logic, which can be thought of as factory assembly lines.
+<p>Once we have the list of valid moves, we check to see if it is empty. If there are no valid moves, we just return the score of our current board, in a (None,score) tuple:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">match</span><span class="normal"> validMoves </span><span class="keyword">with</span>
+<span class="symbol">|</span><span class="normal"> </span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="type">None</span><span class="symbol">,</span><span class="normal">scoreBoard board</span><span class="symbol">)</span>
+<span class="symbol">|</span><span class="normal"> _  </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">...</span>
+</tt></pre>
+
+</div>
+<p>If there are valid moves, then we create a list of the <em>valid boards that are instantiated from our valid moves</em>: We pipe the <tt>validMoves</tt> list to <tt>List.map</tt>, and for each valid move, <tt>List.map</tt> creates a tuple. The first element of the tuple is the move itself (the integer pointing to the column). The second element of the tuple is the new board that is created when we drop a chip on that column, via the <tt>dropDisk</tt> function:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">let</span><span class="normal"> performMoves board validMoves color </span><span class="symbol">=</span>
+<span class="normal">    validMoves </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">map </span><span class="symbol">(</span><span class="keyword">fun</span><span class="normal"> column </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">column</span><span class="symbol">,</span><span class="normal">dropDisk board column color</span><span class="symbol">))</span>
+
+<span class="normal">	</span><span class="keyword">let</span><span class="normal"> validMovesAndBoards </span><span class="symbol">=</span><span class="normal"> performMoves board validMoves color </span><span class="keyword">in</span><span class="normal"> </span><span class="symbol">...</span>
+</tt></pre>
+
+</div>
+<p>We now check if any of these boards are winning/losing boards. Depending on the level we are, we are either maximizing or minimizing the score (i.e. we try to find the optimal move for the Orange <em>OR</em> for the Yellow player), so <tt>targetScore</tt> is made to point to the "magic" value that, when returned from <tt>scoreBoard</tt>, declares a victory. We then "filter" for that target score:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">let</span><span class="normal"> killerMoves </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="keyword">let</span><span class="normal"> targetScore </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> maximizeOrMinimize </span><span class="keyword">then</span><span class="normal"> orangeWins </span><span class="keyword">else</span><span class="normal"> yellowWins </span><span class="keyword">in</span>
+<span class="normal">    validMovesAndBoards </span><span class="symbol">|&gt;</span><span class="normal"> </span>
+<span class="normal">        </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">map </span><span class="symbol">(</span><span class="keyword">fun</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">column</span><span class="symbol">,</span><span class="normal">board</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">column</span><span class="symbol">,</span><span class="normal">scoreBoard board</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">|&gt;</span>
+<span class="normal">        </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">filter </span><span class="symbol">(</span><span class="keyword">fun</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">_</span><span class="symbol">,</span><span class="normal">score</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> score </span><span class="symbol">=</span><span class="normal"> targetScore</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">in</span>
+<span class="keyword">match</span><span class="normal"> killerMoves </span><span class="keyword">with</span>
+<span class="symbol">|</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">killerMove</span><span class="symbol">,</span><span class="normal">killerScore</span><span class="symbol">)::</span><span class="normal">rest </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">(</span><span class="type">Some</span><span class="symbol">(</span><span class="normal">killerMove</span><span class="symbol">),</span><span class="normal"> killerScore</span><span class="symbol">)</span>
+<span class="symbol">|</span><span class="normal"> </span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> </span><span class="symbol">...</span>
+</tt></pre>
+
+</div>
+<p>Did the <tt>killerMoves</tt> find anything? If yes, then any of them (e.g. the first) are enough to end the game - so pick them out from the head of the list, and return them.
+<p>If not, we need to perform recursion, and descend down into derived boards:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">let</span><span class="normal"> validBoards </span><span class="symbol">=</span><span class="normal"> validMovesAndBoards </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">map snd </span><span class="keyword">in</span>
+<span class="keyword">let</span><span class="normal"> bestScores </span><span class="symbol">=</span><span class="normal"> validBoards </span><span class="symbol">|&gt;</span>
+<span class="normal">    </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">map </span><span class="symbol">(</span><span class="normal">minimax </span><span class="symbol">(</span><span class="normal">not maximizeOrMinimize</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">otherColor color</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">depth</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">|&gt;</span>
+<span class="normal">    </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">map snd </span><span class="keyword">in</span>
+</tt></pre>
+
+</div>
+<p>This is the key line in the function: it recursively descends into <tt>depth-1</tt>, toggling the color (via function <tt>otherColor</tt>), toggling the "target mode" from A player to B player and vice versa (i.e. toggling <tt>maximizeOrMinimize</tt>), and returning <b>a tuple</b>, containing the winning move, and its score. We pipe to <tt>List.map snd</tt>, and are therefore ignoring the returned moves - we just keep the scores of our "children" nodes in an output list.
+<p>Using <tt>myzip</tt> (which is a function that, just like F#'s <tt>List.zip</tt>, takes 2 lists as inputs, and creates an output with a single list of 2-tuples), we "pack" all our results in <tt>allData</tt>: a list of 2-tuples, of the form: <tt>(move,score)</tt>
+<p>Skipping over the debug output, there is only one thing remaining: to sort the results, based on their score, and take the largest or the smallest one, depending on which player we are optimizing for (<tt>maximizeOrMinimize</tt>).
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">let</span><span class="normal"> cmpScore </span><span class="symbol">(</span><span class="normal">_</span><span class="symbol">,</span><span class="normal">score1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">_</span><span class="symbol">,</span><span class="normal">score2</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> compare score1 score2 </span><span class="keyword">in</span>
+<span class="keyword">let</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">bestMove</span><span class="symbol">,</span><span class="normal">bestScore</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="keyword">match</span><span class="normal"> maximizeOrMinimize </span><span class="keyword">with</span>
+<span class="normal">    </span><span class="symbol">|</span><span class="normal"> </span><span class="keyword">true</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> allData </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">stable_sort cmpScore </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">rev </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">hd</span>
+<span class="normal">    </span><span class="symbol">|</span><span class="normal"> _    </span><span class="symbol">-&gt;</span><span class="normal"> allData </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">stable_sort cmpScore </span><span class="symbol">|&gt;</span><span class="normal"> </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">hd </span><span class="keyword">in</span>
+<span class="symbol">(</span><span class="type">Some</span><span class="symbol">(</span><span class="normal">bestMove</span><span class="symbol">),</span><span class="normal">bestScore</span><span class="symbol">)</span>
+</tt></pre>
+
+</div>
+<p>
+<em>Update: Reddit and Hacker News people pointed out that we don't really need to sort - we just need to find the largest/smallest value, so <tt>List.fold_left</tt> is perfect for the job (and tail-recursive). The benchmarks show no improvement in execution speed for either OCaml or F# with this change, probably because the lists are too short - but regardless, this is indeed the correct way to find the best value:</em>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">let</span><span class="normal"> best  </span><span class="symbol">(</span><span class="normal">_</span><span class="symbol">,</span><span class="normal">s </span><span class="keyword">as</span><span class="normal"> l</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">_</span><span class="symbol">,</span><span class="normal">s' </span><span class="keyword">as</span><span class="normal"> r</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> s </span><span class="symbol">&gt;</span><span class="normal"> s' </span><span class="keyword">then</span><span class="normal"> l </span><span class="keyword">else</span><span class="normal"> r</span>
+<span class="keyword">and</span><span class="normal"> worst </span><span class="symbol">(</span><span class="normal">_</span><span class="symbol">,</span><span class="normal">s </span><span class="keyword">as</span><span class="normal"> l</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">_</span><span class="symbol">,</span><span class="normal">s' </span><span class="keyword">as</span><span class="normal"> r</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> s </span><span class="symbol">&lt;</span><span class="normal"> s' </span><span class="keyword">then</span><span class="normal"> l </span><span class="keyword">else</span><span class="normal"> r </span><span class="keyword">in</span>
+<span class="keyword">let</span><span class="normal"> bestMove</span><span class="symbol">,</span><span class="normal">bestScore </span><span class="symbol">=</span>
+<span class="normal">    </span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">fold_left </span>
+<span class="normal">	</span><span class="symbol">(</span><span class="keyword">if</span><span class="normal"> maximizeOrMinimize </span><span class="keyword">then</span><span class="normal"> best </span><span class="keyword">else</span><span class="normal"> worst</span><span class="symbol">)</span><span class="normal"> </span>
+<span class="normal">        </span><span class="symbol">(</span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">hd allData</span><span class="symbol">)</span><span class="normal"> </span>
+<span class="normal">        </span><span class="symbol">(</span><span class="preproc">List</span><span class="symbol">.</span><span class="normal">tl allData</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">in</span>
+<span class="symbol">(</span><span class="type">Some</span><span class="symbol">(</span><span class="normal">bestMove</span><span class="symbol">),</span><span class="normal">bestScore</span><span class="symbol">)</span>
+</tt></pre>
+
+</div>
+<p>
+That's all. Notice that the code reasons about boards, moves, and scores - it is completely generic, and applies to any two-player game that we can code a scoring function for.
+<p>
+Speaking of the <tt>scoreBoard</tt> function, I tried various forms to evaluate the board. I ended up on a simple policy: measuring how many chips of the same color exist, in spans of 4 going in any direction. I do this over each of the board's cells, and then aggregate this in a table keeping the aggregates from -4 to 4:
+<ul>
+<li>-4 means that the cell is a part of 4 cells that contain 4 yellow chips 
+<li>-3 means that the cell is a part of 4 cells that contain 3 yellow chips 
+<li>...
+<li>3 means that the cell is a part of 4 cells that contain 3 orange chips 
+<li>4 means that the cell is a part of 4 cells that contain 4 orange chips 
+</ul>
+If 4 is found, the board is a win for the Orange player, and the function returns <tt>orangeWins</tt> (i.e. 1000000). If -4 is found, the board is a win for the Yellow player, and the function returns <tt>yellowWins</tt> (i.e. -1000000). Otherwise, scaling factors are applied, so that the more "3"-cells found, the more positive the board's score. Correspondingly, the more "-3" found, the more negative the board's score.
+<p>
+Let me reiterate again, that all the code above, is NOT problem-specific! If you define your board type, your <tt>findValidMoves</tt> and your <tt>performMoves</tt> functions, this code will play whatever game you want. Functional languages offer impressive code abstraction.
+<h2>Testing with a "driver" program</h2>
+Let's test our implementation - and since we intend to use multiple languages to do Minimax and eventually compare them, a simple Python program is written, which spawns the "engine", and gets back the optimal move. The board's state is passed through the command-line, e.g. ...
+<pre class="o">
+<b>bash$</b> engine o53 y52
+</pre>
+...means that the input board has an orange chip in cell (5,3), and a yellow one in (5,2).<p>
+The engine returns...
+<pre class="o">
+3
+<b>bash$</b> ...
+</pre>
+<p>
+...meaning that the engine chose to play on column 3. The Python "driver" program makes use of this simple command line interface, and offers this "graphical" console:
+<pre class="o">
+home:/home/ttsiod/score4$ ./interfaces/driver.py 
+[                   ]
+[                   ]
+[                   ]
+[                   ]
+[                   ]
+[         X         ]
+--------------------
+ 0  1  2  3  4  5  6
+
+"q" to quit, or column number (0-6): --&gt; 2
+[                   ]                    |
+[                   ]                    |
+[                   ]         I entered "2" here, so I played my "O" at column 2
+[                   ]
+[                   ]
+[      O  X         ]
+--------------------
+ 0  1  2  3  4  5  6
+
+Computer chose 3 
+
+[                   ]
+[                   ]
+[                   ]
+[                   ]
+[         X         ]
+[      O  X         ]
+--------------------
+ 0  1  2  3  4  5  6
+
+"q" to quit, or column number (0-6): --&gt;
+</pre>
+Seems to work! And even at a depth level of 6, plays a better game of <em>Score4</em> than I *ever* could.
+<p>
+Well, how deep can we go? Why not go to level 7?
+<h2>Execution speed</h2>
+Since F# and OCaml are first cousins, we translate the code to F# as well, and invoke a first benchmark:
+<pre class="o">
+<b>bash$</b> /c/Program\ Files/Microsoft\ F#/Fsc.exe --checked- --optimize+ score4.fs
+<b>bash$</b> echo "This is F# (functional)"
+<b>bash$</b> time ./score4.exe o53 y43 -debug
+Depth 7, placing on column 0, Score:2
+Depth 7, placing on column 1, Score:8
+Depth 7, placing on column 2, Score:8
+Depth 7, placing on column 3, Score:8
+Depth 7, placing on column 4, Score:8
+Depth 7, placing on column 5, Score:8
+Depth 7, placing on column 6, Score:2
+5
+real    0m8.023s
+user    0m7.941s
+sys     0m0.013s
+
+<b>bash$</b> ocamlopt -unsafe -rectypes -inline 1000 -o ./score4.bin score4.ml
+<b>bash$</b> echo "This is OCaml (functional)"
+<b>bash$</b> time ./score4.bin o53 y43 -debug
+Depth 7, placing on column 0, Score:2
+Depth 7, placing on column 1, Score:8
+Depth 7, placing on column 2, Score:8
+Depth 7, placing on column 3, Score:8
+Depth 7, placing on column 4, Score:8
+Depth 7, placing on column 5, Score:8
+Depth 7, placing on column 6, Score:2
+5
+
+real    0m1.728s
+user    0m1.703s
+sys     0m0.000s
+</pre>
+Wow... Even though both codes are essentially the same, and we compiled both using optimization options,
+the native binary of OCaml plays a move almost five times faster than F#...
+<p>
+Native compilers have "unfair" advantages over VMs (in this case, .NET). Then again, F# is a relatively new language; it's compiler will undoubtedly improve over time <em>(Or maybe I am missing some optimization option - any feedback on this most welcome)</em>. Let's see what the more mature C# compiler can do on the same platform...
+<h2>Moving to imperative style (C#/OCaml/F# and eventually, C++)</h2>
+Switching to C#, we also rewrite the algorithm in imperative style. Note that C#'s two-dimensional arrays are <em>very</em> slow; we instead use "jagged" arrays, that is, arrays containing arrays - just as we did for OCaml and F#.
+
+<div class='codegenWrapper'>
+<pre><tt>
+<span class="keyword">public</span><span class="normal"> </span><span class="keyword">static</span><span class="normal"> </span><span class="type">void</span><span class="normal"> </span><span class="function">minimax</span><span class="symbol">(</span>
+<span class="normal">    </span><span class="type">bool</span><span class="normal"> maximizeOrMinimize</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Mycell</span><span class="normal"> color</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> depth</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Board</span><span class="normal"> board</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">    </span><span class="keyword">out</span><span class="normal"> </span><span class="type">int</span><span class="normal"> move</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">out</span><span class="normal"> </span><span class="type">int</span><span class="normal"> score</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="number">0</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> depth</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">	move </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">	score </span><span class="symbol">=</span><span class="normal"> </span><span class="function">ScoreBoard</span><span class="symbol">(</span><span class="normal">board</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">	</span><span class="type">int</span><span class="normal"> bestScore</span><span class="symbol">=</span><span class="normal">maximizeOrMinimize</span><span class="symbol">?-</span><span class="number">10000000</span><span class="symbol">:</span><span class="number">10000000</span><span class="symbol">;</span>
+<span class="normal">	</span><span class="type">int</span><span class="normal"> bestMove</span><span class="symbol">=-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">	</span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> column</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> column</span><span class="symbol">&lt;</span><span class="normal">width</span><span class="symbol">;</span><span class="normal"> column</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">	    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">board</span><span class="symbol">.</span><span class="normal">_slots</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">][</span><span class="normal">column</span><span class="symbol">]!=</span><span class="normal">Mycell</span><span class="symbol">.</span><span class="normal">Barren</span><span class="symbol">)</span>
+<span class="normal">		</span><span class="keyword">continue</span><span class="symbol">;</span>
+<span class="normal">	    </span><span class="type">int</span><span class="normal"> rowFilled </span><span class="symbol">=</span><span class="normal"> </span><span class="function">dropDisk</span><span class="symbol">(</span><span class="normal">board</span><span class="symbol">,</span><span class="normal"> column</span><span class="symbol">,</span><span class="normal"> color</span><span class="symbol">);</span><span class="normal"> </span><span class="comment">// damage the state</span>
+<span class="normal">	    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">rowFilled </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span>
+<span class="normal">		</span><span class="keyword">continue</span><span class="symbol">;</span>
+<span class="normal">	    </span><span class="type">int</span><span class="normal"> s </span><span class="symbol">=</span><span class="normal"> </span><span class="function">ScoreBoard</span><span class="symbol">(</span><span class="normal">board</span><span class="symbol">);</span>
+<span class="normal">	    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">maximizeOrMinimize</span><span class="symbol">?</span><span class="normal">orangeWins</span><span class="symbol">:</span><span class="normal">yellowWins</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">		bestMove </span><span class="symbol">=</span><span class="normal"> column</span><span class="symbol">;</span>
+<span class="normal">		bestScore </span><span class="symbol">=</span><span class="normal"> s</span><span class="symbol">;</span>
+<span class="normal">		board</span><span class="symbol">.</span><span class="normal">_slots</span><span class="symbol">[</span><span class="normal">rowFilled</span><span class="symbol">][</span><span class="normal">column</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> Mycell</span><span class="symbol">.</span><span class="normal">Barren</span><span class="symbol">;</span>
+<span class="normal">		</span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">	    </span><span class="cbracket">}</span>
+<span class="normal">	    </span><span class="type">int</span><span class="normal"> moveInner</span><span class="symbol">,</span><span class="normal"> scoreInner</span><span class="symbol">;</span>
+<span class="normal">	    </span><span class="function">minimax</span><span class="symbol">(</span>
+<span class="normal">		</span><span class="symbol">!</span><span class="normal">maximizeOrMinimize</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">		color</span><span class="symbol">==</span><span class="normal">Mycell</span><span class="symbol">.</span><span class="normal">Orange</span><span class="symbol">?</span><span class="normal">Mycell</span><span class="symbol">.</span><span class="normal">Yellow</span><span class="symbol">:</span><span class="normal">Mycell</span><span class="symbol">.</span><span class="normal">Orange</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">		depth</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">		board</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">		</span><span class="keyword">out</span><span class="normal"> moveInner</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">out</span><span class="normal"> scoreInner</span><span class="symbol">);</span>
+<span class="normal">	    board</span><span class="symbol">.</span><span class="normal">_slots</span><span class="symbol">[</span><span class="normal">rowFilled</span><span class="symbol">][</span><span class="normal">column</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> Mycell</span><span class="symbol">.</span><span class="normal">Barren</span><span class="symbol">;</span><span class="normal"> </span><span class="comment">// Undo the damage</span>
+<span class="normal">	    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">depth </span><span class="symbol">==</span><span class="normal"> maxDepth </span><span class="symbol">&amp;&amp;</span><span class="normal"> g_debug</span><span class="symbol">)</span>
+<span class="normal">		Console</span><span class="symbol">.</span><span class="function">WriteLine</span><span class="symbol">(</span>
+<span class="normal">		    </span><span class="string">"Depth {0}, placing on {1}, score:{2}"</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">		    depth</span><span class="symbol">,</span><span class="normal"> column</span><span class="symbol">,</span><span class="normal"> scoreInner</span><span class="symbol">);</span>
+<span class="normal">	    </span><span class="comment">// No need for lists and sorting - just keep the best value you meet.</span>
+<span class="normal">	    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">maximizeOrMinimize</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">		</span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">scoreInner</span><span class="symbol">&gt;=</span><span class="normal">bestScore</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">		    bestScore </span><span class="symbol">=</span><span class="normal"> scoreInner</span><span class="symbol">;</span>
+<span class="normal">		    bestMove </span><span class="symbol">=</span><span class="normal"> column</span><span class="symbol">;</span>
+<span class="normal">		</span><span class="cbracket">}</span>
+<span class="normal">	    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">		</span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">scoreInner</span><span class="symbol">&lt;=</span><span class="normal">bestScore</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">		    bestScore </span><span class="symbol">=</span><span class="normal"> scoreInner</span><span class="symbol">;</span>
+<span class="normal">		    bestMove </span><span class="symbol">=</span><span class="normal"> column</span><span class="symbol">;</span>
+<span class="normal">		</span><span class="cbracket">}</span>
+<span class="normal">	    </span><span class="cbracket">}</span>
+<span class="normal">	</span><span class="cbracket">}</span>
+<span class="normal">	move </span><span class="symbol">=</span><span class="normal"> bestMove</span><span class="symbol">;</span>
+<span class="normal">	score </span><span class="symbol">=</span><span class="normal"> bestScore</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+</tt></pre>
+
+</div>
+Well... in the imperative world...
+<ul>
+<li>We use two "out" parameters to return the results (instead of a tuple).
+<li>We no longer use lists everywhere - we use loops instead.<br><em>(Functional language tutorials tend to favor
+lists - loops are somewhat "tainted" by imperative thinking. Still, OCaml does offer us <tt>for</tt> loops - no <tt>break</tt>, though)</em>
+<li>We mutate the heck out of everything, altering the state wherever we see fit to do so.
+<li>For example, why have <tt>dropDisk</tt> return a new board? Why not just have it return the row where the
+chip fell on, modify (in-place) the <tt>board</tt>, call <tt>minimax</tt>, and after it returns, "undo" the damage and reset that cell to <tt>Barren</tt>?
+<li>In the same vein, why store results in lists, and sort them? Why not just keep the best combo (move,score)
+as we go through the <tt>for</tt> loop in a couple of mutable variables (references)?
+</ul>
+<p>
+And so we hack and slash - the beautiful abstract functional code is translated to a problem-specific mutant...<p>
+Was it worth it?
+<pre class="o">
+<b>bash$</b> csc.exe  /checked- /optimize+ /unsafe+ score4.cs
+<b>bash$</b> echo "This is C# (imperative)"
+<b>bash$</b> time ./score4.exe o53 y43 -debug
+Depth 7, placing on column 0, score:2
+Depth 7, placing on column 1, score:8
+Depth 7, placing on column 2, score:8
+Depth 7, placing on column 3, score:8
+Depth 7, placing on column 4, score:8
+Depth 7, placing on column 5, score:8
+Depth 7, placing on column 6, score:2
+5
+
+real    0m3.527s
+user    0m3.401s
+sys     0m0.123s
+</pre>
+Significantly faster than F# - still, half as fast as OCaml. Let's go back to F# and OCaml, and perform the same... mutation on their code (i.e. write it in a state-altering-mayhem way, since both these languages allow imperative style coding as well):
+<pre class="o">
+<b>bash$</b> /c/Program\ Files/Microsoft\ F#/Fsc.exe --checked- --optimize+ score4_imperative.fs
+<b>bash$</b> echo "This is F# (imperative)"
+<b>bash$</b> time ./score4_imperative.exe o53 y43 -debug
+Depth 7, placing on column 0, Score:2
+Depth 7, placing on column 1, Score:8
+Depth 7, placing on column 2, Score:8
+Depth 7, placing on column 3, Score:8
+Depth 7, placing on column 4, Score:8
+Depth 7, placing on column 5, Score:8
+Depth 7, placing on column 6, Score:2
+5
+
+real    0m6.161s
+user    0m6.143s
+sys     0m0.007s
+
+<b>bash$</b> ocamlopt -unsafe -rectypes -inline 1000 -o ./score4_imperative.bin score4_imperative.ml
+<b>bash$</b> echo "This is OCaml (imperative)"
+<b>bash$</b> time ./score4_imperative.bin o53 y43 -debug
+Depth 7, placing on column 0, Score:2
+Depth 7, placing on column 1, Score:8
+Depth 7, placing on column 2, Score:8
+Depth 7, placing on column 3, Score:8
+Depth 7, placing on column 4, Score:8
+Depth 7, placing on column 5, Score:8
+Depth 7, placing on column 6, Score:2
+5
+
+real    0m1.424s
+user    0m1.400s
+sys     0m0.010s
+</pre>
+Both F# and OCaml improved their times by using imperative constructs (using <tt>for</tt> loops and mutable variables): 24% for F#, 18% for OCaml.
+<p>
+I still feel that bitter taste in my mouth, though - there were speed gains, undoubtedly, but were they worth it?
+<h2>The high-powered plasma cannon: C++</h2>
+Well, since we did the dirty deed and wrote the algorithm imperatively, we might as well see how C++ fares.
+Translation from C# to C++ is almost trivial, most things work as-is... and the results are...
+<pre class="o">
+<b>bash$</b> g++ -O3 -o score4.bin score4.cpp
+<b>bash$</b> echo "This is C++ (imperative)"
+<b>bash$</b> time ./score4.bin o53 y43 -debug
+Depth 7, placing on column 0, score:2
+Depth 7, placing on column 1, score:8
+Depth 7, placing on column 2, score:8
+Depth 7, placing on column 3, score:8
+Depth 7, placing on column 4, score:8
+Depth 7, placing on column 5, score:8
+Depth 7, placing on column 6, score:2
+5
+
+real    0m0.226s
+user    0m0.220s
+sys     0m0.000s
+</pre>
+C++ makes the mutable mayhem <b>really worthwhile</b>: Compared to functional F#, C++ runs an astonishing <b>35x times faster</b>!
+<p>
+Even when compared to the native binaries generated by functional OCaml, it is running 7.6x times faster.
+<p>
+So... nothing beats C++ speed. Except <a href="mandelSSE.html">inline assembly</a>, but let's not get carried away :&#x2011;)
+<h2>Might as well make a GUI, too</h2>
+Not much to say about this one - I used Pygame to code a silly little GUI for my <em>Score4</em> implementation:
+
+<div class="scrollableContainer">
+<img hspace="20" vspace="10" alt="Score4 GUI in Pygame" src="score4.png"><br>
+<em>The Score 4 GUI - so my niece can play :&#x2011;)</em>
+</div>
+
+The fact that I had separated the calculating logic from the presentation logic (the "driver" paradigm) made my job easy.
+<p>
+You can download a precompiled <a href="https://github.com/downloads/ttsiodras/Score4/Score4-win32.binary.zip">Win32 binary package</a> of my <em>Score4</em> implementation from Github (<em>I used py2exe to compile the Python part and MinGW to compile the C++ engine</em>).
+<a name="lessons"></a>
+<h2>Conclusions and lessons learned</h2>
+The executive summary of the benchmark is easily reproducible:
+<pre class="o">
+<b>bash$</b> git clone git://github.com/ttsiodras/Score4.git
+Cloning into Score4...
+remote: Counting objects: 55, done.
+remote: Compressing objects: 100% (43/43), done.
+remote: Total 55 (delta 16), reused 49 (delta 10)
+Unpacking objects: 100% (55/55), done.
+<b>bash$</b> cd Score4
+<b>bash$</b> make benchmark
+real    0m0.222s: That was C++
+real    0m1.389s: That was OCaml (imperative, C++ mirror)
+real    0m1.674s: That was OCaml (functional)
+real    0m3.526s: That was C# (imperative, C++ mirror)
+real    0m6.184s: That was F# (imperative, C++ mirror)
+real    0m7.967s: That was F# (functional)
+<b>bash$</b>
+</pre>
+What did I learn from this exercise? Well, a lot, considering I had (and still have) very little experience with functional-style coding.
+<ul>
+<li>Functional-style programming reasons in terms of higher level constructs: lists of moves, lists of boards, passing around evaluation and move-making functions, etc. Imperative code feels "dirtier", since it reasons in terms of lower-level stuff (<tt>for</tt> loops on arrays, that usually lead to state mutation...) The results in the functional-style seem more abstract, and easier to reuse. For example, the <tt>minimax</tt> of the functional implementation can be used as-is for any two-player game.
+<li>There's no such thing as a free lunch, however - imperative code is usually a lot faster. The sweet spot in terms of this balancing act (clear functional code vs speedy execution) - at least in this experiment - was OCaml, a functional language generating native binaries, whose speed resided halfway between VM-based F#/C# and native C++. 
+<li>If you do need speed, try utilizing imperative style (state-changing) only in your "core" logic. In this example, <tt>scoreBoard</tt> (called hundreds of thousands of times) was written imperatively.
+<li>Switching the code to imperative style offers speed advantages, but it causes detrimental effects on quality and reusability. In this particular example, writing <tt>minimax</tt> imperatively only made sense - i.e. speed gain was significant enough to warrant the code impacts - when C++ was used.
+<li>Separating the presentation logic always helps (easy re-structuring and new features - in this case, a GUI).
+<li>The inclusion of functional constructs (lambdas, etc) and libraries like Boost in C++0x make me eager to see some expert feedback from C++ gurus, who could write the code in a functional manner <em>in C++</em>. Unfortunately, every time I look at Boost my brain bleeds - any help (especially working code) most appreciated.
+</ul>
+Feel free to port the code to your favorite imperative/functional language and send me tarballs or <tt>git-format-patch</tt> outputs: I will add/commit them so we can see how LISP/Scala/Clojure/etc fare on this. <a href="https://github.com/ttsiodras/Score4">The code lives on Github</a>, so you are invited to review and fix any things I did wrong. I've been programming imperatively for decades, but I am a "functional newbie" - so I am hoping people will show me ways to keep the functional way of thinking and still improve the speed under F# and OCaml.
+<p>
+Enjoy!
+<p>
+<b>Update, July 12</b>: Ports are coming in from all over the Web... the repository now carries versions for:
+<ul>
+<li>Java (Sario O. Alvey)
+<li>Python and D (Reddit/leonardo_m - who also suggested that C++ does not need a 'translation stage' in <tt>scoreBoard</tt>, since enumerants can be added - hence a 30% speedup in C++)
+<li>Haskell (Hacker News/phnguyen)
+<li>Go (HackerNews/supersillyus)
+</ul>
+<b>Update, July 22</b>: Thomas and Daniel from <a href="http://stackoverflow.com/questions/6794138/f-seems-slower-than-other-languages-what-can-i-do-to-speed-it-up">StackOverflow</a> helped improve F# speed to within 30% of C#. Thanks, guys!
+<p>
+<b>Update, July 24</b>: Dr Jon Harrop <a href="http://stackoverflow.com/questions/6794138/f-seems-slower-than-other-languages-what-can-i-do-to-speed-it-up">joined in</a> and improved the speed of the F# version of ScoreBoard... by 70%! <a href="http://stackoverflow.com/questions/5850243/fsharp-runs-my-algorithm-slower-than-python">Just as in my first F# endeavour</a>, his help was invaluable.
+<p>
+<b>Update, July 26</b>: Javascript <a href="score4js.html">port</a>, play Score4 in the browser!
+<p>
+<b>Update, July 28</b>: Migrated the F# optimizations (using ints instead of discriminated unions) to other languages, thus avoiding mapping to int values in scoreBoard.
+<p>
+<b>Update, August 7</b>: Added an <tt>unordered_map</tt> cache to the C++ implementation, to avoid recalculating scores for previously seen boards =&gt; 15% speedup.
+<p>
+<b>Update, October 24</b>: Use the best of 10 runs (to minimize impact of OS scheduling artifacts):
+<pre class="o">
+<b>Under Linux, using:
+
+    (a) GCC version 4.4.0
+    (b) Java 7 
+    (c) OCaml 3.12.0
+    (d) Mono 2.10.1</b>
+
+...I get:
+
+<b>linux$</b> make benchmark 
+0.067 : C++(imperative,memoized)
+0.107 : C++(imperative)
+0.124 : C(imperative)
+0.378 : Java(imperative)
+0.392 : OCaml(imperative)
+0.679 : OCaml(functional)
+0.835 : F#(imperative)
+1.045 : C#(imperative)
+2.924 : F#(functional)
+
+<b>Under Windows 7/64bit, and using:
+
+    (a) Cygwin GCC 4.5.0
+    (b) Java 7 
+    (c) Cygwin OCaml 3.12.0
+    (d) C# CSC 3.5.30729.5420, F# FSC 4.0.30319.1</b>
+
+...I get:
+
+<b>win7$</b> make benchmark 
+0.130 : C++(imperative)
+0.145 : C++(imperative,memoized)
+0.155 : C(imperative)
+0.338 : Java(imperative)
+0.342 : C#(imperative)
+0.395 : F#(imperative)
+0.395 : OCaml(imperative)
+0.665 : OCaml(functional)
+0.947 : F#(functional)
+</pre>
+Some comments about these latest results:
+<ul>
+<li>The Windows .NET compilers and runtimes are running the final, optimized code, a lot faster than Mono does.
+<li>Memoization behaves worse under Cygwin's GCC than the normal algorithm - weird, but consistently reproducible in my machine. In contrast, under Linux it provides a sizeable 40% speed increase.
+<li>The winners are still C++ (for imperative style) and OCaml (for functional style) - but the difference is a lot smaller now between them and the others. 
+</ul>
+<p>
+<a name="lisp"></a>
+<b>Update, November 6</b>: The recent passing of John McCarthy reminded me of Lisp... so I decided to port score4 to Lisp as well. The tremendous power of Lisp macros allowed me to unroll (at compile-time!) the computations done in <tt>scoreBoard</tt> and only emit the actual accumulating instructions. This made Lisp the 2nd fastest language, behind only C/C++:
+<pre class="o">
+<b>bash$</b> git clone git://github.com/ttsiodras/Score4.git
+...
+<b>bash$</b> cd Score4
+<b>bash$</b> make benchmark
+...
+======================
+= Running benchmarks =
+======================
+Benchmarking imperative memoized C++ ... 0.089 sec
+Benchmarking imperative C++ ... 0.114 sec
+Benchmarking imperative C ... 0.119 sec
+Benchmarking imperative Lisp (SBCL) ... 0.274 sec
+Benchmarking imperative LISP (CMUCL) ... 0.300 sec
+Benchmarking imperative OCaml ... 0.304 sec
+Benchmarking imperative Java ... 0.376 sec
+Benchmarking functional OCaml ... 0.678 sec
+...
+</pre>
+I have no words - I am simply amazed with what Lisp allowed me to do (it deserves a blog post on its own). This kind of functionality (complex, nested loop unrolling) is something that is either implemented in your language's compiler, or forces you to manually mess up your code (or code generate). Lisp allowed me to do this at compile-time, maintaining at the same time the original (slower) code structure. Mind=blown. 
+<p>
+Here's how the old (commented) and the new code look, for one of the 4 macros:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="cbracket">(</span><span class="keyword">defmacro</span><span class="normal"> horizontal-spans </span><span class="cbracket">()</span>
+<span class="normal">  </span><span class="comment">; normal code is...</span>
+<span class="normal">  </span><span class="comment">;</span>
+<span class="normal">  </span><span class="comment">;(loop for y fixnum from 0 to (1- height) do</span>
+<span class="normal">  </span><span class="comment">;  (let ((score (+ (at y 0)  (at y 1) (at y 2))))</span>
+<span class="normal">  </span><span class="comment">;    (declare (type fixnum score))</span>
+<span class="normal">  </span><span class="comment">;    (loop for x fixnum from 3 to (1- width) do</span>
+<span class="normal">  </span><span class="comment">;      (incf score (at y x))</span>
+<span class="normal">  </span><span class="comment">;      (myincr)</span>
+<span class="normal">  </span><span class="comment">;      (decf score (at y (- x 3))))))</span>
+<span class="normal">  </span><span class="comment">;</span>
+<span class="normal">  </span><span class="comment">; Loop-unrolling done via this macro:</span>
+<span class="normal">  </span><span class="comment">;</span>
+<span class="normal">  `</span><span class="cbracket">(</span><span class="keyword">progn</span>
+<span class="normal">    </span><span class="cbracket">(</span><span class="keyword">let</span><span class="normal"> </span><span class="cbracket">((</span><span class="normal">score </span><span class="number">0</span><span class="cbracket">))</span>
+<span class="normal">    </span><span class="cbracket">(</span><span class="keyword">declare</span><span class="normal"> </span><span class="cbracket">(</span><span class="normal">type fixnum score</span><span class="cbracket">))</span>
+<span class="normal">    ,@</span><span class="cbracket">(</span><span class="keyword">loop</span><span class="normal"> for y fixnum from </span><span class="number">0</span><span class="normal"> to </span><span class="cbracket">(</span><span class="number">1</span><span class="normal">- height</span><span class="cbracket">)</span>
+<span class="normal">      collect `</span><span class="cbracket">(</span><span class="keyword">setf</span><span class="normal"> score </span><span class="cbracket">(</span><span class="keyword">+</span><span class="normal"> </span><span class="cbracket">(</span><span class="normal">at ,y </span><span class="number">0</span><span class="cbracket">)</span><span class="normal"> </span><span class="cbracket">(</span><span class="normal">at ,y </span><span class="number">1</span><span class="cbracket">)</span><span class="normal"> </span><span class="cbracket">(</span><span class="normal">at ,y </span><span class="number">2</span><span class="cbracket">)))</span>
+<span class="normal">      nconc </span><span class="cbracket">(</span><span class="keyword">loop</span><span class="normal"> for x fixnum from </span><span class="number">3</span><span class="normal"> to </span><span class="cbracket">(</span><span class="number">1</span><span class="normal">- width</span><span class="cbracket">)</span>
+<span class="normal">        collect `</span><span class="cbracket">(</span><span class="normal">incf score </span><span class="cbracket">(</span><span class="normal">at ,y ,x</span><span class="cbracket">))</span>
+<span class="normal">        collect `</span><span class="cbracket">(</span><span class="normal">myincr</span><span class="cbracket">)</span>
+<span class="normal">        collect `</span><span class="cbracket">(</span><span class="normal">decf score </span><span class="cbracket">(</span><span class="normal">at ,y ,</span><span class="cbracket">(</span><span class="keyword">-</span><span class="normal"> x </span><span class="number">3</span><span class="cbracket">)))</span>
+<span class="normal">        </span><span class="cbracket">)))))</span>
+</tt></pre>
+
+</div>
+And when macroexpanded, this is how the end result looks:
+<pre class="o">
+<b>bash</b> sbcl
+...
+* (load "score4.cl")
+...
+* (macroexpand '(horizontal-spans))
+
+(PROGN
+ (LET ((SCORE 0))
+   (DECLARE (TYPE FIXNUM SCORE))
+   (SETF SCORE (+ (AT 0 0) (AT 0 1) (AT 0 2)))
+   (INCF SCORE (AT 0 3))
+   (MYINCR)
+   (DECF SCORE (AT 0 0))
+   (INCF SCORE (AT 0 4))
+   (MYINCR)
+   (DECF SCORE (AT 0 1))
+   (INCF SCORE (AT 0 5))
+   (MYINCR)
+   (DECF SCORE (AT 0 2))
+   (INCF SCORE (AT 0 6))
+   (MYINCR)
+   (DECF SCORE (AT 0 3))
+   (SETF SCORE (+ (AT 1 0) (AT 1 1) (AT 1 2)))
+   (INCF SCORE (AT 1 3))
+   (MYINCR)
+   (DECF SCORE (AT 1 0))
+   (INCF SCORE (AT 1 4))
+   ...
+</pre>
+In plain words, the final code does <em>nothing</em> else except what it must: accumulate, update totals, move on.
+<p>
+Lisp macros are amazing.
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:35:19 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/score4.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

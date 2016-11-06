@@ -1,0 +1,552 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/primes.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>The Ulam spiral (Python and PyPy)</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">The Ulam spiral (Python and PyPy)</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(January 2014)</em></p>
+
+<p><a href="https://github.com/ttsiodras/PrimeSpirals">
+<img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub">
+</a></p>
+
+<div class="tldr">
+<b>For the TL;DR crowd:</b>
+<p>Yesterday, I found <a href="http://www.youtube.com/watch?v=iFuR97YcSLM">this Youtube video</a> about 
+the Ulam prime spiral ; I read the relevant <a href="http://en.wikipedia.org/wiki/Ulam_spiral">Wikipedia entry</a>,
+and reliving my first programming memories from childhood, reimplemented it (this time in Python,
+not BASIC :&#x2011;)</p>
+
+<p>I then tried running it for big grids, and using PyPy, saw it execute 50 times faster - from
+70 seconds down to 1.4 seconds.</p>
+</div>
+
+<p>I really loved math, as a kid. It was like an oasis, in a vast desert of subjects 
+that I cared nothing about. I always kept it last in my "study queue of the day",
+as the <em>reward</em> waiting for me after I finished all the rest. Sometimes I couldn't
+take it any more - and bored to tears from intellectually stimulating subjects like
+<em>Geography</em> and <em>On being a citizen</em> (don't ask), I would just... fall off the study wagon,
+towards the only thing that actually made sense to me: math.</p>
+
+<p>To be accurate, it wasn't just math.
+I appreciated the sciences that studied deterministic processes, stuff that
+could be measured by numbers and be modelled - and predicted! - by mathematical constructs.
+For that reason, I loved <a href="wavePhysics.html">physics</a> almost as much as math - a crossing
+of domains, forming a bridge between the beauty of mathematics and the seemingly 
+chaotic natural world. I <em>really</em> liked that.</p>
+
+<p>And then, at the age of 13, I got to meet the ultimate bridge between mathematics and
+reality, through a friend's magazine <em>(called, clairvoyantly enough, 'Computers for everyone')</em>.
+That particular issue contained a <b>BASIC program that calculated primes</b>.
+I didn't know anything about computers, I was only vaguely aware of their existence...
+but the mathematical nature of the article, oh, that I could definitely understand.</p>
+
+<p>I was hooked. This was magic! </p>
+
+<p>A year later, at the age of 14, one of my brothers gave me the best present ever:
+he bought a <a href="http://en.wikipedia.org/wiki/ZX_Spectrum#ZX_Spectrum_16K.2F48K">Sinclair ZX Spectrum 48K</a>...
+and my life found purpose: I wanted to code - more than anything else in the world.</p>
+
+<h2>Memory trigger</h2>
+
+<p>Decades later, that young kid still lives in me. The <em>rewards</em> are now
+far easier to get ; I just lie on my couch, and use my tablet
+to enjoy
+<a href="http://www.youtube.com/user/minutephysics">MinutePhysics</a>,
+<a href="http://www.youtube.com/user/1veritasium">Veritasium</a> and
+<a href="http://www.youtube.com/user/numberphile">Numberphile</a> <em>(which
+is a Greek-derived word, translating as "someone who loves numbers")</em>.</p>
+
+<p>While visiting Numberphile yesterday, I found a video about prime spirals.
+It awoke that long forgotten memory of my first contact with programming - calculating primes!
+As I was watching the video, I knew I would not be able to resist writing the code
+to draw these prime spirals, and verify them for myself.</p>
+
+<p>Have a look - or read the relevant <a href="http://en.wikipedia.org/wiki/Ulam_spiral">Wikipedia entry</a>:
+<center>
+<!--object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/iFuR97YcSLM&amp;hl=en_US&amp;fs=1&amp;rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/iFuR97YcSLM&amp;hl=en_US&amp;fs=1&amp;rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object-->
+<!--object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="http://www.youtube.com/v/iFuR97YcSLM&amp;hl=en_US&amp;fs=1&amp;rel=0"><param name="movie" value="http://www.youtube.com/v/0FrAZis6Wfk"><param name="allowFullScreen" value="true"></object-->
+<object type="application/x-shockwave-flash" style="width:480px;height:385px;"
+        data="https://www.youtube.com/v/iFuR97YcSLM&amp;hl=en_US&amp;fs=1&amp;rel=0">
+    <param name="movie" value="https://www.youtube.com/v/iFuR97YcSLM">
+    <param name="allowFullScreen" value="true">
+    <!-- Fallback content -->
+    <a href="https://www.youtube.com/watch?v=iFuR97YcSLM" target="_blank">
+    <img src="ulam.png" width="279" height="279" alt="Prime spirals">
+    </a>
+</object>
+<br><em>Prime spirals (from the Numberphile Youtube channel)</em>
+</center>
+<p>An unexpected pattern of diagonals emerges when arranging
+all the natural numbers in a spiral - prime numbers seem to 'prefer'
+specific diagonals.</p>
+
+<h2>Coding, decades later</h2>
+
+<p>As soon as I finished watching the video, I stood up from my couch, sat at my
+desktop, and launched my <a href="myvim.html#slime">Python/VIM</a> environment.  For added
+bonus points, I&nbsp;wanted to do this using no external libraries, and via exactly
+the same algorithm that I first saw all these years ago, in BASIC. Yes, I still
+remember the code, and no, it wasn't an array-marking sieve.</p>
+
+<p>The only luxury I allowed myself, was the application of the corresponding
+functional (instead of imperative) looping forms. Translation: the nasty
+C-style loops would be morphed into <code>yield</code>, <code>itertools</code> and generator
+expressions.</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">import</span><span class="normal"> math</span>
+<span class="preproc">import</span><span class="normal"> itertools</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">primes</span><span class="symbol">():</span>
+<span class="normal">    yield </span><span class="number">2</span>
+<span class="normal">    primesSoFar </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="number">2</span><span class="symbol">]</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> candidate </span><span class="keyword">in</span><span class="normal"> itertools</span><span class="symbol">.</span><span class="function">count</span><span class="symbol">(</span><span class="number">3</span><span class="symbol">,</span><span class="normal"> </span><span class="number">2</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> prime </span><span class="keyword">in</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="keyword">for</span><span class="normal"> i </span><span class="keyword">in</span><span class="normal"> primesSoFar </span><span class="keyword">if</span><span class="normal"> i </span><span class="symbol">&lt;=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">math</span><span class="symbol">.</span><span class="function">sqrt</span><span class="symbol">(</span><span class="normal">candidate</span><span class="symbol">))):</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> candidate </span><span class="symbol">%</span><span class="normal"> prime</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">break</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">            primesSoFar</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">candidate</span><span class="symbol">)</span>
+<span class="normal">            yield candidate</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">main</span><span class="symbol">():</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> p </span><span class="keyword">in</span><span class="normal"> </span><span class="function">primes</span><span class="symbol">():</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> p </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">100</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">break</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> p</span><span class="symbol">,</span>
+
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="function">main</span><span class="symbol">()</span>
+</tt></pre>
+</div>
+
+<p>My <a href="myvim.html#slime">SLIME</a>-y Python environment showed that this indeed provided the primes up to 100:</p>
+
+<div>
+<center>
+<script type="text/javascript">
+// Apple devices (e.g. iPhone 3GS) need HW-accelerated MP4, which must
+// also be baseline encoded (translation: fat) and can only have
+// a height up to 496 pixels (translation: blurry). Sigh.
+var element = document.createElement('video');
+var hasWebM = element.canPlayType('video/webm');
+var hasMP4 = element.canPlayType('video/mp4');
+if (hasWebM || hasMP4) {
+    var format = hasWebM?'webm':'mp4';
+    var width = hasWebM?640:496;
+    var height = hasWebM?780:508;
+    document.write("<video controls " + 
+                   "width='" + width + "' " +
+                   "height='" + height + "'" +
+                   "src='pythonPrimes." + format + "'" +
+                   "type='video/" + format + "'><" +
+                   "/video>");
+} else {
+    // For the old generation, throw up a Flash control,
+    // offering the same MP4 content.
+    document.write(
+        "<embed src='flvplayer.swf' width='496' height='758' " +
+        "       bgcolor='#FFFFFF' type='application/x-shockwave-flash'" +
+        "       pluginspage='http://www.macromedia.com/go/getflashplayer' " +
+        "       flashvars='file=pythonPrimes.mp4&autostart=false' />");
+}
+</script>
+<br>
+<em>My <a href="myvim.html#slime">Python/VIM</a> environment.
+If your browser doesn't show the video above,<br>you can <a href="pythonPrimes.webm">download</a>
+and watch it with an offline video player (e.g. <a href="http://www.videolan.org/vlc/">VLC</a>).</em>
+</center>
+</div>
+
+<p>The code is quite simple: the purpose of the function is to yield primes,
+one after the other - so it stores them as it finds them (inside <code>primesSoFar</code>),
+and checks each candidate natural number to see if it can be divided by the primes computed so far
+(checking up to the square root of the candidate, which, if you think about it,
+is the upper limit of any potential factor).</p>
+
+<p>If you've never seen <code>yield</code> before, go read <a href="yield.html">my blog post</a>
+about it and come back afterwards - believe me when I say, it's a construct worth knowing about.
+As you can see, I am also using <code>itertools.count</code> to start counting from 3, in steps of 2.</p>
+
+<p>So, getting the list of primes: <em>check</em>. </p>
+
+<p>Wait a second. That wasn't really the target though, was it? 
+No, what I wanted was to generate the prime spiral ;
+to generate one pixel for each natural number, black or white,
+depending on whether the number is a prime or not.</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">def</span><span class="normal"> </span><span class="function">primeSpiralPixels</span><span class="symbol">():</span>
+<span class="normal">    yield </span><span class="number">255</span><span class="normal">  </span><span class="comment"># 1 is not prime, so return white</span>
+<span class="normal">    yield </span><span class="number">0</span><span class="normal">    </span><span class="comment"># 2 is prime, so return black</span>
+<span class="normal">    primesSoFar </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="number">2</span><span class="symbol">]</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> candidate </span><span class="keyword">in</span><span class="normal"> itertools</span><span class="symbol">.</span><span class="function">count</span><span class="symbol">(</span><span class="number">3</span><span class="symbol">):</span><span class="normal">  </span><span class="comment"># start from 3, up to infinity...</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> prime </span><span class="keyword">in</span><span class="normal"> </span><span class="symbol">(</span>
+<span class="normal">                p </span><span class="keyword">for</span><span class="normal"> p </span><span class="keyword">in</span><span class="normal"> primesSoFar </span><span class="keyword">if</span><span class="normal"> p </span><span class="symbol">&lt;=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">math</span><span class="symbol">.</span><span class="function">sqrt</span><span class="symbol">(</span><span class="normal">candidate</span><span class="symbol">))):</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> candidate </span><span class="symbol">%</span><span class="normal"> prime</span><span class="symbol">:</span>
+<span class="normal">                yield </span><span class="number">255</span><span class="normal">  </span><span class="comment"># non-prime, return white</span>
+<span class="normal">                </span><span class="keyword">break</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">            primesSoFar</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">candidate</span><span class="symbol">)</span>
+<span class="normal">            yield </span><span class="number">0</span><span class="normal">  </span><span class="comment"># prime, return black</span>
+</tt></pre>
+</div>
+
+<p>This mild refactoring provided what I needed - an infinite supply of black and white pixel intensities
+(with intensity result 0 corresponding to black, and intensity 255 to white).
+Basically, the refactoring was about <code>itertools.count</code> losing its step of 2,
+and having not just the primes, but also the non-primes yield a result (255 - white).</p>
+
+<p>Time to implement the spiral arrangement of this infinite stream of
+pixel intensities.</p>
+
+<p>Hmm... how?</p>
+
+<p>Let me think...</p>
+
+<p>Drawing in a spiral means that one moves in circles: first towards the
+right, then up, then left, then down, and then all over again.
+We switch directions, don't we? When?...</p>
+
+<p>When we find that the block <em>towards the next direction in our cycle</em> is empty.</p>
+
+<p>OK, clear enough... but how do we implement this cycling process? </p>
+
+<p>Well, we're in Python: <code>itertools</code> offers a <code>cycle</code>, which can be used
+to keep track of our <em>(dx,dy)</em> vectors: that is, the current <em>move</em> direction,
+and the future <em>move</em> direction. We will call that one the <em>check</em> direction,
+since it is the direction we will switch to, when we check the corresponding tile
+and find it to be empty:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment"># The square we will draw will be rows x rows </span>
+<span class="normal">rows </span><span class="symbol">=</span><span class="normal"> </span><span class="number">202</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">])</span>
+
+<span class="comment"># The 'screen' we will write to, is a dictionary,</span>
+<span class="comment"># with the (x,y) coordinate of the pixel as key,</span>
+<span class="comment"># and as value, the pixel's intensity (0=black, 255=white)</span>
+<span class="comment">#</span>
+<span class="comment"># Why am I using a dict and not e.g. a NumPy 2D array here?</span>
+<span class="comment"># As I said, I wanted to write this without external dependencies,</span>
+<span class="comment"># and also prefer the matrix[x,y] form to the m[x][y] (i.e. the</span>
+<span class="comment"># list of lists form). 'x,y' is a constructor form of the (x,y) tuple,</span>
+<span class="comment"># which we can use to index a dictionary with. This also means,</span>
+<span class="comment"># that since we are not using a real 2D array, the order of indices</span>
+<span class="comment"># has no bearing on speed (row-major vs column-major).</span>
+<span class="normal">screen </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">{}</span>
+
+<span class="comment"># The (dx,dy) directions we will cycle through: right,up,left,down</span>
+<span class="normal">moves </span><span class="symbol">=</span><span class="normal"> itertools</span><span class="symbol">.</span><span class="function">cycle</span><span class="symbol">([(</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">),</span><span class="normal"> </span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">),</span><span class="normal"> </span><span class="symbol">(-</span><span class="number">1</span><span class="symbol">,</span><span class="normal">  </span><span class="number">0</span><span class="symbol">),</span><span class="normal"> </span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)])</span>
+
+<span class="comment"># Setup: the check direction is one step ahead of the move one!</span>
+<span class="normal">check </span><span class="symbol">=</span><span class="normal"> moves</span><span class="symbol">.</span><span class="function">next</span><span class="symbol">()</span>
+<span class="normal">move</span><span class="symbol">,</span><span class="normal"> check </span><span class="symbol">=</span><span class="normal"> check</span><span class="symbol">,</span><span class="normal"> moves</span><span class="symbol">.</span><span class="function">next</span><span class="symbol">()</span>
+
+<span class="comment"># Start from the middle of the board:</span>
+<span class="normal">currentPosition </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="function">int</span><span class="symbol">(</span><span class="normal">rows </span><span class="symbol">/</span><span class="normal"> </span><span class="number">2</span><span class="symbol">),</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">rows </span><span class="symbol">/</span><span class="normal"> </span><span class="number">2</span><span class="symbol">)]</span>
+
+<span class="comment"># Spiral away!</span>
+<span class="keyword">for</span><span class="normal"> c </span><span class="keyword">in</span><span class="normal"> itertools</span><span class="symbol">.</span><span class="function">islice</span><span class="symbol">(</span><span class="function">primeSpiralPixels</span><span class="symbol">(),</span><span class="normal"> rows </span><span class="symbol">*</span><span class="normal"> rows</span><span class="symbol">):</span>
+<span class="normal">    screen</span><span class="symbol">[</span><span class="normal">currentPosition</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span><span class="normal"> currentPosition</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> c</span>
+<span class="normal">    currentPosition</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> move</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]</span>
+<span class="normal">    currentPosition</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> move</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span>
+<span class="normal">    checkPosition </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span>
+<span class="normal">        currentPosition</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> check</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span>
+<span class="normal">        currentPosition</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> check</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">])</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> checkPosition </span><span class="keyword">not</span><span class="normal"> </span><span class="keyword">in</span><span class="normal"> screen</span><span class="symbol">:</span>
+<span class="normal">        move</span><span class="symbol">,</span><span class="normal"> check </span><span class="symbol">=</span><span class="normal"> check</span><span class="symbol">,</span><span class="normal"> moves</span><span class="symbol">.</span><span class="function">next</span><span class="symbol">()</span>
+</tt></pre>
+</div>
+
+<p><code>itertools</code> are used here to...</p>
+
+<ul>
+<li><p><code>cycle</code> through the 4 directions, keeping the <em>check</em> direction one step ahead
+of the <em>move</em> direction:</p>
+
+<pre>move, check = check, moves.next()</pre></li>
+<li><p>...and to <code>islice</code> the infinite list of pixel values returned by
+<code>primeSpiralPixels</code>, to get the pixels necessary for a <em>rows x rows</em> grid.</p></li>
+</ul>
+
+<div class="shout">
+A mini-class could also be used here, equipped with an addition operator,
+which would clear up the inner loop further - into something like this:
+
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">for</span><span class="normal"> c </span><span class="keyword">in</span><span class="normal"> itertools</span><span class="symbol">.</span><span class="function">islice</span><span class="symbol">(</span><span class="function">primeSpiralPixels</span><span class="symbol">(),</span><span class="normal"> rows </span><span class="symbol">*</span><span class="normal"> rows</span><span class="symbol">):</span>
+<span class="normal">    screen</span><span class="symbol">[</span><span class="normal">currentPosition</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> c</span>
+<span class="normal">    currentPosition </span><span class="symbol">+=</span><span class="normal"> move</span>
+<span class="normal">    checkPosition </span><span class="symbol">=</span><span class="normal"> currentPosition </span><span class="symbol">+</span><span class="normal"> check</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> checkPosition </span><span class="keyword">not</span><span class="normal"> </span><span class="keyword">in</span><span class="normal"> screen</span><span class="symbol">:</span>
+<span class="normal">        move</span><span class="symbol">,</span><span class="normal"> check </span><span class="symbol">=</span><span class="normal"> check</span><span class="symbol">,</span><span class="normal"> moves</span><span class="symbol">.</span><span class="function">next</span><span class="symbol">()</span>
+</tt></pre>
+</div>
+
+<p>This is left as an exercise for the reader :&#x2011;)
+</div>
+<p>And that was it.</p>
+
+<p>The <code>screen</code> dictionary filled up with the pixel data,
+so I could now save it in any image format I wanted. To abide by my rules 
+(no external dependencies) but also quickly test what I did, I saved the data in a .pgm file - a simple,
+grayscale format, expecting <em>width x height</em> bytes (you now see why I used 0 for black,
+and 255 for white - it's what .pgm expects), with a simple header up front to provide
+the image dimensions:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">image </span><span class="symbol">=</span><span class="normal"> </span><span class="function">open</span><span class="symbol">(</span><span class="string">"ulam.pgm"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"w"</span><span class="symbol">)</span>
+<span class="normal">image</span><span class="symbol">.</span><span class="function">write</span><span class="symbol">(</span><span class="string">"P5\n"</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="function">str</span><span class="symbol">(</span><span class="normal">rows </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="function">str</span><span class="symbol">(</span><span class="normal">rows </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"\n255\n"</span><span class="symbol">)</span>
+<span class="keyword">for</span><span class="normal"> row </span><span class="keyword">in</span><span class="normal"> </span><span class="function">xrange</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> rows</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> col </span><span class="keyword">in</span><span class="normal"> </span><span class="function">xrange</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> rows</span><span class="symbol">):</span>
+<span class="normal">        image</span><span class="symbol">.</span><span class="function">write</span><span class="symbol">(</span><span class="function">chr</span><span class="symbol">(</span><span class="normal">screen</span><span class="symbol">[</span><span class="normal">col</span><span class="symbol">,</span><span class="normal"> row</span><span class="symbol">]))</span>
+</tt></pre>
+</div>
+
+<p>I know, I know - this is probably the lamest and slowest way to save an image, ever&nbsp;:&#x2011;)</p>
+
+<p>And there it was - a prime spiral of my own making:
+<br>&nbsp;<br>
+<center>
+<img src="ulamScaled.png" alt="The Ulam prime spiral">
+<br>&nbsp;<br>
+<em>See? There they are, those prime diagonals...</em>
+</center>
+<p>What about larger grids? Is this naive implementation fast enough?</p>
+
+<h2>Optimizing?</h2>
+
+<p>We live in the days of CPUs with large caches - and one of the things that clashes
+with proper cache usage is increased memory usage. Have we sinned in that department?</p>
+
+<p>Sure we have - we use Python, for one. An interpreter.</p>
+
+<p>We also store the image data in a dictionary, instead of a 2D array. Tut-tut.</p>
+
+<p>And to top it all off, even though I can't say the magic <strong>lazy</strong> word here
+<em>(for fear of being lynched by a Haskell mob, :&#x2011;)</em> we are not exactly optimal
+in that department, either... Use of <code>yield</code> and functional-style generators
+clears up the code, sure - but a mutating imperative-style for-loop terrorist
+is far more efficient, both instruction- and data-cache-wise.</p>
+
+<p>But first things first - before we optimize, we need to be able to monitor
+the executions, to see a percentage completion indicator. We know the target
+number of pixels from the start, so this...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">pixelsDone </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">oldPct </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">"Generating picture...     "</span><span class="symbol">,</span>
+<span class="keyword">for</span><span class="normal"> c </span><span class="keyword">in</span><span class="normal"> itertools</span><span class="symbol">.</span><span class="function">islice</span><span class="symbol">(</span><span class="function">primeSpiralPixels</span><span class="symbol">(),</span><span class="normal"> rows </span><span class="symbol">*</span><span class="normal"> rows</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="normal">    pixelsDone </span><span class="symbol">+=</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    newPct </span><span class="symbol">=</span><span class="normal"> </span><span class="number">100</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> pixelsDone </span><span class="symbol">/</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">rows </span><span class="symbol">*</span><span class="normal"> rows</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> newPct </span><span class="symbol">!=</span><span class="normal"> oldPct</span><span class="symbol">:</span>
+<span class="normal">        sys</span><span class="symbol">.</span><span class="normal">stdout</span><span class="symbol">.</span><span class="function">write</span><span class="symbol">(</span><span class="string">"\b\b\b\b%3d%%"</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> newPct</span><span class="symbol">)</span>
+<span class="normal">        sys</span><span class="symbol">.</span><span class="normal">stdout</span><span class="symbol">.</span><span class="function">flush</span><span class="symbol">()</span>
+<span class="normal">        oldPct </span><span class="symbol">=</span><span class="normal"> newPct</span>
+</tt></pre>
+</div>
+
+<p>...this should do the trick. The <code>\b</code> backtracks the cursor to the left,
+and thus new percentage reports overwrite the previous ones.
+We will now know during execution how far away we are from completing the picture.</p>
+
+<p>Let's try this out with a larger grid:</p>
+
+<pre class="o">
+<b>bash$</b> time ./primeSpirals.py 500
+
+Generating picture... 100%
+Done! Now go open 'ulam.pgm' with your picture viewer (e.g. feh, gqview, etc)...
+
+real    1m10.755s
+user    1m10.703s
+sys     0m0.017s
+</pre>
+
+<p>Hmm, 70 seconds.</p>
+
+<p>I <em>could</em> switch to hyperdrive, and <a href="score4.html">as I did with other problems</a> write an imperative implementation in C.
+The speedup would probably be tremendous: compiled instead of interpreted, a 2D array instead of a dictionary for <code>screen</code>,
+array-modulo-based access of moves instead of <code>itertools.cycle</code>, much improved CPU cache utilization, etc...</p>
+
+<p>But before I go all Terminator on the code, I better try for some low-hanging fruit first - namely, use PyPy:</p>
+
+<pre class="o">
+<b>bash$</b> # Run in good old CPython...
+
+<b>bash$</b> time ./primeSpirals.py 500
+
+Generating picture... 100%
+Done! Now go open 'ulam.pgm' with your picture viewer (e.g. feh, gqview, etc)...
+
+real    1m10.755s
+user    1m10.703s
+sys     0m0.017s
+
+<b>bash$</b> # Checksum the generated image, to be sure PyPy doesn't break things
+
+<b>bash$</b> md5sum ulam.pgm 
+4a7c62d1becfad1580de8e549417052e  ulam.pgm
+
+<b>bash$</b> # Run in PyPy...
+
+<b>bash$</b> time pypy ./primeSpirals.py 500
+Generating picture... 100%
+Done! Now go open 'ulam.pgm' with your picture viewer (e.g. feh, gqview, etc)...
+
+real    0m1.339s
+user    0m1.300s
+sys     0m0.037s
+
+<b>bash$</b> # Checksum matches?
+
+<b>bash$</b> md5sum ulam.pgm 
+4a7c62d1becfad1580de8e549417052e  ulam.pgm
+</pre>
+
+<p>Wait - what just happened?</p>
+
+<p>PyPy runs this code 50 times faster than CPython!</p>
+
+<p>And I made sure (via MD5 checking) that the generated picture was indeed the same.</p>
+
+<p>OK, optimizing in this case is surely not <a href="straylight.html">what I am used to</a>. Way to go, PyPy!</p>
+
+<p>...</p>
+
+<p>I lie back on the couch, and get back to watching more Numberphile videos - oh,
+there's this "pebbling a chessboard" that begs for a Javascript interface... :&#x2011;)</p>
+
+<p><!--hr>
+**<a href="https://news.ycombinator.com/item?id=6911045">Discussion in Hacker News</a>** -->
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:15:50 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/primes.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

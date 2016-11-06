@@ -1,0 +1,437 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/win32backup.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Optimal backups for Windows machines</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Optimal backups for Windows machines</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <em>(April 2009)</em><p>
+In <a href="backup.html">an adjoining article</a>, I have described 
+the techniques I use to perform a daily backup of an overseas
+Linux server - in a very efficient manner.<p>
+Windows machines are a different story, though.<p>
+An ideal Windows backup strategy must...
+<ul>
+<li>be fast and hassle-free</li>
+<li>be executed automatically (e.g. on a daily basis)</li>
+<li>use only open-source and free Microsoft tools (i.e. 
+avoid closed-source third-party software)</li>
+<li>allow <b>instantly navigateable history</b> for as many 
+days/weeks/months as storage permits, with <b>only the modified and new 
+files actually reserving space</b> on the backup device</li>
+<li>work just fine with open files (registry hive, SQL server data, 
+Outlook mailboxes, etc)</li>
+<li>use cheap hardware</li>
+</ul>
+I searched for something like this and found many solutions that had some 
+of the desired features... but none that had them all. 
+<h2>Challenges</h2>
+<h3>Backup where?</h3>
+Tapes and optical disks are not ideal backup storage - they would require manual
+fiddling each time (change tape, insert DVD/BlueRay disk, etc). We want the process 
+to be completely automated, we want to set it up and forget about it. 
+Hard drives (e.g. external USB drives) and network shares fit this 
+profile. In fact, since we intend to use techniques that only store 
+the modified/new data, we can start with enough storage for e.g. twice
+the amount of our windows drive: a 500GB external USB drive will be able to
+store anywhere from hundreds to thousands of daily snapshots of a 250GB Windows 
+machine. Why? Because we rarely change more than 1GB of our data on a single
+day (depending on disk usage patterns of course - don't go searching for
+extreme scenarios). To see a more technical Linux-based example of the
+inner workings of what we'll do, read the <a href="backup.html#history">explanation 
+of using hard links and rsync</a> from my Linux backup page - or just take my 
+word for it :&#x2011;)
+<h3>Instantly navigateable</h3>
+Windows XP Professional are equipped with NTBackup. I am told that
+this works fine, and I don't doubt it. However, I want to be able to 
+access my backed-up data directly, and not through yet another GUI.
+I want to be able to open last week's version of <tt>VeryImportantDocument.xls</tt> 
+just by browsing with Explorer to that day's backup directory, and 
+double-clicking on it. Rsync and filesystem hard-links provide the necessary 
+functionality for this, so why would I use yet another application to 
+"extract" my old version? Why do I need to decide about "full backups" and 
+"incremental backups"? I want all my backed-up data accessible, all the time. And I can.
+<h3>Your file is being used by another process... Sorry...</h3>
+In sharp contrast to UNIX - where I have never seen any applications/filesystems 
+enforcing draconian read/write access policies - there are a lot
+of files under Windows whose contents are simply not accessible:
+
+<pre class="o">
+(start a CMD prompt from an Administrative account)
+
+<b>C:\&gt;</b> cd c:\windows\system32\config
+<b>C:\WINDOWS\system32\config&gt;</b> copy SAM c:\
+The process cannot access the file because 
+it is being used by another process.
+        0 file(s) copied.
+</pre>
+
+The filesystem doesn't let us - these files were opened with exclusive
+access modes. The developers who built the relevant applications knew 
+that these files adhere to binary formats (i.e. registry hive, 
+SQL Server files, etc), and since there is no guarantee that these files 
+are in a consistent state, they don't want us to read them. What we would
+read would be useless anyway... yet another reason why UNIX, with its ASCII-based configuration 
+files under <tt>/etc</tt> is much better than the registry - and in the same vein, 
+Thunderbird, with its plain ASCII-based mbox format is much better 
+than the cryptic Outlook PSTs. I digress... (it's tough not to, when
+you see this kind of things).
+<p>
+So how do we back these files up? There are very important files
+included in the "forbidden fruit" category... the registry hive, the SQL Server files, Outlook's PSTs - i.e. 
+your mail! <em>(unless you are wise enough to use Thunderbird, which has 
+no such issues)</em> - etc. Leaving these files out of the backup is simply 
+not an option. <p>To cover this requirement, Microsoft took a page out of 
+<a href="http://tldp.org/HOWTO/LVM-HOWTO/">LVM</a> snapshots and 
+introduced with Windows XP the <em>Volume Shadow Copy services</em>.
+In plain words, they developed the necessary drivers and services that
+allow a process to take a "frozen picture" of the filesystem, and use
+that frozen picture for whatever reason - backup applications being the 
+primary clients of this feature. To cope with the fact that some 
+applications would not tolerate the inconsistent state of the files
+when snapshot, the Volume Shadow services include the necessary
+work-arounds: asking the appropriate applications to do a sort of "commit",
+basically, before actually taking the snapshot.
+<p>
+Unfortunately, the Volume Shadow Copy left again something to 
+be desired: there is no way for normal processes to access these "shadow" 
+volumes, since they are not visible via normal drive letters (they
+are low-level devices, e.g. <tt>\\?\Volume{785cc4a6-3d68-11d7-9cc5-505054503030}</tt>).
+Thanks to <a href="http://blogs.msdn.com/adioltean/archive/2005/01/05/346793.aspx">Adi Oltean</a>,
+however, there is a method that involves using Microsoft tools
+(<tt>vshadow</tt> and <tt>dosdev</tt>) that allow us to create these
+snapshots and give them a normal drive letter - after which, we can use
+the usual rsync-based snapshots to back everything up!
+<h3>Rsync under Windows</h3>
+Older versions of Cygwin (e.g. 1.5) had some issues: they couldn't handle
+UTF-8 filenames correctly, and also had issues with very long
+filenames/paths. Cygwin 1.7 fixed these issues for all
+applications.
+<h3>Permissions</h3>
+When backing up our files, we have to decide what to do with their
+permissions: we can of course invoke rsync with the "<tt>-a</tt>" parameter,
+to try and save as much of them as possible, but this isn't necessarily
+a wise thing: when we "rotate" the backup directories, we first remove
+the oldest one - but if we save the original permissions of the files,
+we won't be able to remove some (e.g. the Windows system folders, marked
+as read-only) - which will break the backup process. For my
+needs (I backup to an external USB drive that I alone can access), 
+I invoke rsync with the <tt>--chmod=ugo=rwX</tt> which basically
+makes everything accessible for everyone.
+<h2>The complete solution</h2>
+As with all problems, there is no magic bullet that covers everyone's requirements.
+And this is where the UNIX philosophy shines: understanding the simple tools that 
+do one job - and do it well - and then "glueing" them together with scripting to 
+cover our specific needs.<p>
+In this case, I'll show you how I use an external USB drive to perform a daily backup 
+of my Windows machine at work. The process however can be modified in many
+ways: e.g. to backup to a network share (<em>an OpenSolaris/ZFS Samba share 
+would be perfect: just remember to <tt>rsync --inplace</tt> and snapshot 
+the results via ZFS snapshots</em>) or to create directories named after
+the day of the backup, etc. What follows is a very simple - yet fully functional - usage 
+scenario of the appropriate tools.
+<p>
+Download <a href="Backup.7z">my Windows XP backup package</a> (I used
+the open source <a href="http://www.7-zip.org/">7-zip</a> archiver,
+which compresses much better than anything else right now). Uncompress
+it in e.g. <tt>c:\Backup</tt>, and let's have a look inside:
+
+<pre class="o">
+<b>C:\&gt;</b> cd Backup
+<b>C:\Backup&gt;</b> dir
+ Volume in drive C has no label.
+ Volume Serial Number is XXXX-XXXX
+
+ Directory of C:\Backup
+
+15/04/2009  06:10 pm    &lt;DIR&gt;          .
+15/04/2009  06:10 pm    &lt;DIR&gt;          ..
+24/04/2008  12:51 pm    1.157.632 cygcrypto-0.9.8.dll \
+23/10/2006  01:44 am      999.424 cygiconv-2.dll      | 
+20/11/2005  04:13 am       31.744 cygintl-3.dll       | Cygwin DLLs
+23/10/2006  02:23 am       31.744 cygintl-8.dll       |=>  for
+09/06/2002  07:50 am       22.528 cygpopt-0.dll       |  rsync.exe
+22/05/2008  09:02 pm    2.329.849 cygwin1.dll         | 
+16/10/2006  03:10 am       66.048 cygz.dll           /
+28/09/2004  02:07 pm        6.656 dosdev.exe      => MS tool
+15/04/2009  01:52 pm           62 mybackup.cmd
+23/05/2008  09:52 pm      915.896 rsync.exe       => Cygwin tool
+01/11/2006  02:05 pm      150.328 sync.exe        => MS tool
+08/06/2005  03:17 pm      294.912 vshadow.exe     => MS tool
+08/06/2005  03:17 pm      352.256 vshadow2003andMaybeVista.exe => MS
+15/04/2009  12:39 pm        1.219 vss-exec.cmd
+              18 File(s)      6.639.134 bytes
+               2 Dir(s)  80.913.649.664 bytes free
+</pre>
+
+So we have a set of Microsoft and Cygwin tools, and two scripts.
+The backup process starts with <tt>mybackup.cmd</tt>:
+
+<pre class="o">
+<b>C:\Backup&gt;</b> type mybackup.cmd
+@echo off
+echo Creating backup directories on F:\Backups if missing
+if not exist F:\Backups mkdir F:\Backups
+for %%p in (0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15) do if 
+  not exist F:\Backups\%%p mkdir F:\Backups\%%p
+sync
+vshadow.exe -script=vss-setvar.cmd -exec=vss-exec.cmd C:
+</pre>
+
+First, we make sure the backup directories exist.
+We then invoke the <tt>sync</tt> command from <a 
+href="http://technet.microsoft.com/en-us/sysinternals/default.aspx">Microsoft Sysinternals</a>,
+which flushes all filesystem buffers to the disks (<em>just in case
+something goes bad - Windows do have blue screens, you know :&#x2011;)</em>)
+We then invoke <tt>vshadow.exe</tt> to create a shadow volume
+copy of the C: drive (<em>if you are backing up a different drive, 
+change this</em>).<br>
+
+<div class="shout">
+<b>If you don't use Windows XP?</b>
+If you have Windows 2003 or Vista, you must use <tt>vshadow2003andMaybeVista.exe</tt>
+instead. I personally don't use Vista (and know no self-respecting
+sysadmin that does, either) so feel free to experiment and report
+any findinds...
+</div>
+
+<tt>vshadow</tt> will create a <tt>vss-setvar.cmd</tt> that sets 
+helpful environment variables relating to our "shadow" volume, and 
+will then invoke our <tt>vss-exec.cmd</tt>. Here it is:
+
+<pre class="o">
+<b>C:\Backup&gt;</b>type vss-exec.cmd
+call vss-setvar.cmd
+@echo off
+dosdev B: %SHADOW_DEVICE_1%
+echo Removing oldest snapshot...
+rmdir /S /Q F:\Backups\15
+echo Rolling histories one snapshot ahead...
+rename F:\Backups\14 15
+rename F:\Backups\13 14
+rename F:\Backups\12 13
+rename F:\Backups\11 12
+rename F:\Backups\10 11
+rename F:\Backups\9 10
+rename F:\Backups\8 9
+rename F:\Backups\7 8
+rename F:\Backups\6 7
+rename F:\Backups\5 6
+rename F:\Backups\4 5
+rename F:\Backups\3 4
+rename F:\Backups\2 3
+rename F:\Backups\1 2
+rename F:\Backups\0 1
+rsync -rtDvx --chmod=ugo=rwX --delete --link-dest=/cygdrive/f/Backups/1 
+  /cygdrive/b/ /cygdrive/f/Backups/0/
+dosdev -r -d B:
+</pre>
+
+Don't go blindly executing this, let's see it first, step by step:
+<ul>
+<li>We first call <tt>vss-setvar.cmd</tt>: vshadow has created this for us, and it will
+setup a number of environment variables that relate to the shadow volume and that we can use.
+The SHADOW_DEVICE_1 variable points to the low-level device 
+name of the shadow volume (\\?\Volume{7843917...), so...
+<li>We pass the low-level device name to <tt>dosdev</tt>, which creates a nice drive letter
+for us to use. The <b>B:</b> drive letter is a good choice, since the probability of
+it being used is nowadays non-existent.
+<li>Since <tt>dosdev</tt> has created a drive letter for us, we can proceed with
+the <a href="backup.html#history">usual rsync trickery</a>, that allows us to keep as
+many snapshots as we wish: in this example script, 15 snapshots are maintained, one per day, 
+for around two weeks of backup history:
+<ul>
+<li>We first remove the oldest snapshot. My external USB drive is at <tt>F:</tt>, so I remove
+folder <tt>F:\Backups\15</tt>.
+
+<div class="shout">At this point, <b>the process may fail</b> if some application on your drive has open files inside <tt>F:\Backups\15</tt>!
+A user reported that e.g. TortoiseSVN periodically scans all drives to quickly identify ".svn" subdirectories (disable this for your backup drive,
+using <a rel="lightbox" title="TortoiseSVN/Settings..." href="tortoiseSVN1.png">TortoiseSVN/Settings...</a> and <a rel="lightbox" title="Exclude Paths" href="tortoiseSVN2.png">Exclude Paths</a>). The same can happen
+if your antivirus program scans your backup drive.<p>
+Executive summary: make sure there are no applications doing any activity on your backup drive's files, since that could cause the removal and renames of the backup folders to fail.
+</div>
+
+<li>We then rotate the snapshots, moving backup folder number 14 to 15, backup folder 13 to 14, etc. 
+(<em>I know, I know, a loop is in order - but this is just an example</em>).
+<li>We finally invoke rsync:
+we instruct it to copy from our shadow volume (<tt>drive B:</tt>, so in cygwin terms, 
+<tt>/cygdrive/b</tt>) to our latest snapshot (<tt>/cygdrive/f/Backups/0/</tt>), and to utilize hard-links
+from <tt>/cygdrive/f/Backups/1</tt> (the one-before-last backup) for those files that remain the same.
+Since we use <tt>--delete</tt>, the files that were removed since the last time we backed up,
+will also be missing inside F:\Backups\0 (<em>but will be easily accessible on</em> F:\Backups\1).
+The <tt>--chmod</tt> option gives full permissions to all files, and the <tt>-rtDvx</tt>
+will perform the backup in the proper manner: that is, recurse on the whole disc, checking 
+timestamps/filesizes and actually copying only the files that did change (and thanks to
+<tt>--link-dest</tt>, using hardlinks for the rest).
+</ul>
+<li>After rsync completes, we invoke <tt>dosdev</tt> to remove the B: label (for the "shadow" drive)
+</ul>
+That's it.
+<p>The only remaining piece in the puzzle is the automatic invocation of <tt>mybackup.cmd</tt>
+at a convenient time. We can use the Windows Scheduler service for this:
+
+<pre class="o">
+<b>C:\Backup&gt;</b> schtasks /Create /SC weekly /D MON,TUE,WED,THU,FRI 
+  /TN MyDailyBackup  /ST 23:30:00 /TR c:\Backup\mybackup.cmd 
+  /RU SEMANTIX\ttsiodras /RP mypassword
+</pre>
+
+The <tt>/RU</tt> and <tt>/RP</tt> options are there to specify the account under which
+the backup will take place. Make sure you use an account with backup privileges for this
+(the Administrator account will of course work just fine - but it's not a good policy,
+security-wise). With the invocation above,
+the machine will be automatically backed-up every weekday night at 11:30pm.
+If you want to check that this works without waiting for the middle of the night,
+do your first backup (<em>which will take more time since it has to copy all the data - the
+following backups will be very fast</em>) right now:
+
+<pre class="o">
+<b>C:\Backup&gt;</b> schtasks /Create /SC Once /TN MyFirstBackup 
+  /ST 14:10:00 /TR c:\Backup\mybackup.cmd 
+  /RU SEMANTIX\ttsiodras /RP mypassword
+
+(Change 14:10:00 to one/two minutes ahead of your current time)
+</pre>
+
+I hope you'll find this process as useful as I have... It is simple to understand 
+and easy to execute (even for newbies - just change the drive letters to the ones used 
+in your PC).
+<p>
+P.S. And for those of you that want a taste of things to come: the rsync process
+is forced to make a copy of the files that have changed - so if for example
+you use VMWARE images (which come with huge .vmdk files), any change inside them
+(even one little sector worth of data)
+will force a complete copy... and waste a lot of space. Copy-on-write filesystems
+like <a href="http://en.wikipedia.org/wiki/ZFS">ZFS</a> (and soon, 
+<a href="http://en.wikipedia.org/wiki/Btrfs">btrfs</a>) are incredibly more efficient:
+If you run the rsync daemon on one of them, you can use rsync with the <tt>--inplace</tt> option, 
+and then use the filesystem's snapshotting mechanisms after rsync completes - which will only reserve space 
+<b>for the storage blocks that actually changed</b>! If you have an OpenSolaris/ZFS server, you can already use this to backup your machines - with such incredible storage gains, that
+for all intents and purposes, you can enjoy almost unlimited daily backups.
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 10:09:33 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/win32backup.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

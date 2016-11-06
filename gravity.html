@@ -1,0 +1,478 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/gravity.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>A naive simulator of gravity, written in Python</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">A naive simulator of gravity, written in Python</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            
+<em>(Coded during a 2010 summer night... updated with Runge-Kutta solver during Xmas 2012 weekend... <a href="http://redd.it/15bqd4">Reddit-ed</a>)</em>
+<p>
+I've always been fascinated by space - ever since I read 
+"The Family of the Sun", when I was young. And I always wanted
+to simulate what I've read about Newton's law of gravity, and see
+what happens in... a universe of my own making... :&#x2011;)
+<br>&nbsp;<br>
+<table summary="A simple simulation of gravity" align="center">
+<tr>
+<td>
+<center>
+<object type="application/x-shockwave-flash" style="width:480px;height:372px;" data="https://www.youtube.com/v/a6oAkSVHg7Y&amp;hl=en_US&amp;fs=1&amp;hd=1">
+    <param name="movie" value="https://www.youtube.com/v/a6oAkSVHg7Y">
+    <param name="allowFullScreen" value="true">
+    <!-- Fallback content -->
+    <a href="https://www.youtube.com/watch?v=a6oAkSVHg7Y">
+    <img src="gravity-video.jpg" width="480" height="372" alt="Gravity simulation video">
+    </a>
+</object><p>
+<em>First with 30 planets, then with just one (to show stable orbit, thanks to <a href="http://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">RK4</a>)</em>
+</center>
+  </td></tr></table>
+<p>
+So eventually, I sat down and did it. The <a href="gravityRK4.py">following code</a> "sprays" planets randomly, inside a
+900x600 window (the values are in the code, change them at will).
+It then proceeds to apply the following:
+<ul>
+<li>Gravity, inversely proportional to the square of the distance,
+  and linearly proportional to the product of the two masses
+<li>Elastic "mergings" of two planets if they are close enough to touch: a
+  merged planet is then created, that maintains the momentum (mass times velocity)
+  and the mass of the two merged ones.
+</ul>
+My <a href="gravity.py">original version</a> used Euler integration - i.e. assuming a unit time step...
+<pre>
+        self._x += self._vx
+        self._y += self._vy
+        self._vx += self._ax
+        self._vy += self._ay
+</pre>
+...it just applied a crude form of Euler's method in updating position and velocity. I always meant to update the code with a more stable solution... and I finally found some time to hack it, during the Xmas 2012 weekend: the code now uses the <a href="http://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">RK4</a> solution of the velocity / acceleration differential equation. I based the patch on the excellent work of <a href="http://gafferongames.com">Glenn Fiedler</a> (definitely worth checking out, if you like this sort of thing). 
+<p>
+And now... I can observe stable orbits - and have long-term fun watching chaotic solar systems calm down into peaceful ones like our own :&#x2011;)
+<h2>Download / usage</h2>
+If you use Windows, download a pre-compiled version <a href="http://www.semantix.gr/thanassis/gravityRK4.zip">from here</a>. Otherwise, the Python code (less than 300 commented lines) is <a href="gravityRK4.py">here</a>. After downloading, make sure you have pygame installed (<tt>sudo apt-get install python-pygame</tt> or whatever your distro/environment needs) and then, just...
+<pre class="o">
+<b>bash$</b> ./gravityRK4.py 20
+</pre>
+...to run a simulation with 20 planets. Change this number up to whatever number your machine can handle (think of it as a benchmark :&#x2011;)
+<p>
+You can also use the numeric keypad's +/- to zoom in/out, and press SPACE to toggle showing/hiding the orbits trace.
+<p>
+Enjoy!
+<p>
+(<em>More of my "semi-scientific" models of natural processes can be found <a href="games.html">here</a>.</em>)
+<br>&nbsp;<br>
+
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+<span class="comment">"""</span>
+<span class="comment">An improved version of my Python-based gravity simulator, using Runge-Kutta</span>
+<span class="comment">4th order solution of the differential equations - coded during Xmas 2012.</span>
+<span class="comment">Happy holidays, everyone!</span>
+
+<span class="comment">I've always been fascinated by space - ever since I read 'The Family of</span>
+<span class="comment">the Sun', when I was young. And I always wanted to simulate what I've read</span>
+<span class="comment">about Newton's gravity law, and see what happens in... a universe of my own</span>
+<span class="comment">making :-)</span>
+
+<span class="comment">So: The following code 'sprays' some 'planets' randomly, around a sun,</span>
+<span class="comment">inside a 900x600 window (the values are below, change them at will).</span>
+<span class="comment">Afterwards, it applies a very simple set of laws:</span>
+
+<span class="comment">- Gravity, inversely proportional to the square of the distance, and linearly</span>
+<span class="comment">  proportional to the product of the two masses</span>
+<span class="comment">- Elastic collissions of two objects if they are close enough to touch: a</span>
+<span class="comment">  merged object is then created, that maintains the momentum (mass*velocity)</span>
+<span class="comment">  and the mass of the two merged ones.</span>
+<span class="comment">- This updated version of the code is using the RK4 solution of the velocity/</span>
+<span class="comment">  acceleration differential equation, and is in fact based on the excellent</span>
+<span class="comment">  blog of Glenn Fiedler (http://gafferongames.com)</span>
+
+<span class="comment">Use the numeric keypad's +/- to zoom in/out, and press SPACE to toggle</span>
+<span class="comment">showing/hiding the orbits trace.</span>
+
+<span class="comment">Blog post at:</span>
+
+<span class="comment">    http://users.softlab.ntua.gr/~ttsiod/gravity.html</span>
+<span class="comment">    http://ttsiodras.github.com/gravity.html</span>
+
+<span class="comment">Thanassis Tsiodras</span>
+<span class="comment">ttsiodras@gmail.com</span>
+<span class="comment">"""</span>
+
+<span class="preproc">import</span><span class="normal"> sys</span>
+<span class="preproc">import</span><span class="normal"> math</span>
+<span class="preproc">import</span><span class="normal"> pygame</span>
+<span class="preproc">import</span><span class="normal"> random</span>
+<span class="preproc">from</span><span class="normal"> collections </span><span class="preproc">import</span><span class="normal"> defaultdict</span>
+
+<span class="comment"># The window size</span>
+<span class="normal">WIDTH</span><span class="symbol">,</span><span class="normal"> HEIGHT </span><span class="symbol">=</span><span class="normal"> </span><span class="number">900</span><span class="symbol">,</span><span class="normal"> </span><span class="number">600</span>
+<span class="normal">WIDTHD2</span><span class="symbol">,</span><span class="normal"> HEIGHTD2 </span><span class="symbol">=</span><span class="normal"> WIDTH</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">.,</span><span class="normal"> HEIGHT</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">.</span>
+
+<span class="comment"># The number of simulated planets</span>
+<span class="normal">PLANETS </span><span class="symbol">=</span><span class="normal"> </span><span class="number">30</span>
+
+<span class="comment"># The density of the planets - used to calculate their mass</span>
+<span class="comment"># from their volume (i.e. via their radius)</span>
+<span class="normal">DENSITY </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.001</span>
+
+<span class="comment"># The gravity coefficient - it's my universe, I can pick whatever I want :-)</span>
+<span class="normal">GRAVITYSTRENGTH </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">.</span><span class="normal">e4</span>
+
+<span class="comment"># The global list of planets</span>
+<span class="normal">g_listOfPlanets </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span>
+
+
+<span class="keyword">class</span><span class="normal"> State</span><span class="symbol">:</span>
+<span class="comment">    """Class representing position and velocity."""</span>
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">__init__</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> y</span><span class="symbol">,</span><span class="normal"> vx</span><span class="symbol">,</span><span class="normal"> vy</span><span class="symbol">):</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_vx</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_vy </span><span class="symbol">=</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> y</span><span class="symbol">,</span><span class="normal"> vx</span><span class="symbol">,</span><span class="normal"> vy</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">__repr__</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="string">'x:{x} y:{y} vx:{vx} vy:{vy}'</span><span class="symbol">.</span><span class="function">format</span><span class="symbol">(</span>
+<span class="normal">            x</span><span class="symbol">=</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">,</span><span class="normal"> y</span><span class="symbol">=</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">,</span><span class="normal"> vx</span><span class="symbol">=</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_vx</span><span class="symbol">,</span><span class="normal"> vy</span><span class="symbol">=</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_vy</span><span class="symbol">)</span>
+
+
+<span class="keyword">class</span><span class="normal"> Derivative</span><span class="symbol">:</span>
+<span class="comment">    """Class representing velocity and acceleration."""</span>
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">__init__</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> dx</span><span class="symbol">,</span><span class="normal"> dy</span><span class="symbol">,</span><span class="normal"> dvx</span><span class="symbol">,</span><span class="normal"> dvy</span><span class="symbol">):</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_dx</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_dy</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_dvx</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_dvy </span><span class="symbol">=</span><span class="normal"> dx</span><span class="symbol">,</span><span class="normal"> dy</span><span class="symbol">,</span><span class="normal"> dvx</span><span class="symbol">,</span><span class="normal"> dvy</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">__repr__</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="string">'dx:{dx} dy:{dy} dvx:{dvx} dvy:{dvy}'</span><span class="symbol">.</span><span class="function">format</span><span class="symbol">(</span>
+<span class="normal">            dx</span><span class="symbol">=</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_dx</span><span class="symbol">,</span><span class="normal"> dy</span><span class="symbol">=</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_dy</span><span class="symbol">,</span><span class="normal"> dvx</span><span class="symbol">=</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_dvx</span><span class="symbol">,</span><span class="normal"> dvy</span><span class="symbol">=</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_dvy</span><span class="symbol">)</span>
+
+
+<span class="keyword">class</span><span class="normal"> Planet</span><span class="symbol">:</span>
+<span class="comment">    """Class representing a planet. The "_st" member is an instance of "State",</span>
+<span class="comment">    carrying the planet's position and velocity - while the "_m" and "_r"</span>
+<span class="comment">    members represents the planet's mass and radius."""</span>
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">__init__</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> PLANETS </span><span class="symbol">==</span><span class="normal"> </span><span class="number">1</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="comment"># A nice example of a planet orbiting around our sun :-)</span>
+<span class="normal">            self</span><span class="symbol">.</span><span class="normal">_st </span><span class="symbol">=</span><span class="normal"> </span><span class="function">State</span><span class="symbol">(</span><span class="number">150</span><span class="symbol">,</span><span class="normal"> </span><span class="number">300</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">2</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="comment"># otherwise pick a random position and velocity</span>
+<span class="normal">            self</span><span class="symbol">.</span><span class="normal">_st </span><span class="symbol">=</span><span class="normal"> </span><span class="function">State</span><span class="symbol">(</span>
+<span class="normal">               </span><span class="function">float</span><span class="symbol">(</span><span class="normal">random</span><span class="symbol">.</span><span class="function">randint</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> WIDTH</span><span class="symbol">)),</span>
+<span class="normal">               </span><span class="function">float</span><span class="symbol">(</span><span class="normal">random</span><span class="symbol">.</span><span class="function">randint</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> HEIGHT</span><span class="symbol">)),</span>
+<span class="normal">               </span><span class="function">float</span><span class="symbol">(</span><span class="normal">random</span><span class="symbol">.</span><span class="function">randint</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">300</span><span class="symbol">)/</span><span class="number">100</span><span class="symbol">.)-</span><span class="number">1.5</span><span class="symbol">,</span>
+<span class="normal">               </span><span class="function">float</span><span class="symbol">(</span><span class="normal">random</span><span class="symbol">.</span><span class="function">randint</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">300</span><span class="symbol">)/</span><span class="number">100</span><span class="symbol">.)-</span><span class="number">1.5</span><span class="symbol">)</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_r </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1.5</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="function">setMassFromRadius</span><span class="symbol">()</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_merged </span><span class="symbol">=</span><span class="normal"> False</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">__repr__</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">repr</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">)</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">acceleration</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> state</span><span class="symbol">,</span><span class="normal"> unused_t</span><span class="symbol">):</span>
+<span class="comment">        """Calculate acceleration caused by other planets on this one."""</span>
+<span class="normal">        ax </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span>
+<span class="normal">        ay </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> p </span><span class="keyword">in</span><span class="normal"> g_listOfPlanets</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> p </span><span class="keyword">is</span><span class="normal"> self </span><span class="keyword">or</span><span class="normal"> p</span><span class="symbol">.</span><span class="normal">_merged</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">continue</span><span class="normal">  </span><span class="comment"># ignore ourselves and merged planets</span>
+<span class="normal">            dx </span><span class="symbol">=</span><span class="normal"> p</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_x </span><span class="symbol">-</span><span class="normal"> state</span><span class="symbol">.</span><span class="normal">_x</span>
+<span class="normal">            dy </span><span class="symbol">=</span><span class="normal"> p</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_y </span><span class="symbol">-</span><span class="normal"> state</span><span class="symbol">.</span><span class="normal">_y</span>
+<span class="normal">            dsq </span><span class="symbol">=</span><span class="normal"> dx</span><span class="symbol">*</span><span class="normal">dx </span><span class="symbol">+</span><span class="normal"> dy</span><span class="symbol">*</span><span class="normal">dy  </span><span class="comment"># distance squared</span>
+<span class="normal">            dr </span><span class="symbol">=</span><span class="normal"> math</span><span class="symbol">.</span><span class="function">sqrt</span><span class="symbol">(</span><span class="normal">dsq</span><span class="symbol">)</span><span class="normal">  </span><span class="comment"># distance</span>
+<span class="normal">            force </span><span class="symbol">=</span><span class="normal"> GRAVITYSTRENGTH</span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">*</span><span class="normal">p</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">/</span><span class="normal">dsq </span><span class="keyword">if</span><span class="normal"> dsq</span><span class="symbol">&gt;</span><span class="number">1e-10</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="number">0</span><span class="symbol">.</span>
+<span class="normal">            </span><span class="comment"># Accumulate acceleration...</span>
+<span class="normal">            ax </span><span class="symbol">+=</span><span class="normal"> force</span><span class="symbol">*</span><span class="normal">dx</span><span class="symbol">/</span><span class="normal">dr</span>
+<span class="normal">            ay </span><span class="symbol">+=</span><span class="normal"> force</span><span class="symbol">*</span><span class="normal">dy</span><span class="symbol">/</span><span class="normal">dr</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ax</span><span class="symbol">,</span><span class="normal"> ay</span><span class="symbol">)</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">initialDerivative</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> state</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">):</span>
+<span class="comment">        """Part of Runge-Kutta method."""</span>
+<span class="normal">        ax</span><span class="symbol">,</span><span class="normal"> ay </span><span class="symbol">=</span><span class="normal"> self</span><span class="symbol">.</span><span class="function">acceleration</span><span class="symbol">(</span><span class="normal">state</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">Derivative</span><span class="symbol">(</span><span class="normal">state</span><span class="symbol">.</span><span class="normal">_vx</span><span class="symbol">,</span><span class="normal"> state</span><span class="symbol">.</span><span class="normal">_vy</span><span class="symbol">,</span><span class="normal"> ax</span><span class="symbol">,</span><span class="normal"> ay</span><span class="symbol">)</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">nextDerivative</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> initialState</span><span class="symbol">,</span><span class="normal"> derivative</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">,</span><span class="normal"> dt</span><span class="symbol">):</span>
+<span class="comment">        """Part of Runge-Kutta method."""</span>
+<span class="normal">        state </span><span class="symbol">=</span><span class="normal"> </span><span class="function">State</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">.,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">.,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">.,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">.)</span>
+<span class="normal">        state</span><span class="symbol">.</span><span class="normal">_x </span><span class="symbol">=</span><span class="normal"> initialState</span><span class="symbol">.</span><span class="normal">_x </span><span class="symbol">+</span><span class="normal"> derivative</span><span class="symbol">.</span><span class="normal">_dx</span><span class="symbol">*</span><span class="normal">dt</span>
+<span class="normal">        state</span><span class="symbol">.</span><span class="normal">_y </span><span class="symbol">=</span><span class="normal"> initialState</span><span class="symbol">.</span><span class="normal">_y </span><span class="symbol">+</span><span class="normal"> derivative</span><span class="symbol">.</span><span class="normal">_dy</span><span class="symbol">*</span><span class="normal">dt</span>
+<span class="normal">        state</span><span class="symbol">.</span><span class="normal">_vx </span><span class="symbol">=</span><span class="normal"> initialState</span><span class="symbol">.</span><span class="normal">_vx </span><span class="symbol">+</span><span class="normal"> derivative</span><span class="symbol">.</span><span class="normal">_dvx</span><span class="symbol">*</span><span class="normal">dt</span>
+<span class="normal">        state</span><span class="symbol">.</span><span class="normal">_vy </span><span class="symbol">=</span><span class="normal"> initialState</span><span class="symbol">.</span><span class="normal">_vy </span><span class="symbol">+</span><span class="normal"> derivative</span><span class="symbol">.</span><span class="normal">_dvy</span><span class="symbol">*</span><span class="normal">dt</span>
+<span class="normal">        ax</span><span class="symbol">,</span><span class="normal"> ay </span><span class="symbol">=</span><span class="normal"> self</span><span class="symbol">.</span><span class="function">acceleration</span><span class="symbol">(</span><span class="normal">state</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">+</span><span class="normal">dt</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">Derivative</span><span class="symbol">(</span><span class="normal">state</span><span class="symbol">.</span><span class="normal">_vx</span><span class="symbol">,</span><span class="normal"> state</span><span class="symbol">.</span><span class="normal">_vy</span><span class="symbol">,</span><span class="normal"> ax</span><span class="symbol">,</span><span class="normal"> ay</span><span class="symbol">)</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">updatePlanet</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">,</span><span class="normal"> dt</span><span class="symbol">):</span>
+<span class="comment">        """Runge-Kutta 4th order solution to update planet's pos/vel."""</span>
+<span class="normal">        a </span><span class="symbol">=</span><span class="normal"> self</span><span class="symbol">.</span><span class="function">initialDerivative</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">)</span>
+<span class="normal">        b </span><span class="symbol">=</span><span class="normal"> self</span><span class="symbol">.</span><span class="function">nextDerivative</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">,</span><span class="normal"> a</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">,</span><span class="normal"> dt</span><span class="symbol">*</span><span class="number">0.5</span><span class="symbol">)</span>
+<span class="normal">        c </span><span class="symbol">=</span><span class="normal"> self</span><span class="symbol">.</span><span class="function">nextDerivative</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">,</span><span class="normal"> dt</span><span class="symbol">*</span><span class="number">0.5</span><span class="symbol">)</span>
+<span class="normal">        d </span><span class="symbol">=</span><span class="normal"> self</span><span class="symbol">.</span><span class="function">nextDerivative</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">,</span><span class="normal"> c</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">,</span><span class="normal"> dt</span><span class="symbol">)</span>
+<span class="normal">        dxdt </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1.0</span><span class="symbol">/</span><span class="number">6.0</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">_dx </span><span class="symbol">+</span><span class="normal"> </span><span class="number">2.0</span><span class="symbol">*(</span><span class="normal">b</span><span class="symbol">.</span><span class="normal">_dx </span><span class="symbol">+</span><span class="normal"> c</span><span class="symbol">.</span><span class="normal">_dx</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> d</span><span class="symbol">.</span><span class="normal">_dx</span><span class="symbol">)</span>
+<span class="normal">        dydt </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1.0</span><span class="symbol">/</span><span class="number">6.0</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">_dy </span><span class="symbol">+</span><span class="normal"> </span><span class="number">2.0</span><span class="symbol">*(</span><span class="normal">b</span><span class="symbol">.</span><span class="normal">_dy </span><span class="symbol">+</span><span class="normal"> c</span><span class="symbol">.</span><span class="normal">_dy</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> d</span><span class="symbol">.</span><span class="normal">_dy</span><span class="symbol">)</span>
+<span class="normal">        dvxdt </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1.0</span><span class="symbol">/</span><span class="number">6.0</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">_dvx </span><span class="symbol">+</span><span class="normal"> </span><span class="number">2.0</span><span class="symbol">*(</span><span class="normal">b</span><span class="symbol">.</span><span class="normal">_dvx </span><span class="symbol">+</span><span class="normal"> c</span><span class="symbol">.</span><span class="normal">_dvx</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> d</span><span class="symbol">.</span><span class="normal">_dvx</span><span class="symbol">)</span>
+<span class="normal">        dvydt </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1.0</span><span class="symbol">/</span><span class="number">6.0</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">.</span><span class="normal">_dvy </span><span class="symbol">+</span><span class="normal"> </span><span class="number">2.0</span><span class="symbol">*(</span><span class="normal">b</span><span class="symbol">.</span><span class="normal">_dvy </span><span class="symbol">+</span><span class="normal"> c</span><span class="symbol">.</span><span class="normal">_dvy</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> d</span><span class="symbol">.</span><span class="normal">_dvy</span><span class="symbol">)</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_x </span><span class="symbol">+=</span><span class="normal"> dxdt</span><span class="symbol">*</span><span class="normal">dt</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_y </span><span class="symbol">+=</span><span class="normal"> dydt</span><span class="symbol">*</span><span class="normal">dt</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_vx </span><span class="symbol">+=</span><span class="normal"> dvxdt</span><span class="symbol">*</span><span class="normal">dt</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_vy </span><span class="symbol">+=</span><span class="normal"> dvydt</span><span class="symbol">*</span><span class="normal">dt</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">setMassFromRadius</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">):</span>
+<span class="comment">        """From _r, set _m: The volume is (4/3)*Pi*(r^3)..."""</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_m </span><span class="symbol">=</span><span class="normal"> DENSITY</span><span class="symbol">*</span><span class="number">4</span><span class="symbol">.*</span><span class="normal">math</span><span class="symbol">.</span><span class="normal">pi</span><span class="symbol">*(</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_r</span><span class="symbol">**</span><span class="number">3</span><span class="symbol">.)/</span><span class="number">3</span><span class="symbol">.</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">setRadiusFromMass</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">):</span>
+<span class="comment">        """Reversing the setMassFromRadius formula, to calculate radius from</span>
+<span class="comment">        mass (used after merging of two planets - mass is added, and new</span>
+<span class="comment">        radius is calculated from this)"""</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_r </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="number">3</span><span class="symbol">.*</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">/(</span><span class="normal">DENSITY</span><span class="symbol">*</span><span class="number">4</span><span class="symbol">.*</span><span class="normal">math</span><span class="symbol">.</span><span class="normal">pi</span><span class="symbol">))**(</span><span class="number">0.3333</span><span class="symbol">)</span>
+
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">main</span><span class="symbol">():</span>
+<span class="normal">    pygame</span><span class="symbol">.</span><span class="function">init</span><span class="symbol">()</span>
+<span class="normal">    win</span><span class="symbol">=</span><span class="normal">pygame</span><span class="symbol">.</span><span class="normal">display</span><span class="symbol">.</span><span class="function">set_mode</span><span class="symbol">((</span><span class="normal">WIDTH</span><span class="symbol">,</span><span class="normal"> HEIGHT</span><span class="symbol">))</span>
+
+<span class="normal">    keysPressed </span><span class="symbol">=</span><span class="normal"> </span><span class="function">defaultdict</span><span class="symbol">(</span><span class="normal">bool</span><span class="symbol">)</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">ScanKeyboard</span><span class="symbol">():</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> True</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="comment"># Update the keysPressed state:</span>
+<span class="normal">            evt </span><span class="symbol">=</span><span class="normal"> pygame</span><span class="symbol">.</span><span class="normal">event</span><span class="symbol">.</span><span class="function">poll</span><span class="symbol">()</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> evt</span><span class="symbol">.</span><span class="normal">type </span><span class="symbol">==</span><span class="normal"> pygame</span><span class="symbol">.</span><span class="normal">NOEVENT</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">break</span>
+<span class="normal">            </span><span class="keyword">elif</span><span class="normal"> evt</span><span class="symbol">.</span><span class="normal">type </span><span class="keyword">in</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">pygame</span><span class="symbol">.</span><span class="normal">KEYDOWN</span><span class="symbol">,</span><span class="normal"> pygame</span><span class="symbol">.</span><span class="normal">KEYUP</span><span class="symbol">]:</span>
+<span class="normal">                keysPressed</span><span class="symbol">[</span><span class="normal">evt</span><span class="symbol">.</span><span class="normal">key</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> evt</span><span class="symbol">.</span><span class="normal">type </span><span class="symbol">==</span><span class="normal"> pygame</span><span class="symbol">.</span><span class="normal">KEYDOWN</span>
+
+<span class="normal">    </span><span class="keyword">global</span><span class="normal"> g_listOfPlanets</span><span class="symbol">,</span><span class="normal"> PLANETS</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">2</span><span class="symbol">:</span>
+<span class="normal">        PLANETS </span><span class="symbol">=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">])</span>
+
+<span class="normal">    </span><span class="comment"># And God said: Let there be lights in the firmament of the heavens...</span>
+<span class="normal">    g_listOfPlanets </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> i </span><span class="keyword">in</span><span class="normal"> </span><span class="function">xrange</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> PLANETS</span><span class="symbol">):</span>
+<span class="normal">        g_listOfPlanets</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="function">Planet</span><span class="symbol">())</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">planetsTouch</span><span class="symbol">(</span><span class="normal">p1</span><span class="symbol">,</span><span class="normal"> p2</span><span class="symbol">):</span>
+<span class="normal">        dx </span><span class="symbol">=</span><span class="normal"> p1</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_x </span><span class="symbol">-</span><span class="normal"> p2</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_x</span>
+<span class="normal">        dy </span><span class="symbol">=</span><span class="normal"> p1</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_y </span><span class="symbol">-</span><span class="normal"> p2</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_y</span>
+<span class="normal">        dsq </span><span class="symbol">=</span><span class="normal"> dx</span><span class="symbol">*</span><span class="normal">dx </span><span class="symbol">+</span><span class="normal"> dy</span><span class="symbol">*</span><span class="normal">dy</span>
+<span class="normal">        dr </span><span class="symbol">=</span><span class="normal"> math</span><span class="symbol">.</span><span class="function">sqrt</span><span class="symbol">(</span><span class="normal">dsq</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> dr</span><span class="symbol">&lt;=(</span><span class="normal">p1</span><span class="symbol">.</span><span class="normal">_r </span><span class="symbol">+</span><span class="normal"> p2</span><span class="symbol">.</span><span class="normal">_r</span><span class="symbol">)</span>
+
+<span class="normal">    sun </span><span class="symbol">=</span><span class="normal"> </span><span class="function">Planet</span><span class="symbol">()</span>
+<span class="normal">    sun</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">,</span><span class="normal"> sun</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_y </span><span class="symbol">=</span><span class="normal"> WIDTHD2</span><span class="symbol">,</span><span class="normal"> HEIGHTD2</span>
+<span class="normal">    sun</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_vx </span><span class="symbol">=</span><span class="normal"> sun</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_vy </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">.</span>
+<span class="normal">    sun</span><span class="symbol">.</span><span class="normal">_m </span><span class="symbol">*=</span><span class="normal"> </span><span class="number">1000</span>
+<span class="normal">    sun</span><span class="symbol">.</span><span class="function">setRadiusFromMass</span><span class="symbol">()</span>
+<span class="normal">    g_listOfPlanets</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">sun</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> p </span><span class="keyword">in</span><span class="normal"> g_listOfPlanets</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> p </span><span class="keyword">is</span><span class="normal"> sun</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">continue</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="function">planetsTouch</span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">,</span><span class="normal"> sun</span><span class="symbol">):</span>
+<span class="normal">            p</span><span class="symbol">.</span><span class="normal">_merged </span><span class="symbol">=</span><span class="normal"> True  </span><span class="comment"># ignore planets inside the sun</span>
+
+<span class="normal">    </span><span class="comment"># Zoom factor, changed at runtime via the '+' and '-' numeric keypad keys</span>
+<span class="normal">    zoom </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1.0</span>
+<span class="normal">    </span><span class="comment"># t and dt are unused in this simulation, but are in general, </span>
+<span class="normal">    </span><span class="comment"># parameters of engine (acceleration may depend on them)</span>
+<span class="normal">    t</span><span class="symbol">,</span><span class="normal"> dt </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">.,</span><span class="normal"> </span><span class="number">1</span><span class="symbol">.</span>
+
+<span class="normal">    bClearScreen </span><span class="symbol">=</span><span class="normal"> True</span>
+<span class="normal">    pygame</span><span class="symbol">.</span><span class="normal">display</span><span class="symbol">.</span><span class="function">set_caption</span><span class="symbol">(</span><span class="string">'Gravity simulation (SPACE: show orbits, '</span>
+<span class="normal">                               </span><span class="string">'keypad +/- : zoom in/out)'</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> True</span><span class="symbol">:</span>
+<span class="normal">        t </span><span class="symbol">+=</span><span class="normal"> dt</span>
+<span class="normal">        pygame</span><span class="symbol">.</span><span class="normal">display</span><span class="symbol">.</span><span class="function">flip</span><span class="symbol">()</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> bClearScreen</span><span class="symbol">:</span><span class="normal">  </span><span class="comment"># Show orbits or not?</span>
+<span class="normal">            win</span><span class="symbol">.</span><span class="function">fill</span><span class="symbol">((</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">))</span>
+<span class="normal">        win</span><span class="symbol">.</span><span class="function">lock</span><span class="symbol">()</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> p </span><span class="keyword">in</span><span class="normal"> g_listOfPlanets</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="keyword">not</span><span class="normal"> p</span><span class="symbol">.</span><span class="normal">_merged</span><span class="symbol">:</span><span class="normal">  </span><span class="comment"># for planets that have not been merged, draw a</span>
+<span class="normal">                </span><span class="comment"># circle based on their radius, but take zoom factor into account</span>
+<span class="normal">                pygame</span><span class="symbol">.</span><span class="normal">draw</span><span class="symbol">.</span><span class="function">circle</span><span class="symbol">(</span><span class="normal">win</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">(</span><span class="number">255</span><span class="symbol">,</span><span class="normal"> </span><span class="number">255</span><span class="symbol">,</span><span class="normal"> </span><span class="number">255</span><span class="symbol">),</span>
+<span class="normal">                    </span><span class="symbol">(</span><span class="function">int</span><span class="symbol">(</span><span class="normal">WIDTHD2</span><span class="symbol">+</span><span class="normal">zoom</span><span class="symbol">*</span><span class="normal">WIDTHD2</span><span class="symbol">*(</span><span class="normal">p</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">-</span><span class="normal">WIDTHD2</span><span class="symbol">)/</span><span class="normal">WIDTHD2</span><span class="symbol">),</span>
+<span class="normal">                     </span><span class="function">int</span><span class="symbol">(</span><span class="normal">HEIGHTD2</span><span class="symbol">+</span><span class="normal">zoom</span><span class="symbol">*</span><span class="normal">HEIGHTD2</span><span class="symbol">*(</span><span class="normal">p</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">-</span><span class="normal">HEIGHTD2</span><span class="symbol">)/</span><span class="normal">HEIGHTD2</span><span class="symbol">)),</span>
+<span class="normal">                     </span><span class="function">int</span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">.</span><span class="normal">_r</span><span class="symbol">*</span><span class="normal">zoom</span><span class="symbol">),</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">        win</span><span class="symbol">.</span><span class="function">unlock</span><span class="symbol">()</span>
+<span class="normal">        </span><span class="function">ScanKeyboard</span><span class="symbol">()</span>
+
+<span class="normal">        </span><span class="comment"># Update all planets' positions and speeds (should normally double</span>
+<span class="normal">        </span><span class="comment"># buffer the list of planet data, but turns out this is good enough :-)</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> p </span><span class="keyword">in</span><span class="normal"> g_listOfPlanets</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> p</span><span class="symbol">.</span><span class="normal">_merged </span><span class="keyword">or</span><span class="normal"> p </span><span class="keyword">is</span><span class="normal"> sun</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">continue</span>
+<span class="normal">            </span><span class="comment"># Calculate the contributions of all the others to its acceleration</span>
+<span class="normal">            </span><span class="comment"># (via the gravity force) and update its position and velocity</span>
+<span class="normal">            p</span><span class="symbol">.</span><span class="function">updatePlanet</span><span class="symbol">(</span><span class="normal">t</span><span class="symbol">,</span><span class="normal"> dt</span><span class="symbol">)</span>
+
+<span class="normal">        </span><span class="comment"># See if we should merge the ones that are close enough to touch,</span>
+<span class="normal">        </span><span class="comment"># using elastic collisions (conservation of total momentum)</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> p1 </span><span class="keyword">in</span><span class="normal"> g_listOfPlanets</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> p1</span><span class="symbol">.</span><span class="normal">_merged</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">continue</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> p2 </span><span class="keyword">in</span><span class="normal"> g_listOfPlanets</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> p1 </span><span class="keyword">is</span><span class="normal"> p2 </span><span class="keyword">or</span><span class="normal"> p2</span><span class="symbol">.</span><span class="normal">_merged</span><span class="symbol">:</span>
+<span class="normal">                    </span><span class="keyword">continue</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="function">planetsTouch</span><span class="symbol">(</span><span class="normal">p1</span><span class="symbol">,</span><span class="normal"> p2</span><span class="symbol">):</span>
+<span class="normal">                    </span><span class="keyword">if</span><span class="normal"> p1</span><span class="symbol">.</span><span class="normal">_m </span><span class="symbol">&lt;</span><span class="normal"> p2</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">:</span>
+<span class="normal">                        p1</span><span class="symbol">,</span><span class="normal"> p2 </span><span class="symbol">=</span><span class="normal"> p2</span><span class="symbol">,</span><span class="normal"> p1  </span><span class="comment"># p1 is the biggest one (mass-wise)</span>
+<span class="normal">                    p2</span><span class="symbol">.</span><span class="normal">_merged </span><span class="symbol">=</span><span class="normal"> True</span>
+<span class="normal">                    </span><span class="keyword">if</span><span class="normal"> p1 </span><span class="keyword">is</span><span class="normal"> sun</span><span class="symbol">:</span>
+<span class="normal">                        </span><span class="keyword">continue</span><span class="normal">  </span><span class="comment"># No-one can move the sun :-)</span>
+<span class="normal">                    newvx </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p1</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_vx</span><span class="symbol">*</span><span class="normal">p1</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">+</span><span class="normal">p2</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_vx</span><span class="symbol">*</span><span class="normal">p2</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">)/(</span><span class="normal">p1</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">+</span><span class="normal">p2</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">)</span>
+<span class="normal">                    newvy </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p1</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_vy</span><span class="symbol">*</span><span class="normal">p1</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">+</span><span class="normal">p2</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_vy</span><span class="symbol">*</span><span class="normal">p2</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">)/(</span><span class="normal">p1</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">+</span><span class="normal">p2</span><span class="symbol">.</span><span class="normal">_m</span><span class="symbol">)</span>
+<span class="normal">                    p1</span><span class="symbol">.</span><span class="normal">_m </span><span class="symbol">+=</span><span class="normal"> p2</span><span class="symbol">.</span><span class="normal">_m  </span><span class="comment"># maintain the mass (just add them)</span>
+<span class="normal">                    p1</span><span class="symbol">.</span><span class="function">setRadiusFromMass</span><span class="symbol">()</span><span class="normal">  </span><span class="comment"># new mass --&gt; new radius</span>
+<span class="normal">                    p1</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_vx</span><span class="symbol">,</span><span class="normal"> p1</span><span class="symbol">.</span><span class="normal">_st</span><span class="symbol">.</span><span class="normal">_vy </span><span class="symbol">=</span><span class="normal"> newvx</span><span class="symbol">,</span><span class="normal"> newvy</span>
+
+<span class="normal">        </span><span class="comment"># update zoom factor (numeric keypad +/- keys)</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> keysPressed</span><span class="symbol">[</span><span class="normal">pygame</span><span class="symbol">.</span><span class="normal">K_KP_PLUS</span><span class="symbol">]:</span>
+<span class="normal">            zoom </span><span class="symbol">/=</span><span class="normal"> </span><span class="number">0.99</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> keysPressed</span><span class="symbol">[</span><span class="normal">pygame</span><span class="symbol">.</span><span class="normal">K_KP_MINUS</span><span class="symbol">]:</span>
+<span class="normal">            zoom </span><span class="symbol">/=</span><span class="normal"> </span><span class="number">1.01</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> keysPressed</span><span class="symbol">[</span><span class="normal">pygame</span><span class="symbol">.</span><span class="normal">K_ESCAPE</span><span class="symbol">]:</span>
+<span class="normal">            </span><span class="keyword">break</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> keysPressed</span><span class="symbol">[</span><span class="normal">pygame</span><span class="symbol">.</span><span class="normal">K_SPACE</span><span class="symbol">]:</span>
+<span class="normal">            </span><span class="keyword">while</span><span class="normal"> keysPressed</span><span class="symbol">[</span><span class="normal">pygame</span><span class="symbol">.</span><span class="normal">K_SPACE</span><span class="symbol">]:</span>
+<span class="normal">                </span><span class="function">ScanKeyboard</span><span class="symbol">()</span>
+<span class="normal">            bClearScreen </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">not</span><span class="normal"> bClearScreen</span>
+<span class="normal">            verb </span><span class="symbol">=</span><span class="normal"> </span><span class="string">"show"</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> bClearScreen </span><span class="keyword">else</span><span class="normal"> </span><span class="string">"hide"</span>
+<span class="normal">            pygame</span><span class="symbol">.</span><span class="normal">display</span><span class="symbol">.</span><span class="function">set_caption</span><span class="symbol">(</span>
+<span class="comment">                'Gravity simulation (SPACE: '</span>
+<span class="normal">                </span><span class="string">'%s orbits, keypad +/- : zoom in/out)'</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> verb</span><span class="symbol">)</span>
+
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="keyword">try</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="preproc">import</span><span class="normal"> psyco</span>
+<span class="normal">        psyco</span><span class="symbol">.</span><span class="function">profile</span><span class="symbol">()</span>
+<span class="normal">    </span><span class="keyword">except</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> </span><span class="string">'Psyco not found, ignoring it'</span>
+<span class="normal">    </span><span class="function">main</span><span class="symbol">()</span>
+</tt></pre>
+
+</div>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:27:22 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/gravity.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

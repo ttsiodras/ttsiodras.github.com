@@ -1,0 +1,454 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/backup.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Optimal remote backups with rsync over Samba</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Optimal remote backups with rsync over Samba</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+                Backing up a remote Linux machine, when all you have... is Windows<p>
+    <em>(October 2007)</em>
+    <h2>A little history...</h2>
+    <p>The company I work for, is a small startup. By definition,
+    startups are forced to work with limited budgets, limited
+    resources, limited staff - which makes them perfect places
+    for people like me. Why? Well... Let's just say that my 
+    coding skills span over a... wide range of "stuff". 
+    I have worked on almost everything you can think of, from 
+    mini OSes for tiny embedded MPC860s and the Windows device 
+    drivers that talked to them, to full fledged database-driven
+    MFC and C++ Builder GUIs for chemical plants... I <em>enjoy</em> 
+    diversity, and I can suggest no better way of keeping your 
+    mental health and staying sharp, than working in a startup.
+
+    <p><em>(Just make sure you have loads of patience... 
+    you'll need it :&#x2011;)</em>
+
+    <p>One of the roles I double (or is it triple? quadruple? :&#x2011;)
+    for, is that of "the crazy Unix guy" (tm). 
+    Put simply, when the services offered by my company involve
+    Unix technology, advanced text processing and/or scripting, 
+    I am frequently "called to the rescue". It is in this context 
+    that I was called to manage a USA-based Virtual Dedicated Server (VDS) 
+    coupled with a CentOS installation (i.e. a Linux distribution). 
+    The VDS is used for the hosting (web site, e-mails, etc) of our company
+    products.
+
+    <p>Initially, I tried to avoid as much effort as possible :&#x2011;) 
+    I opted for a small web and e-mail hosting package, that gave no 
+    shell access. Unfortunately, I quickly found out that there were 
+    lots of other sites co-hosted by our provider on the same IP address 
+    (our own). Some of them were spammers - or more probably, their users 
+    were infected by malware that sent spam. This made our e-mail domain 
+    a permanent resident of Spamhaus, which occasionally caused mails sent
+    by us to travel to Never-never land. In the end, we were forced to 
+    move - to our very own server, with an IP address which was ours and 
+    ours alone. 
+
+    <p>That immediately took care of our Spamhaus issues. Moreover, SSH 
+    access allowed me to tinker with the machine, and setup many things 
+    I deemed to be necessary. Over the course of weeks, I fine-tuned the
+    installation: I got acquainted with bind, and made our DNS server 
+    report SPF records, so no spammers could use our e-mail addresses as 
+    phony "From"s ; I setup Mantis-based bug trackers for our product and 
+    client support teams; Joomla for our main site; scripted and automated
+    package updates; and lots more. And naturally,
+    I had to devise a way to backup the server; if the real machine
+    hosting our server crashed, I wanted to be able to re-introduce
+    all my custom changes - with minimal effort.
+
+    <p>Unfortunately... startups have limited resources. Our company
+    uses a unified Windows backup strategy, so whatever data I was
+    to collect from our VDS machine, I would have to store them
+    in Windows machines (equipped with RAID drives, and a host of
+    external USB disks).
+
+    <h2>Remote synchronization under Windows</h2>
+
+    <p>As far as remote synchronization is concerned, I believe it is 
+    safe to say that there is an undisputed king: the best way to 
+    synchronize data between a remote machine and a local one is through 
+    <a href="http://www.samba.org/rsync">rsync</a>. This amazing 
+    utility identifies and transfers only the differences
+    between files; it currently allows us to take a backup 
+    of around 3GB of data (residing inside our USA-based VDS), and 
+    synchronize it with our local mirror transferring just under 5MB
+    (and doing so in less than one minute)! Moreover, this transfer is 
+    done over a secured, compressible SSH tunnel, so what's not to like?
+
+    <p>My only issue was where to store the data. That is, where to store 
+    the actual files received through rsync... I only have Windows machines 
+    to work with, so a number of challenges started to crop up...
+
+    <p>Initially, I thought about Cygwin; I performed a small test,
+    and found the results to be ... so and so. Certainly not 
+    optimal - Cygwin uses an emulation layer to transform Unix system calls 
+    (made by rsync) to those supported by Windows, so it is slower than
+    the real thing. Rsync-ing to Windows filesystems also meant
+    issues with file permissions and owners: try as I might, I
+    could never figure out how to successfully map the UNIX machine's
+    owners (those inside the VDS) to the Windows ones of our domain.
+    Problems would inevitably crop up when - eventually - I would need to
+    restore something.
+
+    <p>Performance wise, I found out that VMWARE server offered a much 
+    better alternative.  I installed the free version on my Windows machine 
+    (as a Windows service, so that it runs even when I am not logged on), 
+    and proceeded to install a small Debian under it (<em>I would have 
+    used <A href="http://fabrice.bellard.free.fr/qemu/">Qemu</a>, 
+    but didn't find any way to run it as a Windows service</em>).
+    I benchmarked the virtual machine I created and found out that it
+    was running rsync at near native speeds - a much better performer
+    than Cygwin. The tests I did, however, were run on the virtual disk
+    that the VMWARE server offered to my Debian - that wasn't enough.
+    I had to somehow store the files in the Windows backup server, since 
+    only then would they be backed up (copied to the external USB drives, etc).
+    
+    <h2>Dancing some Samba</h2>
+
+    As it turned out, Andrew Tridgell (the creator of rsync) had also
+    created the software that allows Unix machines to access Windows shares:
+    <a href="http://www.samba.org">Samba</a>. All I had to do to mount
+    the backup share was...
+    <pre class="o">
+	<b>root#</b> mount -t smbfs -o username=SEMANTIX\\BackupAdministrator \
+		//WindowsBackup/VDS-backup /mnt/backup</pre>
+    ... and the /mnt/backup directory offered me a way into the automatically
+    backed-up folders of the WindowsBackup machine.
+
+    <p>Now, you might think that this solved the problem; I now had
+    a Linux accessible folder to run rsync in - and I would enjoy the
+    full native speed of my machine in running it. Unfortunately, you 
+    are forgetting that speed was only a small part of the problem.
+    The big one remained: the permissions/owners issue; whether you run 
+    rsync under Cygwin or over a Samba-mounted folder in Linux, you still 
+    have to cope with the mappings of Unix owners and permissions to
+    the Windows ones. Darn. And performance of rsync itself is not enough;
+    even though rsync would be running natively, it would have to write 
+    many small files over the Samba protocol - not the best way towards 
+    achieving speed.
+
+    <h2>An automatically expanding encrypted filesystem image</h2>
+    Any Linux administrator worth his salt eventually learns about
+    loop-mounted filesystems. Basically, it boils down to this:
+    you can use the Linux loop device to transform any file/device 
+    into a fresh new device. If you use loop-AES, you can additionally
+    encrypt the data with an industrial strength cipher:
+    <pre class="o">
+	<b>root#</b> mount -o loop,encryption=aes256 BigFile /mnt/</pre>
+    
+    <p>I already knew about this... What I didn't realize for quite some 
+    time, was that I could use it to mount a Samba-mounted BigFile!
+    <pre class="o">
+	<b>root#</b> mount -t smbfs -o lfs,username=SEMANTIX\\BackupAdministrator \
+		//WindowsBackup/VDS-backup /mnt/windows
+	<b>root#</b> mount -o loop,encryption=aes256 \
+		/mnt/windows/BigFile /mnt/backup</pre>
+	
+    <p>Now that solves many issues... The /mnt/backup folder will be used 
+    as rsync's destination, and since the actual filesystem inside BigFile
+    can be any Linux supported fs (Ext3, ReiserFS, etc), UNIX permissions 
+    and owners will be kept just fine!
+ 
+    <p><em><font color="red">Caveat:</font>By default, Samba mounting
+    has a file size limitation of 2GB (or 4GB, not sure). This is
+    why the "lfs" option is used in mounting, to allow for larger files.</em>
+
+    <p>Then again, how big should this (Windows hosted) BigFile be?
+    Possible hard drive extensions in our VDS must be accounted for...
+
+    <p>Well, how about anticipating <em>all possible sizes</em>, without
+    wasting a single bit of real hard drive space? Unbeknownst to many people,
+    <font color="red">sparse</font> files come to our rescue: They are 
+    considered common-place in the UNIX world, being in use for decades; 
+    Microsoft OSes started supporting them with the introduction of NTFS.
+    <p>Sparse files are files whose real allocation needs are fulfilled 
+    only when data are written inside them. If you try to read from places
+    you haven't written before, you get zeroes - and these zeroes don't
+    really occupy any space in your hard drive. If only one sector of data 
+    (512 bytes) gets written at some offset inside a sparse file, then 
+    a sector is all the sparse file will reserve from the filesystem - <b>not 
+    the size reported by the filesystem!</b>
+
+    <p>All that is required to create a 150GB sparse file under Windows 
+    is this:
+    <pre class="o">(From within a Cygwin command prompt)
+    dd if=/dev/zero of=BigFile bs=1M count=1 seek=150000</pre>
+    <p>This command will execute in 1 second, and it will only reserve
+    1MB of real hard drive space.  Real storage will grow as needed, when data are written inside BigFile.
+
+    <p>At this point, all the necessary components are there:
+    <ul>
+    <li>Create an automatically expanding sparse BigFile under the
+    Windows share:
+    <pre class="o">dd if=/dev/zero of=BigFile bs=1M count=1 seek=150000</pre>
+    <li>Mount the Windows share under the Linux machine:
+    <pre class="o"><b>root#</b> mount -t smbfs -o lfs,username=SEMANTIX\\BackupAdministrator \
+		//WindowsBackup/VDS-backup /mnt/windows</pre>
+    <li><tt>losetup</tt> and format a Linux filesystem inside this file 
+    (optionally, using encryption: <tt>losetup -e aes256</tt>):
+    <pre class="o"><b>root#</b> losetup /dev/loop0 /mnt/windows/BigFile
+<b>root#</b> mkreiserfs /dev/loop0</pre>
+    <li>Finally, mount it, and run rsync:
+    <pre class="o"><b>root#</b> mount /dev/loop0 /mnt/backup
+<b>root#</b> cd /mnt/backup
+<b>root#</b> rsync -avz root@hosting.machine.in.US:/ ./
+</pre>
+</ul>
+<a name="history">&nbsp;</a>
+<h2>The perfect backup - browsing in history</h2>
+So... optimal rsync execution, permission/owner preservation
+inside a native Linux filesystem, automatic storage space extension in
+the Windows server (as required by our data), and optional 
+encryption: our USA-based Linux server is perfectly mirrored inside our 
+Greece-based Windows backup server.
+
+<p>But this can be improved even more... Navigateable directories with 
+daily snapshots can be created, and - again - almost no hard drive space
+needs to be paid for it!
+
+<p>This is accomplished through <b>hard links</b>.
+Try this under any Unix (or Cygwin):
+<pre class="o">
+<b>bash$</b> dd if=/dev/zero of=/tmp/file1 bs=1K count=10
+<b>bash$</b> cp -al /tmp/file1 /tmp/file2
+<b>bash$</b> ls -la /tmp/file1 /tmp/file2
+-rw-r--r--  2 owner group 10240 Oct 14 12:14 /tmp/file1
+-rw-r--r--  2 owner group 10240 Oct 14 12:14 /tmp/file2
+</pre>
+Did you notice the "2", in the second column, for both output lines?<br>
+It means that there are two "names" for the data inside these files:
+in UNIX parlance, these are two directory entries pointing to
+the same inode, the same "real data" in the filesystem.
+If you remove one of them,
+<pre class="o">
+<b>bash$</b> rm -f /tmp/file1
+<b>bash$</b> ls -l /tmp/file2
+</pre>
+...the other one can still be used to access the data:
+<pre class="o">
+-rw-r--r--  1 owner group 10240 Oct 14 12:14 /tmp/file2
+</pre>
+Notice that the "link count" column, is now 1. Only if you
+remove this file as well, will the data really go to Never-never land.
+
+<p>How can this be put to use in our backups? Simple: Since hard links
+take almost no space, a "free" local mirror of the previous backup can be
+taken into another directory (using hardlinks), and THEN, rsync will
+work on one of the two copies, leaving the hard links in the other
+one to point to the old data:
+<pre class="o">
+<b>root#</b> mount /dev/loop0 /mnt/backup
+<b>root#</b> cd /mnt/backup
+<b>root#</b> rm -rf OneBeforeLast
+<b>root#</b> cp -al LastBackup OneBeforeLast
+<b>root#</b> cd LastBackup
+<b>root#</b> rsync -avz --delete root@hosting.machine.in.US:/ ./
+</pre>
+The "cp -al" creates a zero-cost copy of the data
+(using hardlinks, the only price paid is the one of the directory entries,
+and ReiserFS is well known for its ability to store these extremely
+efficiently). Then, rsync is executed with the --delete option:
+meaning that it must remove from our local mirror all the files that 
+were removed on the server - and thus creating an accurate image of
+the current state.
+
+<p><b>And here's the icing on the cake:</b> The data inside these files
+are not lost! They are still accessible from the OneBeforeLast/ directory, 
+since hard links (the old directory entries) are pointing to them!
+
+<p>In plain terms, simple navigation inside OneBeforeLast can be used to
+examine the exact contents of the server as they were BEFORE the last
+mirroring.
+
+<p>Naturally, this history bookkeeping can be extended beyond two images. 
+Personally, I created a script that keeps a little over two weeks worth
+of daily backups - and is run automatically from cron, at 3:00am every day,
+performing actions like these:
+<pre>
+#!/bin/bash
+rm -rf backup.16
+mv backup.15 backup.16
+mv backup.14 backup.15
+...
+mv backup.2 backup.3
+cp -al backup.1 backup.2
+rsync -avz --delete root@hosting.machine.in.US:/ backup.1/
+</pre>
+<h2>Results - some thoughts</h2>
+<p>Current statistics show that our instantly navigateable backups of the 
+last 15 days (for 3GB of remote data) are only costing...
+<ul>
+<li>real storage space on the Windows backup server of 3.05GB 
+<li>...and the transfer price of less than 5MB - on average - per rsync!
+</ul>
+<p>Am I not right, in calling this the perfect backup?
+<p>If you are to keep anything in mind from the above, it is this:
+<p>The power of UNIX lies in NOT trying to hit all birds with one stone;
+each utility does one job, and it does it well. The amazing overall
+functionality we have developed (not existing, as a whole - at least to my 
+knowledge - in any commercial offering) was obtained by "glue"-ing 
+functionality of different components together. That's how the Unix world 
+works: by weaving components together:
+<ul>
+<li>I didn't need any special effort to automate the backups and execute 
+them at 3:00am, since cron does this job well. 
+<li>SSH was perfect in tunneling securely and compressing the delta stream 
+generated by rsync. 
+<li>The loop device driver allowed me to work with any file on any device  
+<li>Samba gave me the way to access Windows filesystems
+<li>Sparse files and hard links allowed me to lessen the required storage space by orders of magnitude.
+</ul>
+An example from the future: when <a href="http://en.wikipedia.org/wiki/ZFS">ZFS</a> 
+arrives on the Linux scene, I will also add compression in the backed up 
+data - as well as automatic detection and correction of hardware data 
+errors - and it will cost me NOTHING: instead of formating the BigFile 
+as ReiserFS, I will format it as ZFS. 
+<p>In fact, I could already add compression of backed up data in many 
+places; I could ask the Windows server (through Explorer) to keep the 
+BigFile as a compressed one; or I could apply any of the many 
+<a href="https://github.com/libfuse/libfuse/wiki/Filesystems">FUSE based
+compressible filesystems</a> to the mounted ReiserFS image (much better). 
+<p>The possibilities are endless - in the open source world, at least.
+  <div class="redBox">
+  <b>Update: Use FreeBSD/ZFS</b><p>
+  Keep in mind, that in the years that passed since I wrote
+  this, my backup procedure improved further, by moving to...
+  FreeBSD/ZFS. I am still rsyncing - but the target storage
+  is a FreeBSD/ZFS Atom330 machine: Atoms have low wattage (which is
+  important for an always-on backup machine), and much more importantly...
+  <ul>
+  <li>The machine has two green 2TB drives in ZFS mirror-mode.
+  <li>ZFS automatically heals itself from bad sectors, bad PSU causing power spike, cosmic rays toggling memory bits, etc. In the 2 years I've been using it, "zpool scrub" has caught 6 errors - errors that no-other tech can catch AND fix (RAID-1 can only detect a discrepancy - it can't know "which copy is the good one").
+  <li>rsync is used with the --inplace option - because that's the optimal way for...
+  <li>ZFS snapshots. Taken every day - instant navigation is therefore available (under mountpoint/.zfs/snapshots) with storage re-use between snapshots at <b>sector</b> level: the hard-links described above are doing re-use at file level, so they can't efficiently store e.g. 10GB VMWARE .vmdk drives, that change only by a few sectors each day... ZFS snapshots only store the differences... (tremendous gains in storage usage)
+  <li>All in all, this single Atom330 contains almost a years-worth of the history of EVERYTHING in my company: the remote USA server's filesystem, the file-server in the company (a Windows machine, with rsyncd installed on it), the VMWARE server's .vmdk files (large files on the order of many GB - changing on a daily basis!), etc.
+  </ul>
+  ZFS rules.
+</div>
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 10:05:14 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/backup.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

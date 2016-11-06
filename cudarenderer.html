@@ -1,0 +1,594 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/cudarenderer.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Renderer 2.x - Porting to CUDA</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Renderer 2.x - Porting to CUDA</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+              <em>(December 2010)</em>
+<br>&nbsp;<br>
+  <table border="1" frame="box" cellpadding="10" summary="Updated version" 
+  bgcolor="#DD8080"><tr><td><b>Update, February 2011: Complete re-write.</b><p>
+  One month after I wrote this post, I found the time to <a href="cudarenderer-BVH.html">move from raycasting to raytracing</a>, with lots of new features:
+  <ul>
+  <li>Real-time raytracing of triangle meshes - my 70$ GT240 renders a 67K triangles chessboard with reflections and shadows at 15-20 frames per second. Interactive navigation and rendering mode changes are allowed (see video below). Overall, compared to the <a href="renderer.html">pure C++/OpenMP</a> version, the CUDA implementation runs 10 times faster.</li>
+  <li>A Bounding Volume Hierarchy using axis-aligned bounding boxes is created and used for ray/triangle intersections. The BVH is created via the surface-area heuristic, and is stored for fast re-use. If SSE are available, a SIMD implementation is used that builds the BVH faster.</li>
+  <li>CUDA 1.2 cards like my GT240 have no support for recursion, so I used C++ template magic to implement compile-time recursion - see <tt>cudarenderer.cu</tt> in the source tarball for details.</li>
+  <li>C++ template-based configuration allows for no-penalty runtime selection of (a) specular lighting (b) Phong interpolation of normals (c) backface culling (e.g. not used in refractions) (d) reflections (e) shadows (f) anti-aliasing.</li>
+  <li>Z-order curve is used to cast the primary rays (Morton order) - significantly less divergence => more speed.</li>
+  <li>Vertices, triangles and BVH data are stored in textures - major speed boost.</li>
+  </ul>
+  The sources (latest version: 2.1h, April 2011) of this new raytracer are available <a href="https://github.com/ttsiodras/renderer-cuda/archive/v2.1k.tar.gz">from here</a>, and <a href="cudarenderer-2.x.latest-win32.7z">Win32 binaries</a> are also available (compressed <a href="http://www.7-zip.org/">with 7-zip</a>). I also included MSVC project files, to make builds under Win32 easier.
+  <p>Enjoy!<br>&nbsp;<br>
+  <table summary="CUDA interactive raytracing" align="center">
+  <tr>
+  <td>
+<center>
+<!--object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/1o8HM11h8fc&hl=en_US&fs=1&rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/1o8HM11h8fc&hl=en_US&fs=1&rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object-->
+<!--object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="http://www.youtube.com/v/1o8HM11h8fc&amp;hl=en_US&amp;fs=1&amp;rel=0"><param name="movie" value="http://www.youtube.com/v/1o8HM11h8fc"><param name="allowFullScreen" value="true"></object-->
+<object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="https://www.youtube.com/v/1o8HM11h8fc&amp;hl=en_US&amp;fs=1&amp;rel=0">
+    <param name="movie" value="https://www.youtube.com/v/1o8HM11h8fc">
+    <param name="allowFullScreen" value="true">
+    <!-- Fallback content -->
+    <a href="https://www.youtube.com/watch?v=1o8HM11h8fc">
+    <img src="chess-iphone.jpg" width="480" height="360" alt="CUDA interactive raytracing">
+    </a>
+</object>
+</center>
+  </td></tr></table>
+
+  </td></tr>
+  </table>
+  &nbsp;<br>
+<h2>Changelog:</h2>
+<table border="0" summary="Changelog">
+<tr valign="top"><td width="20%"><em>January 30, 2011:</em></td><td>Complete re-write, now using Bounding Volume Hierarchy for acceleration of ray/triangle intersections. A C++ template generates a set of CUDA kernels, with selectable different features: reflections, Phong normal interpolation, shadows, Specular lighting, backface culling, anti-aliasing etc.</td></tr>
+<tr valign="top"><td><em>January 9, 2011:</em></td><td>Added loading of .3ds/.ply models, help screen and Win32 binaries.</td></tr>
+<tr valign="top"><td><em>January 7, 2011:</em></td><td>Optimal number of threads per block, and re-written kernel for better coalescing - the "train" object (seen in the new uploaded video) now spins at 21.5 fps on my GT240.</td></tr>
+<tr valign="top"><td><em>January 2, 2011:</em></td><td><A href="http://www.reddit.com/r/programming/comments/euxzx/porting_my_renderer_from_c_to_cuda_the_speed/">Reddit-ed</A>, <a href="http://goo.gl/P0KiC">most popular CUDA post ever</a> in Reddit/programming :&#x2011;)<br>
+<br></td></tr>
+</table>
+<h2>Introduction</h2>
+At work, I recently had an opportunity to implement a project with CUDA, and results were excellent:
+Execution of the code presented a remarkable 30-40x speedup.
+<p>
+After <a href="mandelSSE.html">testing the waters</a> with a simple Mandelbrot implementation,
+I was eager to apply CUDA to my life-long obsession: <a href="renderer.html">my SW-only renderer</a>.
+<p>
+What happened then was interesting, so I decided to document it. And no, the text below is not about graphics. It is about taking a set of algorithms (that simply happen to be graphics algorithms) and trying to implement them in CUDA. Let me say this again: I know all about <a href="trimesh.html">OpenGL</a> and the shadow ARB extension, but this post is NOT about graphics. It is about a more generic question: "I have an algorithm. Will CUDA/OpenCL/DirectCompute help me execute my algorithm faster"?
+  <table summary="CUDA interactive raycasting" align="center">
+  <tr>
+  <td>
+<center>
+<!--object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/0F1A3npCe4A&hl=en_US&fs=1&rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/0F1A3npCe4A&hl=en_US&fs=1&rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object-->
+<!--object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="http://www.youtube.com/v/0F1A3npCe4A&amp;hl=en_US&amp;fs=1&amp;rel=0"><param name="movie" value="http://www.youtube.com/v/0F1A3npCe4A"><param name="allowFullScreen" value="true"></object-->
+<object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="https://www.youtube.com/v/Qzn0Ep4tvSI&amp;hl=en_US&amp;fs=1&amp;rel=0">
+    <param name="movie" value="https://www.youtube.com/v/Qzn0Ep4tvSI">
+    <param name="allowFullScreen" value="true">
+    <!-- Fallback content -->
+    <a href="https://www.youtube.com/watch?v=Qzn0Ep4tvSI">
+    <img src="train-iphone.png" width="480" height="360" alt="CUDA interactive raycasting">
+    </a>
+</object>
+</center>
+  </td></tr></table>
+<p>
+My GT240 offers <a href="http://en.wikipedia.org/wiki/GeForce_200_Series#Technical_summary">hundreds of GFlops</a>, so things looked promising.
+<h2>First attempt - can I do rasterizing?</h2>
+Well, first things first. My SW-only renderer is optimized for CPUs: it renders via rasterizing, which roughly means
+that the top-most loop is of this form:
+<pre>
+for each object
+    for each triangle of the object
+        transform the triangle's vertices into screen space
+        linearly interpolate - per screen pixel - the triangle data
+        (i.e. Z-distance, color in Gouraud, normal vector in Phong, etc)
+        use the Z-distance and a Z-buffer to check if the pixel is visible
+        if it is visible, look at the shadow buffer, to see if it is in shadow
+        if not, perform Phong lighting
+</pre>
+For those of you that are not into graphics, the key point is this: the algorithm tries to optimize the necessary 
+computations, by taking advantage of the fact that neighbouring pixels of a rasterized triangle are "related": 
+it computes some data on the 3 vertices, and linearly interpolates these values per-pixel, instead of re-computing 
+them on each pixel (<em>Which is what a raycaster/raytracer does</em>).
+<p>
+This means, that for each pixel plotted during the rasterization of the triangle, the algorithm has to check 
+the Z-Buffer, to see if the point is indeed the closest one to the screen. That is, we have one access per pixel
+to the Z-buffer. And when we are doing shadow mapping, we are also doing another access per-pixel, to the shadow buffer.
+<p>
+Both of these buffers are WIDTH x HEIGHT arrays with a floating point value in each cell. And they are accessed 
+concurrently by each thread, since each thread is rasterizing one triangle...
+<p>
+<b>This is the first point where I hit a wall: when doing many accesses in a big enough buffer <em>in a RANDOM access pattern</em>, CUDA loses all its speed advantages. 
+Why? because the "global" memory (in CUDA terms) is too slow to allow multiple threads to read/write wherever they want. It has no cache!</b>
+<p>
+Things are OK if your algorithm performs sequential accesses. The memory coalescing mechanisms can greatly help in that case.
+<p>
+But if your algorithm is generating "random" offsets in its read/write requests
+- just like triangle rasterizing does, when concurrently executed by one thread per triangle -  then your speed
+becomes... glacial. I tested this, and found out that CUDA was... 3 times slower than my CPU, in a window one quarter the size!
+<p>You can survive this if you can adapt your algorithm to work in the small - but fast! - thread-shared memory (16K in 
+the case of my 70$ GT240).
+Unfortunately, rasterizing can't be (easily) shoe-horned into this: I tried splitting the screen into tiny "screens" (32x32), small
+enough to fit into the shared memory, and rasterize the triangles inside them. And indeed, the rasterizing speed of each 
+tiny "screen" became much faster - but I had GRIDxGRID such tiny screens now, and to display the complete screen I had
+to invoke the CUDA kernel GRIDxGRID times. Resulting speed: 10 times slower than the CPU rasterizer!
+<p>
+Executive summary: the rasterizing algorithm <a href="renderer.html">is fine for a CPU implementation</a>, but at least in its plain form (one CUDA thread per triangle), it doesn't seem to fit the CUDA model.
+<h2>Second attempt - what about raycasting?</h2>
+Raycasting is a completely different algorithm. It sends a ray of
+"light" from the viewpoint, that "pierces" the screen at each pixel, and checks whether the ray intersects the scene's
+triangles:
+<pre>
+for each screen pixel
+        throw a ray from the viewpoint to the pixel
+        find the closest triangle pierced by the ray
+        at the intersection point, perform Phong lighting
+</pre>
+Or, if we also want shadows:
+<pre>
+for each screen pixel
+        throw a ray from the viewpoint to the pixel
+        find the closest triangle pierced by the ray
+        at the intersection point, throw another ray towards the light
+        if this shadow ray finds any triangle, the pixel is in shadow
+        Otherwise, perform Phong lighting
+</pre>
+Now notice that this algorithm works per-pixel. We only pass over each screen pixel once (<b>in sequence</b>) and doing a bunch of calculations
+that involve reading the triangle data (<b>in sequence</b>). Which means that memory accesses are far more <b>sequential</b> than in rasterizing.
+<p>
+A number of hours after I realized this, I had finished coding a Phong raycaster, which was <font color="red"><b>15 times faster</b></font> than its C++ equivalent! 
+The video linked near the end of the page shows a run of the C++ version, followed by a run of the CUDA version - notice the frames per second reported in these first two runs, where a "dragon" object made of 50.000 triangles goes from 1.3 frames per second (with C++) to 20 (with CUDA).<p><em>(When considering these numbers, keep in mind that this is raycasting, not rasterizing: even the <a href="renderer.html">SW-only C++ version</a> of my renderer will render the dragon with soft shadows at far more than 50 fps, but the comparison is not fair, since raycasting is a lot "heavier" than rasterizing)</em>.
+<p>
+<font color="red"><em><b>Update, one month later:</b> The <a href="cudarenderer-BVH.html">new implementation</a> raytraces the dragon with reflections and shadows at 18 frames per second. Wow.</em></font>
+<h3>Caveat</h3>
+<p>
+To be fair, however, this speedup came at a price: The CUDA code is a lot more complex than the C++ code.
+<p>
+To accelerate the ray-triangle intersection, I do a pre-processing step: I split the screen in a grid of "bins", and 
+project each triangle to see which bins it spans over:
+  <table summary="Triangle bin spanning" align="center"><tr><td>
+  <center>
+  <img hspace="20" vspace="20" alt="Triangle bin spanning" src="binSpanning.png"><br>
+  <em>The triangles are placed in "bin" lists.</em>
+</center>
+  </td></tr></table>
+  &nbsp;<br>
+This allows me, when doing the raycasting, to only check the triangles that are in the pixel's "bin" list.
+<p>
+In C++, the data structure and code to implement this are very simple:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">    </span><span class="symbol">...</span>
+<span class="normal">    </span><span class="comment">// re-populate the screen-space triangle bins</span>
+<span class="normal">    std</span><span class="symbol">::</span><span class="usertype">list&lt;Triangle*&gt;</span><span class="normal"> bins</span><span class="symbol">[</span><span class="normal">RAYCASTBINS</span><span class="symbol">][</span><span class="normal">RAYCASTBINS</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="symbol">(</span><span class="keyword">auto</span><span class="normal"> triIt</span><span class="symbol">=</span><span class="normal">triangles</span><span class="symbol">.</span><span class="function">begin</span><span class="symbol">();</span><span class="normal"> triIt</span><span class="symbol">!=</span><span class="normal">triangles</span><span class="symbol">.</span><span class="function">end</span><span class="symbol">();</span><span class="normal"> triIt</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">	Triangle</span><span class="symbol">&amp;</span><span class="normal"> triangle </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">triIt</span><span class="symbol">;</span>
+<span class="normal">	</span><span class="comment">// project triangle to screen space and find the bounding box corners</span>
+<span class="normal">	</span><span class="symbol">...</span>
+<span class="normal">	</span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> a</span><span class="symbol">=</span><span class="normal">bottomy</span><span class="symbol">;</span><span class="normal"> a</span><span class="symbol">&lt;=</span><span class="normal">topy</span><span class="symbol">;</span><span class="normal"> a</span><span class="symbol">++)</span>
+<span class="normal">	    </span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> b</span><span class="symbol">=</span><span class="normal">bottomx</span><span class="symbol">;</span><span class="normal"> b</span><span class="symbol">&lt;=</span><span class="normal">topx</span><span class="symbol">;</span><span class="normal"> b</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">		bins</span><span class="symbol">[</span><span class="normal">a</span><span class="symbol">][</span><span class="normal">b</span><span class="symbol">].</span><span class="function">push_back</span><span class="symbol">(&amp;</span><span class="normal">triangle</span><span class="symbol">);</span>
+<span class="normal">	    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+</tt></pre>
+
+</div>
+What about the CUDA version?
+<p>
+Well...
+<p>
+There are no std::lists, of course. I have to know how "deep" each bin list will go, so I do a first pass that does atomic increments in list counters, one per bin (1st CUDA kernel), while calculating each triangle's bounding box. I then do a parallel reduction (2nd CUDA kernel), to calculate the scene's bounding box. I then accumulate the counters in another kernel, to know the starting offset of each bin in the final bin list (3rd CUDA kernel). After accumulation, I know how deep each list will go, so I can allocate enough memory for all bins, and pass it to the placement kernel (4th CUDA kernel). I then do the raycasting (5th CUDA kernel), and I can then free the bin memory - and finally blit the rendered buffer. Phew.<p>
+Which means I had to implement multiple passes over the data, and in fact implement algorithms that had nothing to do with my original problem. A good example is the parallel reduction I had to do, to optimally calculate the total scene bounding box. There were also difficult to debug race condition bugs - thank God for cuda-gdb.
+<p>
+Was it worth it?
+<p>Well, I did it for fun, so yes it was :&#x2011;)<br>
+And it did provide a marvelous 15x speedup over the same algorithm in C++, so... yes, it definitely was.
+<p>
+Just keep in mind that for many categories of problems, CUDA will force you to make your code a lot more painful, before rewarding you with speed.
+<h3>And then there were shadows...</h3>
+But that was not the end of it - after all, my rasterizer uses shadow mapping to create very nice-looking shadows.
+Could I reproduce the same 15x gains in the CUDA-based shadow-raycaster?
+
+<div class="scrollableContainer">
+<img hspace="20" vspace="20" alt="Shadow mapped train" src="trainTwoLights.png">
+</div>
+
+<p>
+No... I couldn't. Not at first.
+<p>
+The moment I added the shadow ray casting, CUDA lost ALL its speed. It became slower than the C++ code!
+<p>
+Was it the additional memory accesses that are now done per-pixel? Before, we were just checking the list of triangles
+in the "camera-space" bins, now we are also looking at the list of triangles in the "light-space" bins (the ones
+used for shadows).
+<p>
+<a name="divergence"></a>
+No, it was something different. I verified it by doing all the shadow-raycasting work... and then simply ignoring
+the boolean value "inShadow". And the speed returned!
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">__global__ </span><span class="usertype">void</span><span class="normal"> </span><span class="function">CoreLoopTrianglesRaycaster</span><span class="symbol">(</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="normal">    </span><span class="comment">// Lots of code doing shadow-raycasting...</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="normal">    </span><span class="comment">// results in the "inShadow" boolean set or not</span>
+
+<span class="normal">    </span><span class="comment">// If I uncomment the line below, then I am reading the "inShadow" boolean,</span>
+<span class="normal">    </span><span class="comment">// and the threads diverge here: some will do Phong illumination, some wont.</span>
+<span class="normal">    </span><span class="comment">// I get my shadow rendering... but speed is... 0.6 fps :-(</span>
+
+<span class="normal">    </span><span class="comment">//if (inShadow) {</span>
+
+<span class="normal">    </span><span class="comment">// But by commenting it out, I am back to non-shadow Phong, and</span>
+<span class="normal">    </span><span class="comment">// the CUDA warps (32-threads each) are mostly executing the same path... </span>
+<span class="normal">    </span><span class="comment">// And even though the shadow ray calculations are still done, </span>
+<span class="normal">    </span><span class="comment">// (their result is ignored), the speed gets back to 20 fps!</span>
+
+<span class="normal">    </span><span class="comment">// Which means that it is the thread divergence that kills speed,</span>
+<span class="normal">    </span><span class="comment">// not the shadow ray calculations (they are still done!)</span>
+</tt></pre>
+
+</div>
+<p>
+In the non-shadow version, the threads spawned by CUDA are executing more or less 
+the same path. They follow the same "decision paths" in the ray-casting code. In the shadow ray mode, however, depending 
+on whether the point is in shadow or not, the path followed per thread is completely different.
+<p><b>And this is the second point where I hit a wall: the threads spawned must more-or-less execute the same path
+of code - they can't diverge. Or rather, they can - but the moment they do, all your speed benefit goes out the window</b>. As I discovered after the fact, this is also quoted in the <a href="http://en.wikipedia.org/wiki/CUDA#Limitations">wikipedia</a> article about CUDA:
+<table width="80%" summary="CUDA quote from Wikipedia" align="center"><tr><td><em>"Branches in the program code do not impact performance significantly, <b>provided that each of 32 threads takes the same execution path</b>; the SIMD execution model becomes a significant limitation for any inherently divergent task."</em></td></tr></table>
+<p>The second part of the video linked below shows how the CUDA raycaster became 30 times slower as soon as the
+shadow ray calculation was introduced.<p>
+<font color="red"><em><b>Update, one month later:</b> After studying some papers, I <a href="cudarenderer-BVH.html">implemented</a> a different order in casting rays: instead of doing it in a nested loop that goes from top-to-bottom, left-to-right, I used the <a href="http://en.wikipedia.org/wiki/Z-order_curve">Z-order curve</a>, also known as Morton order. This significantly reduced the divergence of the primary rays, and increased speed of primary rays by 30%. Next thing to try: ray packets!</em></font>
+<h3>Texture fetching</h3>
+<a name="textures"></a>
+Even though CUDA doesn't have caches, it has read-only "textures" that have small caches. I therefore proceeded to make
+some further changes to the code, by changing things like these:
+<pre>
+int triIdx = ptrCudaCameraBins[i];
+</pre>
+...into things like these:
+<pre>
+int triIdx = tex1Dfetch(cameraBinsTexture, i);
+</pre>
+Naturally, this required the setup of the cameraBinsTexture, right after the ptrCudaCameraBins data had been calculated,
+and before the line above (from the raycaster kernel) was executed.
+<p>
+I tried this change in many places - the cameraBins, the lightBins, even the pre-calculated cache of light-space normals
+and edge vectors that are used during the shadow ray intersections. To my disappointment, this improved speed only a little (the train object sped up by less than 3%).<p>
+<font color="red"><em><b>Update, one month later:</b> The "bins" algorithm indeed showed little benefit from using textures. This however was not the case for the <a href="cudarenderer-BVH.html">new implementation</a> with the Bounding Volume Hierarchy: I used textures to store everything, the data for the vertices, the pre-calculated triangle intersection data, the inner and leaf nodes of the BVH tree... and the speed soared by more than 120% !</em></font>
+<h3>Bins and threads</h3>
+<a name="threads"></a>
+An additional optimization that works in CUDA, is figuring out the optimal number of CUDA threads used per block.
+In my algorithm, this value combines with the number of raycasting bins, to form very different memory bandwidth/computation CUDA usage patterns, so... I decided to brute-force:
+<p>
+I wrote a simple python script that changed these two values, recompiled, spawned the raycaster, and reported timings:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+<span class="preproc">import</span><span class="normal"> os</span>
+<span class="preproc">import</span><span class="normal"> sys</span>
+
+<span class="keyword">for</span><span class="normal"> t </span><span class="keyword">in</span><span class="normal"> </span><span class="symbol">(</span><span class="number">32</span><span class="symbol">,</span><span class="normal"> </span><span class="number">64</span><span class="symbol">,</span><span class="normal"> </span><span class="number">96</span><span class="symbol">,</span><span class="normal"> </span><span class="number">128</span><span class="symbol">,</span><span class="normal"> </span><span class="number">160</span><span class="symbol">,</span><span class="normal"> </span><span class="number">192</span><span class="symbol">,</span><span class="normal"> </span><span class="number">224</span><span class="symbol">,</span><span class="normal"> </span><span class="number">256</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> b </span><span class="keyword">in</span><span class="normal"> </span><span class="symbol">(</span><span class="number">32</span><span class="symbol">,</span><span class="normal"> </span><span class="number">64</span><span class="symbol">,</span><span class="normal"> </span><span class="number">128</span><span class="symbol">,</span><span class="normal"> </span><span class="number">192</span><span class="symbol">,</span><span class="normal"> </span><span class="number">256</span><span class="symbol">):</span>
+<span class="normal">        header </span><span class="symbol">=</span><span class="normal"> </span><span class="function">open</span><span class="symbol">(</span><span class="string">"src/cudarenderer.h"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"w"</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> line </span><span class="keyword">in</span><span class="normal"> </span><span class="function">open</span><span class="symbol">(</span><span class="string">"cudarenderer.h.template"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'r'</span><span class="symbol">).</span><span class="function">readlines</span><span class="symbol">():</span>
+<span class="normal">            header</span><span class="symbol">.</span><span class="function">write</span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">.</span><span class="function">replace</span><span class="symbol">(</span><span class="string">'##BINS##'</span><span class="symbol">,</span><span class="normal"> </span><span class="function">str</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">)))</span>
+<span class="normal">        header</span><span class="symbol">.</span><span class="function">close</span><span class="symbol">()</span>
+
+<span class="normal">        cu </span><span class="symbol">=</span><span class="normal"> </span><span class="function">open</span><span class="symbol">(</span><span class="string">"src/cudarenderer.cu"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"w"</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> line </span><span class="keyword">in</span><span class="normal"> </span><span class="function">open</span><span class="symbol">(</span><span class="string">"cudarenderer.cu.template"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'r'</span><span class="symbol">).</span><span class="function">readlines</span><span class="symbol">():</span>
+<span class="normal">            cu</span><span class="symbol">.</span><span class="function">write</span><span class="symbol">(</span><span class="normal">line</span><span class="symbol">.</span><span class="function">replace</span><span class="symbol">(</span><span class="string">'##THREADS##'</span><span class="symbol">,</span><span class="normal"> </span><span class="function">str</span><span class="symbol">(</span><span class="normal">t</span><span class="symbol">)))</span>
+<span class="normal">        cu</span><span class="symbol">.</span><span class="function">close</span><span class="symbol">()</span>
+
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> os</span><span class="symbol">.</span><span class="function">system</span><span class="symbol">(</span><span class="string">"make &gt;/dev/null 2&gt;&amp;1"</span><span class="symbol">):</span>
+<span class="normal">            </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Running with"</span><span class="symbol">,</span><span class="normal"> t</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"threads and"</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"bins"</span>
+<span class="normal">            sys</span><span class="symbol">.</span><span class="normal">stdout</span><span class="symbol">.</span><span class="function">flush</span><span class="symbol">()</span>
+<span class="normal">            os</span><span class="symbol">.</span><span class="function">system</span><span class="symbol">(</span><span class="string">"sync ; ./src/cudaRenderer -b 3D-Objects/trainColor.ply"</span><span class="symbol">)</span>
+</tt></pre>
+
+</div>
+The code simply read two "template" files and created the two real ones, where the number of threads is placed in the '##THREADS##' placeholder, and the same is done for the size of the bin grid (in '##BINS##'). After that, it "make"-ed, and run the raycaster:
+<p>
+These were the results for the colorful train shown above:
+<pre class="o">
+Running with 32 threads and 32 bins
+Rendering 15 frames in 4.341 seconds. (3.45543 fps)
+Running with 32 threads and 64 bins
+Rendering 15 frames in 2.562 seconds. (5.8548 fps)
+Running with 32 threads and 128 bins
+Rendering 15 frames in 2.461 seconds. (6.09508 fps)
+Running with 32 threads and 192 bins
+Rendering 15 frames in 3.827 seconds. (3.91952 fps)
+Running with 32 threads and 256 bins
+Rendering 15 frames in 7.562 seconds. (1.9836 fps)
+Running with 64 threads and 32 bins
+Rendering 15 frames in 2.835 seconds. (5.29101 fps)
+Running with 64 threads and 64 bins
+Rendering 15 frames in 1.639 seconds. (9.14634 fps)
+Running with 64 threads and 128 bins
+Rendering 15 frames in 1.533 seconds. (9.78474 fps)
+Running with 64 threads and 192 bins
+Rendering 15 frames in 2.366 seconds. (6.33981 fps)
+Running with 64 threads and 256 bins
+Rendering 15 frames in 4.458 seconds. (3.36474 fps)
+Running with 96 threads and 32 bins
+Rendering 15 frames in 3.387 seconds. (4.4287 fps)
+Running with 96 threads and 64 bins
+Rendering 15 frames in 1.989 seconds. (7.53769 fps)
+Running with 96 threads and 128 bins
+Rendering 15 frames in 1.797 seconds. (8.34725 fps)
+Running with 96 threads and 192 bins
+Rendering 15 frames in 2.456 seconds. (6.10749 fps)
+Running with 96 threads and 256 bins
+Rendering 15 frames in 4.371 seconds. (3.43171 fps)
+Running with 128 threads and 32 bins
+Rendering 15 frames in 2.805 seconds. (5.34759 fps)
+Running with 128 threads and 64 bins
+Rendering 15 frames in 1.708 seconds. (8.7822 fps)
+Running with 128 threads and 128 bins
+Rendering 15 frames in 1.499 seconds. (10.0067 fps)  <==  maximum speed achieved for this object here
+Running with 128 threads and 192 bins               using 128 threads per block and a bin size of 128
+Rendering 15 frames in 2.215 seconds. (6.77201 fps)
+Running with 128 threads and 256 bins
+Rendering 15 frames in 4.063 seconds. (3.69185 fps)
+Running with 160 threads and 32 bins
+Rendering 15 frames in 3.295 seconds. (4.55235 fps)
+Running with 160 threads and 64 bins
+Rendering 15 frames in 1.918 seconds. (7.82065 fps)
+Running with 160 threads and 128 bins
+Rendering 15 frames in 1.724 seconds. (8.7007 fps)
+Running with 160 threads and 192 bins
+Rendering 15 frames in 2.44 seconds. (6.14754 fps)
+Running with 160 threads and 256 bins
+Rendering 15 frames in 4.291 seconds. (3.49569 fps)
+</pre>
+Notice that there is quite a difference between the top performing combination and the bottom one: from 1.9 to 10, 
+i.e. more than a 5x. So this is also helping quite a lot.
+<p>
+I used these values (128 bins, 128 threads per block) when creating the video with the train, on the top of this page.
+<h3>Coalescing</h3>
+In the absence of cache, it is vital to have coalesced memory accesses. I changed the raycasting kernel to work on pixels in a specific order: the order of bins. In fact, by using blocks of threads that span an entire bin, the rays handled by a thread block will always "hit" the same bin. This means that accesses to the triangle list of each bin are now a lot more coalesced ... and speed was instantly improved by another 2x.
+<p>
+And this is where I will stop working further with the "bins" algorithm. The train currently (Jan 8, 2011) spins at 21.5 frames per second, so I consider my goal of real-time rendering achieved. To put it in perspective, <a href="renderer.html">the "pure" C++ code</a> - occupying 100% of both cores of my Core2 Duo (via OpenMP), clocks the same object at 4-5 fps.<p>
+Mission accomplished :&#x2011;)
+<p>
+<font color="red"><em><b>Update, one month later:</b> The <a href="cudarenderer-BVH.html">new implementation</a> with the Bounding Volume Hierarchy is a lot faster, and has more features (reflections, anti-aliasing, run-time selection of features (via C++ templates), etc)</em>.</font>
+<h2>Executive summary</h2>
+Will CUDA help you make your code run faster?
+<p>
+Yes - but there are some things you should know:
+<ul>
+<li>Some algorithms (like rasterizing) depend on large memory buffers, accessed in a random pattern. These will not work efficiently with CUDA, unless you can change your algorithm to perform the random accesses in the fast (but small, only 16KB!) shared memory, and then "flush" the output results to the main (slow) global memory, sequentially.
+<li>If no random accesses to global memory are done, algorithms can greatly benefit from the many threads offered by CUDA - my Phong raycaster became 15 times faster.
+<li>There's another catch, though: the code executed by each thread must follow the same paths (the same "if" decisions taken). Otherwise, you may find you are running slower than on a CPU.
+<li>Try using textures to store your lookup data, since textures offer cache (a small one).
+<li>Finally, make sure you find the optimal number of threads per block to use, via simple benchmarks. If your algorithm has additional configuration parameters (like mine, the bin grid size), benchmark that as well.
+</ul>
+<em>Note 1: NVIDIA added a L1 cache in newer CUDA cards (Fermi), so perhaps the first point will be alleviated. If anyone donates one, I will report back with results :&#x2011;)</em>
+<p>
+<em>Note 2: Yes, <a href="trimesh.html">I know about OpenGL</a> - custom HW can be used to solve anything. The post above is simply an objective report of what happened when I tried to apply CUDA to a set of algorithms I have experience with. It just so happens that these are also graphics algorithms. I didn't do it to create a commercial raycaster - this was just a weekend project. Note also that, to my knowledge, neither OpenGL nor DirectX have raycasting support - unless you intend to implement one in a fragment shader: using textures to store triangle data, etc... in which case, you are brave, may the Force be with you :&#x2011;)</em><p>
+<em>Note 3: After the posting to Reddit, one of the comments pointed to <a href="http://www.youtube.com/watch?v=4bITAdWvMXE">a presentation given by Brad Peebler of Luxology</a>, about CPU vs GPU rendering. They are of course using tremendously more complex algorithms, but their conclusions match mine: the more complex the algorithm, the more divergent, the harder it becomes to improve speed with a GPU implementation.</em>
+  <table summary="Rendering: C++ vs CUDA" align="center">
+  <tr>
+  <td>
+<center>
+<!--object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/0F1A3npCe4A&hl=en_US&fs=1&rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/0F1A3npCe4A&hl=en_US&fs=1&rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object-->
+<!--object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="http://www.youtube.com/v/0F1A3npCe4A&amp;hl=en_US&amp;fs=1&amp;rel=0"><param name="movie" value="http://www.youtube.com/v/0F1A3npCe4A"><param name="allowFullScreen" value="true"></object-->
+<object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="https://www.youtube.com/v/0F1A3npCe4A&amp;hl=en_US&amp;fs=1&amp;rel=0">
+    <param name="movie" value="https://www.youtube.com/v/0F1A3npCe4A">
+    <param name="allowFullScreen" value="true">
+    <!-- Fallback content -->
+    <a href="https://www.youtube.com/watch?v=0F1A3npCe4A">
+    <img src="dragon-video.jpg" width="480" height="360" alt="C++ vs CUDA raycasting">
+    </a>
+</object>
+</center>
+  </td></tr>
+  <tr><td><center><em>A dragon... in C++ and in CUDA.</em></center></td></tr></table>
+<h2>Downloads</h2>
+You can download my GPL code for:
+<ul>
+<li>(Deprecated) <a href="cudarenderer-1.x.latest.tar.bz2">the source code for the "bins" based raycaster</a> that was described in this article (<em>latest version: 1.1, January 9th, 2011</em>).</li>
+<li><b>Update:</b> <a href="https://github.com/ttsiodras/renderer-cuda/archive/v2.1k.tar.gz">the source code for the new BVH raytracer</a> <em>(latest version: 2.1k, December 2015)</em>. This is a complete raytracer, much faster than the preliminary "bins" version, with more features (reflections, anti-aliasing, etc).</li>
+<li><b>Update:</b> <a href="cudarenderer-2.x.latest-win32.7z">Win32 binaries</a> of the new BVH raytracer, with 2 sample objects.</li>
+</ul>
+<h3>Compilation under Linux</h3>
+<em>(Should also work on OS/X with minor changes)</em>
+The code has 3 dependencies: You must have installed OpenGL (with GLEW and GLUT), libSDL and the CUDA toolkit.
+If you are using Debian, simply...
+
+<pre>
+sudo apt-get install libglew1.5-dev freeglut3-dev mesa-common-dev
+</pre>
+
+...and install the CUDA toolkit from NVIDIA (I downloaded version 3.2, and installed it in /opt/cuda-3.2/). 
+After this, a simple...
+
+<pre>
+    <b>bash$</b> ./configure --with-cuda=/path/to/your/cudaToolkit
+    <b>bash$</b> make
+
+...followed by...
+
+    <b>bash$</b> ./src/cudaRenderer 3D-objects/chessboard.tri 
+</pre>
+
+And you will see a chessboard with reflections and shadows rotating, like the video shown on the top of this page.
+
+<h3>Compilation under Windows</h3>
+Make sure you have the CUDA toolkit installed (I used version 3.2). Then:
+<ol>
+<li>Open the VisualC/cudaRenderer_vc90.sln with your Visual Studio
+<li>Compile in Release mode
+<li>Right-click on "cudaRenderer" in the Solution explorer, and select "Properties"
+<li>Click on "Configuration Properties/Debugging"
+<li>In the "Command Arguments", enter "..\3D-objects\chessboard.tri" and click OK
+<li>Hit Ctrl-F5 to run.
+</ol>
+
+You should see a rotating chessboard... 
+
+Read below for keyboard control intructions, or just press 'H' for help.
+<p>
+<em>Note: I used the free Visual C++ 2008 Express Edition, but this should work 
+with the commercial one, too.</em>
+
+<h3>Keyboard controls</h3>
+You can navigate in realtime:
+  <ul>
+  <li>Hit 'R' to stop/start auto-spin.
+  <li>Use the cursor keys, 'A' and 'Z' to pilot. Don't be afraid to press multiple keys together.
+  <li>Rotate the light with 'W', 'Q'.
+  <li>'S' and 'F' are 'strafe' left/right, 'E' and 'D' are 'strafe' up/down.<br>
+  (strafe keys don't work in auto-spin mode).
+  <li>(<em>For the old, deprecated "bins" version:</em>) Page up/page down change the rendering mode, cycling through:
+  <ul>
+    <li>Points 
+    <li>Points via backface triangle culling
+    <li>Raycasting with diffuse lighting
+    <li>Raycasting with diffuse lighting and normal interpolation
+    <li>Raycasting with specular lighting and normal interpolation
+    <li>Raytracing with specular, normal interpolation and reflections
+    <li>Raytracing with reflections and shadows
+    <li>Antialiased raytracing with reflections and shadows
+  </ul>
+  <li><font color="red"><em><b>Update</b>: For the new raytracer:</em></font>
+  <ul>
+    <li>F4 toggles points mode
+    <li>F5 toggles specular lighting
+    <li>F6 toggles phong normal interpolation
+    <li>F7 toggles reflections
+    <li>F8 toggles shadows
+    <li>F9 toggles anti-aliasing
+  </ul>
+  <li>ESC quits.
+  </ul>
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:35:19 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/cudarenderer.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

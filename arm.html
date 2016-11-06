@@ -1,0 +1,597 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/arm.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Building a tiny ARM-based server</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Building a tiny ARM-based server</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(November 2013)</em></p>
+
+<div class="tldr">
+<b>For the TL;DR crowd:</b>
+I cannibalized an old ARM board, and made a Debian mini-server out of it.
+I now have an always-on gateway into my house (from wherever I am), which...
+
+<ul>
+<li>costs me, energy-wise, only about 3-3.5W</li>
+<li>is always accessible even though I have a dynamic IP
+(via free DNS providers)</li>
+<li>has a Lighttpd web server so I can share things with the world</li>
+<li>has an Exim mail server, so I can receive mail over (E)SMTP,
+store it in my house, and read it over SSH/mutt</li>
+<li>can be SSH-ed into, which allows me to Wake-On-LAN my main desktop,
+whenever I need access to it</li>
+<li>run long running web downloads (e.g. wget/rtorrent) from within 
+screen-ed sessions, and share them over Samba to my house-bound devices
+(e.g. watch movies from my Android tablet)</li>
+<li>SSH is exposed over <code>sslh</code> in my HTTPS port (bypassing several firewall
+limitations in various places)</li>
+<li>etc.</li>
+</ul>
+
+It is one of my very best hacks - I loved building it, and don't know how
+I lived without it :&#x2011;)
+</div>
+
+<div class="rightFloat">
+<img src="mybook.jpg" alt="MyBook WE image">
+</div>
+
+<h1>Building a tiny ARM-based server</h1>
+
+<p>About a year ago, a no longer functional <a href="http://en.wikipedia.org/wiki/Network-attached_storage">NAS device</a>
+made by Western Digital came into my hands - a&nbsp;<a href="http://en.wikipedia.org/wiki/Western_Digital_My_Book">MyBook World Edition</a>.
+This is a rather old, low-powered, ARM-based file server... and even though it is
+considered obsolete by today's standards, I knew the moment I got it that I
+would very much enjoy hacking it to do my bidding :&#x2011;)</p>
+
+<p>I am a programmer by vocation, but I don't really believe in the separation of
+programming and administration - in my humble opinion, there are a lot of advantages
+in practising both.</p>
+
+<h2>Disassembling and soldering</h2>
+
+<p>First, I had to break the thing down, so I could build it up to what I wanted.
+Following in the tradition of many engineers before me, I slaved over it for
+half an hour and succeeded in disassembling it - only to realize afterwards
+that other kind souls had
+<a href="http://www.instructables.com/id/Disassembling-MyBook-World-Edition/">documented the process</a>.
+Oh well - figuring things out on your own is the best part about
+all this :&#x2011;)</p>
+
+<p>I proceeded to remove the two drives in the machine, and after attaching them
+to my external USB/SATA enclosure, run a quick SMART check on them: <code>smartctl
+-a /dev/sdX</code> showed that both drives had bad sectors (<em>Reallocated_Event_Count,
+Current_Pending_Sector</em> were both non-zero - that's not the kind of drive you
+can trust)... I therefore cannibalized an old 160GB external USB disk, and
+attached it to the empty enclosure.</p>
+
+<p>Since this is an embedded platform, with no VGA or serial plug on it, I needed to 
+find a way to monitor its boot process. After a bit of Googling, it turned out that
+the board in fact had soldering pads for traditional RS-232 serial interfaces.
+The "specs" provided by the almighty Internet were simple:</p>
+
+<ul>
+<li>Pin 1 = +3.3V</li>
+<li>Pin 2 = GND</li>
+<li>Pin 3 = Rx</li>
+<li>Pin 4 = Tx</li>
+</ul>
+
+<p>...and since we are way past the age of motherboards with RS-232 interfaces,
+I ordered a TTL/RS-232 cable from an online electronics store (<em>translation:
+a cable that I can attach to the board on one end, and plug the other end
+into a normal PC USB port - where the serial interface will be accessible
+by any serial port program</em>).</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="mybook_serial.jpg" alt="Serial interface">
+<br>
+<em>The board's serial interface, after soldering 3 pins and hooking 3 cables (red arrow)</em>
+</div>
+
+<p>Two days later, the package arrived - so I soldered the 3 pins (2,3 and 4) and
+hooked them up to the USB/serial cable<sup><a href="#john">[1]</a></sup>.</p>
+
+<p>On my main machine (an Atom 330 based ArchLinux), I attached the USB cable,
+fired up a serial interface program (<code>minicom -D /dev/ttyUSB0 -b 115200</code>),
+and then powered up the little board...</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="mybook_pieces.jpg" alt="broken down into pieces">
+<br>
+<em>The game begins :&#x2011;) The board is sitting on the now naked drive enclosure.</em>
+</div>
+
+<p>Nothing happened.</p>
+
+<p>Hmm...</p>
+
+<h2>U-booting from no BIOS whatsoever</h2>
+
+<p>I was expecting this to show some kind of BIOS, but maybe this tiny board 
+had no such luxury... maybe it read everything it needed from the attached
+drives?</p>
+
+<p>I mounted the old drives up to my main PC's USB/SATA enclosure, and sure
+enough, I saw clear signs of a Linux-based machine: the software RAID driver in
+my ArchLinux detected raid devices (<code>cat /proc/mdstat</code> showed information about
+the RAID structure). Apparently, MyBook had the two drives in a RAID formation
+- which I proceeded to successfully mount. There were 4 partitions in each of
+  the two drives, clearly in a RAID1 mirror formation - with the 4th and final
+partition being the one with the "File Server" storage area.</p>
+
+<p>I proceeded to copy the first three partitions (including the partition table)
+to my 160GB drive (via <code>dd</code>). I then used <code>fdisk</code> to fix the size of the 4th
+partition to be the remaining space of my drive.</p>
+
+<p>Attaching the 160GB drive and booting again, minicom logged tremendous
+improvement:</p>
+
+<pre><code>Welcome to minicom 2.6.2
+
+OPTIONS: I18n 
+Compiled on Mar  5 2013, 16:40:55.
+Port /dev/ttyUSB0, 12:22:35
+
+Press CTRL-A Z for help on special keys
+
+�NASOx_0800
+Mon Aug  5 21:45:27 EEST 2013
+
+
+U-Boot 1.1.2 (Jan 21 2008 - 08:50:09)
+
+U-Boot code: 48D00000 -&gt; 48D17648  BSS: -&gt; 48D1B2B8
+RAM Configuration:
+Bank #0: 48000000 32 MB
+In:    serial
+Out:   serial
+Err:   serial
+Initialising disks
+No FIS received from device 1
+Detecting SATA busses:
+Bus 0: Found first device OK
+  Device 0: Model: TOSHIBA MK1652GSX  Firm: LV010J Ser#: 29GGF8WNS
+            Type: Hard Disk
+            Supports 48-bit addressing
+            Capacity: 152627.8 MB = 149.0 GB (312581808 x 512)
+  Device 1: not available
+
+IDE read: device 0 block # 63, count 1 ... 1 blocks read: OK
+</code></pre>
+
+<p>...and proceeded to boot a normal Linux kernel.</p>
+
+<p>Success!</p>
+
+<h2>Installing Debian (and some thoughts on the Unix way)</h2>
+
+<p>Having access to the Western Digital provided Linux of the board was a very good start.
+I then succeeded in using the GPL sources from Western Digital to
+built my own kernel and <a href="http://www.busybox.net/">busybox</a>-based mini-distro.
+I wanted more than just a toy, though ;
+and since I use Debian at work, I followed Mario's consolidated version of instructions
+(<em>'Quick install steps'</em>), and in 15min, installed the <code>debootstrap</code>-ed main parts
+of Debian on my 160GB drive. </p>
+
+<p>&lt;rant&gt;</p>
+
+<p><em>When possible, I always prefer doing things from the console - not only
+does it improve my knowledge of the OS I work with, it also allows me to do
+things over serial lines or SSH connections. In the case of this little ARM
+box, I applied the same knowledge that I am using for normal machines: editing
+/etc/network/interfaces, /etc/resolv.conf, etc.</em></p>
+
+<p><em>Sadly, this is a skill that is fading away, with people becoming increasingly
+dependent on "wizards"...  and facing the inevitable side-effect: clicking on
+buttons while being unaware of what is going on behind the scenes, ends up with
+systems that keep running slower and slower, and can only eventually be
+"rescued" with... clean reinstalls. In contrast, under UNIXes (Linux, the BSDs,
+etc) your applications' settings are simple files and folders under /etc and
+$HOME...  Personally, I have always kept them under revision control (e.g
+<a href="http://github.com/ttsiodras/dotfiles">my main dot files</a> and
+<a href="vim.html">vim configuration</a>), happily migrating them over the last 15 years
+across the many machines I've worked with. Backing them up and restoring them,
+e.g.  when I need to work on a brand-new machine at work, is simply a matter of
+checking out files and folders from my repositories...</em></p>
+
+<p><em>And that alone, from what I can see in my dealings with some of my colleagues,
+is something they would kill for. And if they ever realized what <code>apt-get</code>
+does, and has been doing for decades...</em></p>
+
+<p><em>But I digress - people reading this blog probably already know all this.</em></p>
+
+<p>&lt;/rant&gt;</p>
+
+<p>I quickly setup the network interface, and got up to a working...</p>
+
+<pre><code># apt-get update &amp;&amp; apt-get upgrade
+</code></pre>
+
+<p>At that point, I knew the hard part was over - I now had a Debian/ARM
+distribution, which I could configure to do whatever I wanted.</p>
+
+<h2>Power? Not so much :&#x2011;)</h2>
+
+<p>Spec-wise...</p>
+
+<pre><code># cat /proc/cpuinfo
+Processor   : ARM926EJ-Sid(wb) rev 5 (v5l)
+BogoMIPS    : 99.73
+Features    : swp half thumb fastmult edsp java 
+CPU implementer : 0x41
+CPU architecture: 5TEJ
+CPU variant : 0x0
+CPU part    : 0x926
+CPU revision    : 5
+Cache type  : write-back
+Cache clean : cp15 c7 ops
+Cache lockdown  : format C
+Cache format    : Harvard
+I size      : 32768
+I assoc     : 4
+I line length   : 32
+I sets      : 256
+D size      : 32768
+D assoc     : 4
+D line length   : 32
+D sets      : 256
+
+Hardware    : Oxsemi NAS
+Revision    : 0000
+Serial      : 0000000000000000
+</code></pre>
+
+<p>...the machine definitely doesn't win any contest: it's very low powered,
+but that can also be seen as an advantage: nothing wrong with an always on
+"server" that consumes 0.7 watt when idling! With the 160GB drive added in 
+the mix, I get up to 3-3.5W... not bad at all.</p>
+
+<h2>DNS</h2>
+
+<p>I am behind a DSL line, so my IP address is constantly changing.
+I needed to be able to get to my machine no matter where I am,
+so I opened up a (free) account on DynDNS, and set it up.</p>
+
+<p>Since the board only has 32MB RAM, I chose against using the DynDNS Perl script,
+and instead used a native C client,
+<a href="https://github.com/troglobit/inadyn">inadyn</a>:</p>
+
+<pre><code># apt-get install gcc
+...
+# wget http://.../inadyn.v1.96.2.zip
+# unzip inadyn.v1.96.2.zip
+# cd inadyn
+# make
+...
+# cp bin/linux/inadyn /usr/local/bin
+</code></pre>
+
+<p>I then configured it to run at startup, via cron:</p>
+
+<pre><code># cat /var/spool/cron/crontabs/root 
+...
+@reboot /usr/local/bin/inadyn
+</code></pre>
+
+<p>...and set up my DynDNS credentials:</p>
+
+<pre><code># cat /etc/inadyn.conf 
+--username USER --password PASSWORD --alias UBER-SECRET.dyndns.org
+    --update_period_sec 300 --background
+</code></pre>
+
+<p>That's it - once every 5 minutes (5 x 60 = 300), the tiny server communicates
+it's current IP address to DynDNS:</p>
+
+<pre><code># host UBER-SECRET.dyndns.org
+UBER-SECRET.dyndns.org has address AA.BB.CC.DD
+</code></pre>
+
+<p><strong>Update, a year later</strong>: <em>DynDNS removed its free plan, so I registered
+to two more free DNS providers, <a href="https://entrydns.net/">EntryDNS</a> and 
+<a href="http://duckdns.org/">DuckDNS</a>. They both work via 'magic' web requests,
+so I simply set up two cron jobs (running every 5 min) that invoke <code>curl</code>,
+passing in the string that identifies my machine.</em></p>
+
+<p>So, now that the ARM box had an Internet 'name', it was time to setup...
+"stuff" :&#x2011;)</p>
+
+<h2>Lighttpd</h2>
+
+<p>First, I installed a web server - and was now able to export everything that
+I wanted, to friends and family. As long as they had a browser, they could
+connect to my little ARM.</p>
+
+<p>Initially, I went with NGINX - but since the board only has 32MB of RAM,
+I switched to Lighttpd, which is designed to have a smaller memory footprint.</p>
+
+<p>Not that the tiny ARM server and my 700 Kbit upstream DSL speed would ever
+survive a Slashdoting, of course :&#x2011;) Still, there are other uses: I
+rsync-ed the photo folder of my (jailbroken, company-provided) iPhone, and
+published it in a password-protected folder...</p>
+
+<pre><code># rsync -av mobile@iphone:/private/var/mobile/Media/DCIM/100APPLE/ \
+            /var/www/site/Media/
+</code></pre>
+
+<p>My pictures therefore became accessible from anywhere in the world, just by
+browsing to my mini-server (and using the folder password). Nifty!</p>
+
+<p>I added this rsync to a cronjob, so my iPhone's photos are rsync-ed
+automatically every night, while I sleep and the iPhone is charging.</p>
+
+<h2>Exim, mutt</h2>
+
+<p>Privacy issues not withstanding, it's nice to be able to have a mail presence
+that doesn't depend on others. <code>apt-get install exim4</code>, and my friends can now
+e-mail me at ttsiod@UBER-SECRET.dyndns.org. I read the mail over SSH, via
+'mutt' - which runs fine even in this tiny little CPU.</p>
+
+<p>&lt;rant2&gt;</p>
+
+<p><em>In a world populated by self-respecting human beings, that would be the end of
+it ; unfortunately, even though GMail accounts accepted mail sent from me with
+no problems, others (e.g. Yahoo) considered me a spammer, since I was sending
+mail from the dark pits of hell (i.e. an IP belonging to a DSL line). How can
+they be sure that I am not a zombie Windows machine, infected with malware and
+serving The Spam Lords?</em></p>
+
+<p><em>Neither SPF nor DomainKeys convinced them - so I switched my outgoing direction
+to use <code>smarthost</code> - and therefore route outgoing mail via my ISP.</em></p>
+
+<p>(Sigh)</p>
+
+<p>&lt;/rant2&gt;</p>
+
+<h2>Firewalls and sslh</h2>
+
+<p>There are places where hitting my SSH server (e.g. to use it as a SOCKS proxy
+via <code>ssh -D ...</code>) is impossible, because there are firewalls in place that only
+allow HTTP traffic.</p>
+
+<p>Initially, I tried exposing the server over HTTPS's port (443), but that was
+not enough.  I ended up using <a href="http://www.rutschle.net/tech/sslh.shtml">sslh</a>,
+which cleverly sits between a port and a number of daemons. In my case, since
+it speaks enough of the SSH and HTTPS protocols, it can determine when an
+incoming connection is hunting for SSH responses, and when for HTTPS responses
+- and tunnel the request to the proper local daemons (<code>sshd</code>, <code>nginx</code>). The
+firewall therefore sees me as a legitimate HTTPS site (which I am, thanks to
+Lighttpd) and lets <code>ssh -p 443 ...</code> pass.</p>
+
+<h2>Samba</h2>
+
+<p>I can download anything I want with my little server. <code>rtorrent</code> is a text-based
+torrent client that works fine, but since I am not exactly a mainstream guy, 
+the things that actually interest me are usually found elsewhere.
+Mostly, I prefer gathering up interesting URLs and setting up
+scripts that use <code>wget</code> or <code>youtube-dl</code> to download them inside <code>screen</code>-ed
+sessions. This way, when I get back from work, I mount the tiny server's
+download folder from my jailbroken Android tablet (over Samba - i.e. with
+the usual <code>mount -t cifs ...</code>), and enjoy watching without network 'hiccups'.</p>
+
+<p>In case you're wondering, I am currently watching Drew Neil's amazing <a href="http://vimcasts.org/">Vimcasts</a>
+series, and <a href="http://egghead.io/lessons">egghead.io's videos on AngularJS</a>.
+Scrapping is relatively easy - I scrap enough HTML to find the video URLs,
+and then feed them to a <code>wget</code> with a rate limit - so that I don't overload
+the kind people that share these treasures.</p>
+
+<h2>From Lenny to Wheezy (Oct 2014)</h2>
+
+<p>The Debian rootfs from Mario was made back in 2007, in the days of Lenny. 
+I wanted to move past that, to today's Debian Wheezy. Starting with a chroot
+test in a <code>debootstrap</code>-ed Wheezy, I realized this would not be easy:</p>
+
+<pre><code># # From inside the little ARM machine running Debian Lenny
+$ sudo debootstrap --arch armel wheezy /wheezy \
+     http://ftp.whateverCountry.debian.org/debian
+$ sudo -i
+# mount -t proc none /wheezy/proc
+# mount -t sysfs none /wheezy/sys
+# mount -t devpts none /wheezy/dev/pts
+# chroot /wheezy
+Fatal: Kernel too old
+</code></pre>
+
+<p>The fatal message comes from the GLIBC of wheezy, informing that GLIBC was not
+compiled to work with this old kernel (2.6.17). So, can we recompile a newer
+kernel for this SoC?</p>
+
+<p>No - not easily. Even though WD provides the sources of the custom 2.6.17
+kernel it used, it never updated them to later versions, and they were never
+merged with the mainline kernel. The <code>oxnas</code> SoC is doomed to die a peaceful
+death...</p>
+
+<p>But not before its time :&#x2011;)</p>
+
+<p>Because even though I can't spend the time to port all the device drivers in
+the custom WD 2.6.17 to newer kernels, I can try something else: I can compile
+the Wheezy's GLIBC to support older kernels - including this one!</p>
+
+<p>I <a href="http://stackoverflow.com/questions/26527199/cross-compiling-glibc-for-my-arm-soc">asked for help on StackOverflow and UnixStackexchange</a> with this, but eventually I figured it out on my own and
+posted my own answer. I basically used <code>crosstool-ng</code> to cross-compile GLIBC
+on my Core i5 and generated the ARM-ie version of GLIBC that could run on my
+2.6.17.</p>
+
+<p>After all that, I can probably proclaim my WD MyBook World Edition to be
+the only one on the planet running Debian Wheezy. Maybe it should now
+be called WD MyBook Galaxy Edition :&#x2011;)</p>
+
+<p>If anyone else is interested, I can share a tarball of my updated libc files.</p>
+
+<h1>Conclusion - UNIX glory</h1>
+
+<p>If you think about it, the end result is rather amazing - and done completely
+over ARM processors, not Intel ones:</p>
+
+<ul>
+<li>I pay, energy-wise, about 3-3.5W worth of energy for an always on server that 
+lives in my house.</li>
+<li>The server is always accessible even though I have a dynamic IP (via free
+DNS providers).</li>
+<li>The Lighttpd web server allows me to publish "stuff"
+(including a mirror of this blog).</li>
+<li>Since iPhones also run UNIX, I <code>rsync</code> my phone's photos daily to the little
+server, and therefore my photos are always available over any browser.
+<em>Update</em>: I also ended up using 
+<a href="http://sousmonlit.zincube.net/~niol/playa/oss/projects/lazygal/">lazygal</a>
+to create a nice arrangement of my photos in galleries with previews and
+navigation controls.</li>
+<li>The Exim mail server allows me to receive mail over (E)SMTP,
+store it in my house, and read it via SSH/mutt from wherever I am.</li>
+<li>When I need to, I can <code>ssh</code> to the tiny server and use Wake-On-LAN on my main
+desktop, to easily access any of the work I've done in my coding life.
+Or my music collection :&#x2011;)</li>
+<li>I can run long running web downloads (e.g. <code>wget</code>/<code>youtube-dl</code>) from within
+<code>screen</code>-ed sessions, and share them over Samba to my house-bound devices
+(e.g. watch movies from my jailbroken Android tablet)</li>
+<li>Thanks to <code>sslh</code>, I can bypass several firewall limitations that exist
+in various places, and access my tiny server.</li>
+<li>Thanks to <code>crosstool-ng</code>, I was able to cross-compile GLIBC,
+and bring the machine up-to-date with today's Debian packages. It is 
+a server, after all - it needs to get security updates
+(<code>unattended-upgrades</code>).</li>
+</ul>
+
+<p>In plain words, <em>UNIX power</em> - in the tiny server, in my phone, in my tablet.
+All 3 of them, running on ARM processors. To be honest, I didn't expect that ;
+15 years ago I was sure that Intel and Microsoft had cornered the galaxy...
+but somehow, Linux managed to change all that.</p>
+
+<p>I still have to jailbreak them and/or hack them to do my bidding, of course -
+the world is still not perfect.</p>
+
+<p>But that's why this is fun :&#x2011;)</p>
+
+<p><a name="john"><em>[1] Many thanks go to my good friend John Kydonakis, for his advice
+and help in everything electronics-related. You're awesome, John!</em></a>
+<hr>
+<strong><a href="https://news.ycombinator.com/item?id=6911045">Discussion in Hacker News</a></strong>
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 10:05:14 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/arm.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

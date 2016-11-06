@@ -1,0 +1,695 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/wavePhysics.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Real-time browser-based modelling of 1- and 2D waves</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Real-time browser-based modelling of 1- and 2D waves</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(December 2013)</em></p>
+
+<p><link rel="stylesheet" href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="final-code-wavetheory-lightbox.css"></p>
+
+<script src="//code.jquery.com/jquery-1.9.1.js"></script>
+<script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<script type="text/javascript" src="wavePhysics.js"></script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+    TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML&delayStartupUntil=configured"></script>
+
+<noscript>
+<b>
+Your browser does not support Javascript - no problem, go 
+<a href="games.html">read my old libSDL post</a> instead.
+</b>
+</noscript>
+
+<div id="tabs" class="ui-tabs">
+  <ul class="ui-tabs-nav">
+    <li><a href="#1dwave">1-dimension wave (string)</a></li>
+    <li><a href="#2dwave">2-dimension waves (water)</a></li>
+    <li><a href="#theory">The theory</a></li>
+    <li><a href="#js">The code</a></li>
+  </ul>
+  <div id="1dwave">
+    <div style="margin: 1em auto 1em auto; width:80%">
+        <canvas id="1dwaveDC" width="320" height="240" style="background:black; width:100%"></canvas>
+    </div>
+
+    <p style="text-align:center">
+    <button onclick="pull()">Click/tap this button to pull the string...</button>
+    </p>
+
+<p>Click/tap the button above to pull the string at its middle.  I have
+deliberately set the wave's rate of energy loss quite low, so by clicking the
+button repeatedly, you will be able to see the individual waves you are
+creating interfere with each other.</p>
+
+<p>Can you can hit the button with the proper frequency to maximize
+the wave amplitude? That is, can you find the string's 
+<a href="http://en.wikipedia.org/wiki/Resonance" target=_blank">
+resonance frequency</a>?</p>
+
+<p>Try to make the waves so big they reach the "ceiling" :&#x2011;)</p>
+
+<p>Note that due to the algorithm I am using, the number of waves
+doesn't impact the simulation speed. You may find the
+<a href="#" onclick="switchToTab(2)">theory behind this implementation</a>
+interesting - I certainly enjoyed figuring it out.</p>
+
+<p>I based this Javascript port on my original, libSDL-based GPL implementation,
+which <a href="games.html" target="_blank">compiles and runs under all major OSes</a>.
+As for the <a href="#" onclick="switchToTab(3)">JS code</a>,
+I tested it under Chrome/Firefox/Opera on a puny Atom 330 running ArchLinux,
+and also on an iPhone 3GS's Safari. It should therefore work fine on all modern
+browsers (that support the HTML5 canvas API) - if you are on an older browser,
+it's time to upgrade...</p>
+  </div>
+
+  <div id="2dwave">
+    <div style="margin: 1em auto 1em auto; width:80%">
+        <canvas id="2dwaveDC" width="320" height="240" style="background:#008; width:100%"></canvas>
+    </div>
+
+<p><strong>Click with the mouse (or tap, if you use a phone / tablet)</strong> anywhere you want
+in the blue pool above. You will see waves generated and reflected
+around the borders, interfering with themselves and any other waves you generate.
+Don't click only once - click many times, and marvel at the waves' interference
+patterns :&#x2011;)</p>
+
+<p>Note that due to the algorithm I am using, the number of waves
+doesn't impact the simulation speed. You may find the
+<a href="#" onclick="switchToTab(2)">theory behind this implementation</a>
+interesting - I certainly enjoyed figuring it out.</p>
+
+<p>I based this Javascript port on my original, libSDL-based GPL implementation,
+which <a href="games.html" target="_blank">compiles and runs under all major OSes</a>.
+As for the <a href="#" onclick="switchToTab(3)">JS code</a>,
+I tested it under Chrome/Firefox/Opera on a puny Atom 330 running ArchLinux,
+and also on an iPhone 3GS's Safari. It should therefore work fine on all modern
+browsers (that support the HTML5 canvas API) - if you are on an older browser,
+it's time to upgrade...</p>
+  </div>
+
+  <div id="theory">
+<h2>Theory</h2>
+
+<p>Assume we have a wave, $f_n(i)$, where $i$ refers to the horizontal screen
+axis (i.e. the X-pixel coordinate), and $f_n(i)$ is the Y-coordinate of that
+pixel, in frame $n$. We want to find what that Y-coordinate will change to,
+in frame $n+1$.</p>
+
+<p>Consider the individual pixels to represent the water molecules, and
+assume that each molecule is influenced only by its two neighbours
+(left and right), as if they are connected to it with springs. That is, 
+assume that a given pixel's height $f_n(i)$, is only influenced by the attractive
+force of its two neighbours:</p>
+
+<ul>
+<li>the pixel to the left:&nbsp; $f_{n,L} = f_n(i-1)$</li>
+<li>the pixel to the right: $f_{n,R} = f_n(i+1)$.</li>
+</ul>
+
+<p>With $f$ being the position, $v$ the velocity and $a$ the acceleration,
+we write down the laws governing motion, for $dt=1$ <em>(yes, I know, dt
+is supposed to be infinitesimal ; it doesn't matter, we are engineers 
+playing with computers, we make our own worlds ; keep reading :&#x2011;)</em>
+Basically, we will be applying simple <a href="http://en.wikipedia.org/wiki/Euler_method">Euler integration</a>
+with a huge $dt$... let's see what happens:</p>
+
+<p>First, the pixel's position in the new frame is equal to the position in this frame,
+ plus the vertical velocity times dt:</p>
+
+<p>\begin{equation}
+f_{n+1} = f_n  + v_n
+\label{eq:f}
+\end{equation}</p>
+
+<p>The velocity is equal to the old velocity plus the old acceleration times dt:</p>
+
+<p>\begin{equation}
+v_n = v_{n-1} + a_{n-1}
+\label{eq:v}
+\end{equation}</p>
+
+<p>And since springs cause acceleration that is linearly related to the "pulled" distance:</p>
+
+<p>\begin{equation}
+a_{n-1} = k (f_{n-2,L} - f_{n-2}) + k (f_{n-2,R} - f_{n-2})
+\label{eq:a}
+\end{equation}</p>
+
+<p>...where $k$ is the spring's coefficient - the larger it is, the more 
+acceleration is caused by the spring.</p>
+
+<p>If you prefer the full expanded notation for pixel $i$:</p>
+
+<p>\begin{equation}
+a_{n-1}(i) = k (f_{n-2}(i-1) - f_{n-2}(i)) + k (f_{n-2}(i+1) - f_{n-2}(i)) \nonumber
+\end{equation}</p>
+
+<p>These equations can be used to perform the simulation, and they would work fine.
+To achieve even greater simulation speeds, however - especially for
+the <a href="#" onclick="switchToTab(1)">2D simulation of water waves</a> -
+we'll violate the universe's laws some more: we will use the acceleration
+at time $n+2$ (instead of $n-1$), which basically means that we will
+approximate the current acceleration rate with the one we would have in three
+frames' time. We will also set $k$ to 1, to further simplify the calculation.</p>
+
+<p>Replacing \eqref{eq:v} in \eqref{eq:f}, using $a_{n+2}$ instead
+of $a_{n-1}$, and then applying \eqref{eq:a} leads to the following:</p>
+
+<p>$$
+\begin{eqnarray}
+f_{n+1} &amp; = &amp; f_n + v_n\nonumber \\
+&amp; = &amp; f_n + v_{n-1} + a_{n-1}\nonumber \\
+&amp; = &amp; f_n + (f_n - f_{n-1}) + a_{n-1}\nonumber \\
+&amp; = &amp; f_n + (f_n - f_{n-1}) + a_{n+2}\nonumber \\
+&amp; = &amp; 2 f_n - f_{n-1} + a_{n+2}\nonumber\\
+&amp; = &amp; 2 f_n - f_{n-1} + f_{n,L} - f_n + f_{n,R} - f_n\nonumber\\
+&amp; = &amp; f_{n,L} + f_{n,R} - f_{n-1}
+\end{eqnarray}
+$$</p>
+
+<div class="math-conclusion">
+In our fictitious universe, simulating a 1D-wave is amazingly simple: we add
+the $y$-coordinates of the two neighbouring pixels, and subtract the old value
+we used to have in the previous frame!  Since the springs are losing power with
+each iteration, we will also scale the output of the last equation so that it
+diminishes over time (e.g.  multiply by a factor of 0.99):
+$$
+\begin{equation}
+\boxed{
+f_{n+1}(i) = 0.99 (f_n(i-1) + f_n(i+1) - f_{n-1}(i)) \nonumber
+}
+\end{equation}
+$$
+</div>
+
+<p>For the corresponding two-dimensional problem
+(the <a href="#" onclick="switchToTab(1);">2D simulation of water waves</a>),
+we just average the effects of the X- and Y- coordinate waves:</p>
+
+<p>$$
+\begin{eqnarray}
+f_{n+1}(i,j) &amp; = &amp; \frac{1}{2} &amp; (f_{n+1,HorizontalWave} + f_{n+1,VerticalWave}) \nonumber \\
+&amp; = &amp; \frac{1}{2} (&amp; 0.99 (f_n(i-1,j) + f_n(i+1,j) - f_{n-1}(i,j)) + \nonumber \\
+&amp;   &amp; &amp; 0.99 (f_n(i,j-1) + f_n(i,j+1) - f_{n-1}(i,j)))\nonumber
+\end{eqnarray}
+$$</p>
+
+<div class="math-conclusion">
+So, for real-time simulation of two-dimensional waves, we only need this equation:
+
+$$
+\begin{equation}
+\boxed{
+f_{n+1}(i,j) = 0.99 ( \frac{f_n(i-1,j) + f_n(i+1,j) + f_n(i,j-1) + f_n(i,j+1)}{2} - f_{n-1}(i,j) ) 
+}
+\end{equation}
+$$
+
+Which translates to: we add the 4 neighbouring pixels, divide by 2, subtract the previous frame value, and scale by 0.99.
+
+Simple!
+</div>
+
+<p></div>
+  <div id="js"></p>
+
+<p>In the past, almost
+<a href="renderer.html" target="_blank">all</a>
+<a href="cudarenderer-BVH.html" target="_blank">of</a>
+<a href="mandelSSE.html" target="_blank">my</a>
+<a href="games.html" target="_blank">graphics hacks</a>
+were coded in an OS-agnostic manner, via libSDL and autoconf/automake.
+I could therefore execute them under Linux, Windows and OS/X, and
+rightfully claim that my code works everywhere.</p>
+
+<p>There was a catch, though - to compile and run them, you...
+well, you had to be a person that loves coding, like me.
+I could provide you with pre-compiled binaries (and I do) ;
+but then you'd have to trust me that I am not some malevolent
+Greek, inventing Trojan Horses for fun and profit
+<em>(&nbsp;<a href="http://en.wikipedia.org/wiki/Trojan_Horse" target="_blank">Timeo Danaos et dona ferentes</a>,
+or, in my native language: "Φοβού τους Δαναούς και δώρα φέροντας"</em>&nbsp; :&#x2011;)</p>
+
+<p>But now all that is in the past.  My <a href="http://www.libsdl.org/" target="_blank">libSDL</a>
+days are over ; when I feel the urge to hack stuff for my blog,
+I'll do it in the planet's portable assembly language from now on... 
+that is, in Javascript :&#x2011;)</p>
+
+<p>If my usage of the canvas API is incorrent or I am missing something else,
+please feel free to comment - below you will find the complete simulation code,
+for your easy perusal.</p>
+
+<p>Enjoy!</p>
+
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">//////////////////////////////////////</span>
+<span class="comment">// Global variables</span>
+<span class="comment">//////////////////////////////////////</span>
+<span class="comment">//</span>
+<span class="comment">// This is coded just for fun ; no, I don't use globals in production code.</span>
+<span class="comment">// Honest! :-)</span>
+
+<span class="comment">// The working image buffer dimensions.</span>
+<span class="comment">// I use smallish resolution for the HTML5 canvas native resolution,</span>
+<span class="comment">// so that the code will work even on puny mobile phones.</span>
+<span class="comment">// (i.e. I don't want the code to require beastly CPUs)</span>
+<span class="normal">g_width </span><span class="symbol">=</span><span class="normal"> </span><span class="number">320</span><span class="symbol">;</span>
+<span class="normal">g_height </span><span class="symbol">=</span><span class="normal"> </span><span class="number">240</span><span class="symbol">;</span>
+
+<span class="comment">// The global setInterval timer that calls the 'simulate' function.</span>
+<span class="normal">g_timer </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+
+<span class="comment">// Which tab is currently visible?</span>
+<span class="normal">g_activeTab </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+
+<span class="comment">// Has MathJax been configured in the past?</span>
+<span class="normal">g_mathJax_configured </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+
+<span class="comment">// HTML5 canvas variables, shared between the two simulations.</span>
+<span class="normal">g_dc </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">g_canvas </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+<span class="normal">g_imageData </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">null</span><span class="symbol">;</span>
+
+<span class="comment">// Index of the currently active buffer in our double-buffer scheme</span>
+<span class="normal">g_1dwave_idx </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">g_2dwave_idx </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="comment">// The two double-buffers of data - 1d and 2d</span>
+<span class="normal">g_1dwave_y </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Float32Array</span><span class="symbol">(</span><span class="normal">g_width</span><span class="symbol">),</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Float32Array</span><span class="symbol">(</span><span class="normal">g_width</span><span class="symbol">)];</span>
+<span class="normal">g_2dwave_y </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Float32Array</span><span class="symbol">(</span><span class="normal">g_width</span><span class="symbol">*</span><span class="normal">g_height</span><span class="symbol">),</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Float32Array</span><span class="symbol">(</span><span class="normal">g_width</span><span class="symbol">*</span><span class="normal">g_height</span><span class="symbol">)];</span>
+
+<span class="comment">// Lookup table for the 2d simulation.</span>
+<span class="normal">g_2d_offsets </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">new</span><span class="normal"> </span><span class="function">Int32Array</span><span class="symbol">(</span><span class="normal">g_height</span><span class="symbol">);</span>
+<span class="keyword">for</span><span class="symbol">(</span><span class="keyword">var</span><span class="normal"> ii</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> ii</span><span class="symbol">&lt;</span><span class="normal">g_height</span><span class="symbol">;</span><span class="normal"> ii</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    g_2d_offsets</span><span class="symbol">[</span><span class="normal">ii</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> g_width</span><span class="symbol">*</span><span class="normal">ii</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="comment">// The backlog of pixel(s) to clear when we pull the string</span>
+<span class="normal">g_pullBacklog </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[];</span>
+
+<span class="comment">// Function that checks whether we have a working HTML5 canvas</span>
+<span class="comment">// and then sets up the canvas related globals and the timer.</span>
+<span class="keyword">function</span><span class="normal"> </span><span class="function">setupCanvasAndStartSimulation</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> is1Dsim </span><span class="symbol">=</span><span class="normal"> g_activeTab </span><span class="symbol">===</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">    g_canvas </span><span class="symbol">=</span><span class="normal"> document</span><span class="symbol">.</span><span class="function">getElementById</span><span class="symbol">(</span><span class="normal">is1Dsim</span><span class="symbol">?</span><span class="string">"1dwaveDC"</span><span class="symbol">:</span><span class="string">"2dwaveDC"</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">g_canvas</span><span class="symbol">.</span><span class="normal">getContext</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">alert</span><span class="symbol">(</span><span class="string">"You are using an old browser - please use a recent Firefox / Chrome / Opera / Safari"</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    g_dc </span><span class="symbol">=</span><span class="normal"> g_canvas</span><span class="symbol">.</span><span class="function">getContext</span><span class="symbol">(</span><span class="string">"2d"</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">is1Dsim</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        g_canvas</span><span class="symbol">.</span><span class="function">removeEventListener</span><span class="symbol">(</span><span class="string">'mousedown'</span><span class="symbol">,</span><span class="normal"> rainDrop</span><span class="symbol">);</span>
+<span class="normal">        g_canvas</span><span class="symbol">.</span><span class="function">addEventListener</span><span class="symbol">(</span><span class="string">'mousedown'</span><span class="symbol">,</span><span class="normal"> rainDrop</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="comment">// ...and start the simulation!</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_timer </span><span class="symbol">===</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        g_timer </span><span class="symbol">=</span><span class="normal"> </span><span class="function">setInterval</span><span class="symbol">(</span><span class="keyword">function</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="function">simulate</span><span class="symbol">();</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="number">20</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="comment">////////////////////////////////////////////////////////////////////</span>
+<span class="comment">// 1D wave simulation</span>
+<span class="comment">////////////////////////////////////////////////////////////////////</span>
+
+<span class="comment">// Quickly plot two green or black pixels in the 1D canvas image data</span>
+<span class="keyword">function</span><span class="normal"> </span><span class="function">qplot</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">,</span><span class="normal"> y</span><span class="symbol">,</span><span class="normal"> color</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">&lt;</span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> x</span><span class="symbol">&lt;</span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> y</span><span class="symbol">&gt;=</span><span class="normal">g_height</span><span class="symbol">-</span><span class="number">1</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> x</span><span class="symbol">&gt;=</span><span class="normal">g_width</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> ofs </span><span class="symbol">=</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">floor</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">)*</span><span class="normal">g_width</span><span class="symbol">*</span><span class="number">4</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> Math</span><span class="symbol">.</span><span class="function">floor</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">)*</span><span class="number">4</span><span class="symbol">;</span>
+<span class="normal">    g_imageData</span><span class="symbol">[</span><span class="normal">ofs </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> color</span><span class="symbol">;</span>
+<span class="normal">    g_imageData</span><span class="symbol">[</span><span class="normal">ofs </span><span class="symbol">+</span><span class="normal"> </span><span class="number">3</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="number">255</span><span class="symbol">;</span>
+<span class="normal">    g_imageData</span><span class="symbol">[</span><span class="normal">ofs </span><span class="symbol">+</span><span class="normal"> </span><span class="number">4</span><span class="symbol">*</span><span class="normal">g_width </span><span class="symbol">+</span><span class="normal"> </span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> color</span><span class="symbol">;</span>
+<span class="normal">    g_imageData</span><span class="symbol">[</span><span class="normal">ofs </span><span class="symbol">+</span><span class="normal"> </span><span class="number">4</span><span class="symbol">*</span><span class="normal">g_width </span><span class="symbol">+</span><span class="normal"> </span><span class="number">3</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="number">255</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="comment">// Pull the string at the middle</span>
+<span class="keyword">function</span><span class="normal"> </span><span class="function">pull</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// If there's no simulation running, set it up.</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_timer </span><span class="symbol">===</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="function">setupCanvasAndStartSimulation</span><span class="symbol">())</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="comment">// Now, pull the middle string sample to minimum height.</span>
+<span class="normal">    </span><span class="comment">// Also, mark its old value in the backlog, so we'll clear</span>
+<span class="normal">    </span><span class="comment">// that old pixel in the main loop.</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> yOldest </span><span class="symbol">=</span><span class="normal"> g_1dwave_y</span><span class="symbol">[(</span><span class="normal">g_1dwave_idx</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> </span><span class="number">2</span><span class="symbol">];</span>
+<span class="normal">    g_pullBacklog</span><span class="symbol">.</span><span class="function">push</span><span class="symbol">(</span><span class="normal">yOldest</span><span class="symbol">[</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">floor</span><span class="symbol">(</span><span class="normal">g_width</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)]);</span>
+<span class="normal">    </span><span class="comment">// And now, pull!</span>
+<span class="normal">    yOldest</span><span class="symbol">[</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">floor</span><span class="symbol">(</span><span class="normal">g_width</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> g_height</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="comment">// The theory behind the 1d wave calculation is the following:</span>
+<span class="comment">// Assume we have a wave function, f(x), (x=horizontal pixel) as it is at time (n).</span>
+<span class="comment">// We want to find how the values will change at time (n+1).</span>
+<span class="comment">//</span>
+<span class="comment">// Consider the individual pixels to represent the water molecules.</span>
+<span class="comment">// Assume that each molecule is influenced only by its two neighbours,</span>
+<span class="comment">// as if they are connected to it with "springs":</span>
+<span class="comment">//</span>
+<span class="comment">//      xxx                   xxx</span>
+<span class="comment">//     x    x                R</span>
+<span class="comment">//    x      x              O._</span>
+<span class="comment">//            x            L |\</span>
+<span class="comment">//  ---------------------------\------</span>
+<span class="comment">//              x        x      \</span>
+<span class="comment">//               x      x        `---- This point (O) is only influenced</span>
+<span class="comment">//                x    x               by the forces of two "springs":</span>
+<span class="comment">//                 xxxx                the one attached to its left</span>
+<span class="comment">//                                     neighbour(L) and the one attached</span>
+<span class="comment">//                                     to its right neighbour(R)</span>
+<span class="comment">// Using Euler integration of Neutonian laws, we will have for the point O:</span>
+<span class="comment">// (p=position, v=velocity, a=acceleration)</span>
+<span class="comment">//</span>
+<span class="comment">//</span>
+<span class="comment">// p    = p  + v        (new position = old position + velocity)</span>
+<span class="comment">//  n+1    n    n</span>
+<span class="comment">//</span>
+<span class="comment">//</span>
+<span class="comment">// v  = v    + a        (velocity = old velocity + old acceleration)</span>
+<span class="comment">//  n    n-1    n-1</span>
+<span class="comment">//</span>
+<span class="comment">//                      (springs cause acceleration linear to distance)</span>
+<span class="comment">//</span>
+<span class="comment">// a    = k * (pL    - p    ) + k * (pR    - p    )  (k is the spring coeff)</span>
+<span class="comment">//  n-1          n-2    n-2            n-2    n-2</span>
+<span class="comment">//</span>
+<span class="comment">//</span>
+<span class="comment">// This would work, but would require quite a lot of calculations...</span>
+<span class="comment">// Instead, we will use the acceleration at time n+2 (instead of n-1),</span>
+<span class="comment">// which basically means that we will delay the effects of the springs</span>
+<span class="comment">// for three time slots - as if the springs have a "delayed" effect.</span>
+<span class="comment">//</span>
+<span class="comment">// We will also set k=1. Look at what happens (we replace v  first):</span>
+<span class="comment">//                                                         n</span>
+<span class="comment">//</span>
+<span class="comment">//</span>
+<span class="comment">// p    = p  + v    + a    = (aprox) p  + (p  - p   )  + a</span>
+<span class="comment">//  n+1    n    n-1    n-1            n     n    n-1      n+2</span>
+<span class="comment">//</span>
+<span class="comment">//      = 2*p  - p    + pL    - p   + pR    - p</span>
+<span class="comment">//           n    n-1     n      n      n      n</span>
+<span class="comment">//</span>
+<span class="comment">//      = pL  + pR  - p</span>
+<span class="comment">//          n     n    n-1</span>
+<span class="comment">//</span>
+<span class="comment">// So the end result is amazingly simple: we add the values of the two</span>
+<span class="comment">// neighbouring pixels, and subtract the old value we used to have!</span>
+<span class="comment">// </span>
+<span class="comment">// Since the springs are losing power with each iteration, we will also</span>
+<span class="comment">// scale the output of the last equation so that it diminishes over time</span>
+<span class="comment">// (e.g.  multiply by a factor of 0.995):</span>
+
+<span class="keyword">function</span><span class="normal"> </span><span class="function">simulate1d</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> image </span><span class="symbol">=</span><span class="normal"> g_dc</span><span class="symbol">.</span><span class="function">getImageData</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> g_width</span><span class="symbol">,</span><span class="normal"> g_height</span><span class="symbol">);</span>
+<span class="normal">    g_imageData </span><span class="symbol">=</span><span class="normal"> image</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="comment">// Double buffering two string 'instances'</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> yOldest </span><span class="symbol">=</span><span class="normal"> g_1dwave_y</span><span class="symbol">[</span><span class="normal">g_1dwave_idx</span><span class="symbol">];</span>
+<span class="normal">    g_1dwave_idx </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_1dwave_idx</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> </span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> yOld</span><span class="symbol">=</span><span class="normal">g_1dwave_y</span><span class="symbol">[</span><span class="normal">g_1dwave_idx</span><span class="symbol">],</span><span class="normal"> i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">// Erasing the pixels of the 'pull' backlog</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="symbol">(;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">g_pullBacklog</span><span class="symbol">.</span><span class="normal">length</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">qplot</span><span class="symbol">(</span><span class="normal">g_width</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">,</span><span class="normal"> g_height</span><span class="symbol">/</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> g_pullBacklog</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    g_pullBacklog </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[];</span>
+
+<span class="normal">    </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">1</span><span class="symbol">;</span><span class="normal">i</span><span class="symbol">&lt;</span><span class="normal">g_width</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="comment">// Erasing the old string instance pixels</span>
+<span class="normal">        </span><span class="function">qplot</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> g_height</span><span class="symbol">/</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> yOld</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="comment">// Computing our awesome equation</span>
+<span class="normal">        </span><span class="keyword">var</span><span class="normal"> val </span><span class="symbol">=</span><span class="normal"> yOld</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> yOld</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> yOldest</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        yOldest</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.995</span><span class="symbol">*</span><span class="normal">val</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="comment">// Plotting the new string instance pixels</span>
+<span class="normal">        </span><span class="function">qplot</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal"> g_height</span><span class="symbol">/</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> yOldest</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> </span><span class="number">255</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="comment">// Display the freshly computed HTML5 canvas image</span>
+<span class="normal">    g_dc</span><span class="symbol">.</span><span class="function">putImageData</span><span class="symbol">(</span><span class="normal">image</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="comment">////////////////////////////////////////////////////////////////////</span>
+<span class="comment">// 2D wave simulation</span>
+<span class="comment">////////////////////////////////////////////////////////////////////</span>
+
+<span class="comment">// When the user clicks anywhere in our blue pool...</span>
+<span class="keyword">function</span><span class="normal"> </span><span class="function">rainDrop</span><span class="symbol">(</span><span class="normal">evt</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// ...first figure out where he clicked, in terms of our canvas' native coordinates:</span>
+<span class="normal">    evt </span><span class="symbol">=</span><span class="normal"> evt </span><span class="symbol">||</span><span class="normal"> window</span><span class="symbol">.</span><span class="normal">event</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> x </span><span class="symbol">=</span><span class="normal"> g_width</span><span class="symbol">*(</span><span class="normal">evt</span><span class="symbol">.</span><span class="normal">pageX </span><span class="symbol">-</span><span class="normal"> g_canvas</span><span class="symbol">.</span><span class="normal">offsetLeft </span><span class="symbol">-</span><span class="normal"> $</span><span class="symbol">(</span><span class="string">'#tabs'</span><span class="symbol">)[</span><span class="number">0</span><span class="symbol">].</span><span class="normal">offsetLeft</span><span class="symbol">)/</span><span class="normal">g_canvas</span><span class="symbol">.</span><span class="normal">clientWidth</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> y </span><span class="symbol">=</span><span class="normal"> g_height</span><span class="symbol">*(</span><span class="normal">evt</span><span class="symbol">.</span><span class="normal">pageY </span><span class="symbol">-</span><span class="normal"> g_canvas</span><span class="symbol">.</span><span class="normal">offsetTop </span><span class="symbol">-</span><span class="normal"> $</span><span class="symbol">(</span><span class="string">'#tabs'</span><span class="symbol">)[</span><span class="number">0</span><span class="symbol">].</span><span class="normal">offsetTop</span><span class="symbol">)/</span><span class="normal">g_canvas</span><span class="symbol">.</span><span class="normal">clientHeight</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">// And then, pull that water molecule to maximum height...</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> yOldest </span><span class="symbol">=</span><span class="normal"> g_2dwave_y</span><span class="symbol">[(</span><span class="normal">g_2dwave_idx</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> </span><span class="number">2</span><span class="symbol">];</span>
+<span class="normal">    yOldest</span><span class="symbol">[</span><span class="normal">g_2d_offsets</span><span class="symbol">[</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">floor</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">)]+</span><span class="normal">Math</span><span class="symbol">.</span><span class="function">floor</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">)]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="number">8.0</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">// In fact, the maximum height is 1.0 - but by pulling it to 8,</span>
+<span class="normal">    </span><span class="comment">// we will in fact be displaying this wave as 8 closely</span>
+<span class="normal">    </span><span class="comment">// diminishing ones (see the scaling by 127 below and what</span>
+<span class="normal">    </span><span class="comment">// it means for values larger than 255...)</span>
+<span class="cbracket">}</span>
+
+<span class="comment">// (Continuing from the comments of 'simulate1d' above...)</span>
+<span class="comment">//</span>
+<span class="comment">// ...for the corresponding two-dimensional problem,</span>
+<span class="comment">// we just average the effects of the X- and Y- coordinate waves:</span>
+<span class="comment">//</span>
+<span class="comment">// p   (i,j) = 0.5 (p                  (i,j) + p                (i,j)</span>
+<span class="comment">//  n+1              n+1,HorizontalWave         n+1,VerticalWave</span>
+<span class="comment">//  </span>
+<span class="comment">//           = 0.5 (0.999(p (i-1,j) + p (i+1,j) - p   (i,j)) + </span>
+<span class="comment">//                         n           n           n-1</span>
+<span class="comment">//</span>
+<span class="comment">//                + 0.999(p (i,j-1) + p (i,j+1) - p   (i,j)))</span>
+<span class="comment">//                         n           n           n-1</span>
+<span class="comment">//</span>
+<span class="comment">// p   (i,j) = 0.999(0.5(p (i-1,j) + p (i+1,j) + p (i,j-1) + p (i,j+1))  - p   (i,j) ) </span>
+<span class="comment">//  n+1                   n           n           n           n             n-1</span>
+<span class="comment">//</span>
+<span class="comment">// Which translates to: we add the 4 neighbouring pixels, divide by 2,</span>
+<span class="comment">// subtract the previous frame value, and scale by our energy loss coefficient.</span>
+<span class="comment">//</span>
+<span class="comment">// Simple! :-)</span>
+
+<span class="keyword">function</span><span class="normal"> </span><span class="function">simulate2d</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> image </span><span class="symbol">=</span><span class="normal"> g_dc</span><span class="symbol">.</span><span class="function">getImageData</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> g_width</span><span class="symbol">,</span><span class="normal"> g_height</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="comment">// Double buffering of the two pool 'instances'</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> yOldest </span><span class="symbol">=</span><span class="normal"> g_2dwave_y</span><span class="symbol">[</span><span class="normal">g_2dwave_idx</span><span class="symbol">];</span>
+<span class="normal">    g_2dwave_idx </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_2dwave_idx</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> </span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">var</span><span class="normal"> yOld</span><span class="symbol">=</span><span class="normal">g_2dwave_y</span><span class="symbol">[</span><span class="normal">g_2dwave_idx</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="comment">// Now apply the formula...</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="symbol">(</span><span class="keyword">var</span><span class="normal"> i</span><span class="symbol">=</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">g_height</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="comment">// ...and pre-compute the line offsets, for speed.</span>
+<span class="normal">        </span><span class="comment">// (probably unnecessary in the case of V8,</span>
+<span class="normal">        </span><span class="comment">//  but I did do this in the libSDL code, so I ported it over)</span>
+<span class="normal">        </span><span class="keyword">var</span><span class="normal">     lineOffset </span><span class="symbol">=</span><span class="normal"> g_2d_offsets</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">var</span><span class="normal"> prevLineOffset </span><span class="symbol">=</span><span class="normal"> g_2d_offsets</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">var</span><span class="normal"> nextLineOffset </span><span class="symbol">=</span><span class="normal"> g_2d_offsets</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="symbol">(</span><span class="keyword">var</span><span class="normal"> j</span><span class="symbol">=</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">g_width</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">var</span><span class="normal"> val </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span>
+<span class="normal">                yOld</span><span class="symbol">[</span><span class="normal">prevLineOffset </span><span class="symbol">+</span><span class="normal"> j</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> yOld</span><span class="symbol">[</span><span class="normal">prevLineOffset </span><span class="symbol">+</span><span class="normal"> j</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span>
+<span class="normal">                yOld</span><span class="symbol">[</span><span class="normal">nextLineOffset </span><span class="symbol">+</span><span class="normal"> j</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> yOld</span><span class="symbol">[</span><span class="normal">nextLineOffset </span><span class="symbol">+</span><span class="normal"> j</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">])/</span><span class="number">2</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> yOldest</span><span class="symbol">[</span><span class="normal">lineOffset </span><span class="symbol">+</span><span class="normal"> j</span><span class="symbol">];</span>
+<span class="normal">            yOldest</span><span class="symbol">[</span><span class="normal">lineOffset </span><span class="symbol">+</span><span class="normal"> j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="number">0.99999</span><span class="symbol">*</span><span class="normal">val</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="comment">// Scale between 0 and 255...</span>
+<span class="normal">            </span><span class="keyword">var</span><span class="normal"> color </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="number">127.0</span><span class="symbol">+</span><span class="number">127.0</span><span class="symbol">*</span><span class="number">0.99999</span><span class="symbol">*</span><span class="normal">val</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="comment">// R G [B] [A] - water is blue, no?</span>
+<span class="normal">            image</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="number">4</span><span class="symbol">*(</span><span class="normal">lineOffset</span><span class="symbol">+</span><span class="normal">j</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">2</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> color</span><span class="symbol">;</span>
+<span class="normal">            image</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">[</span><span class="number">4</span><span class="symbol">*(</span><span class="normal">lineOffset</span><span class="symbol">+</span><span class="normal">j</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">3</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="number">255</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    g_dc</span><span class="symbol">.</span><span class="function">putImageData</span><span class="symbol">(</span><span class="normal">image</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="comment">// The function called by setInterval every 20ms (maximum refresh rate: 50Hz).</span>
+<span class="keyword">function</span><span class="normal"> </span><span class="function">simulate</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// Depending on the active TAB, call the proper simulator.</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_activeTab </span><span class="symbol">===</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">simulate1d</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_activeTab </span><span class="symbol">===</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">simulate2d</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="comment">// In the rest of the TABs (the 'Theory' and 'Javascript' sections)</span>
+<span class="normal">        </span><span class="comment">// disable the simulation (don't waste tablet/phone batteries!)</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_timer </span><span class="symbol">!==</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="function">clearInterval</span><span class="symbol">(</span><span class="normal">g_timer</span><span class="symbol">);</span>
+<span class="normal">            g_timer </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="comment">// Called from some HTML side links to switch the active jQueryUI tab.</span>
+<span class="keyword">function</span><span class="normal"> </span><span class="function">switchToTab</span><span class="symbol">(</span><span class="normal">tab</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="function">jQuery</span><span class="symbol">(</span><span class="string">'#tabs'</span><span class="symbol">).</span><span class="function">tabs</span><span class="symbol">(</span><span class="string">"option"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"active"</span><span class="symbol">,</span><span class="normal"> tab</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+
+<span class="comment">// The main entrypoint:</span>
+<span class="function">jQuery</span><span class="symbol">(</span><span class="normal">document</span><span class="symbol">).</span><span class="function">ready</span><span class="symbol">(</span><span class="keyword">function</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// Create a jQueryUI tab, and show the first tab ('1D wave'):</span>
+<span class="normal">    </span><span class="function">jQuery</span><span class="symbol">(</span><span class="normal"> </span><span class="string">"#tabs"</span><span class="normal"> </span><span class="symbol">).</span><span class="function">tabs</span><span class="symbol">(</span><span class="cbracket">{</span>
+<span class="normal">        activate</span><span class="symbol">:</span><span class="normal"> </span><span class="keyword">function</span><span class="symbol">(</span><span class="normal">event</span><span class="symbol">,</span><span class="normal"> ui</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            g_activeTab </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="string">'1-dimension wave (string)'</span><span class="symbol">:</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="string">'2-dimension waves (water)'</span><span class="symbol">:</span><span class="normal"> </span><span class="number">1</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="string">'The theory'</span><span class="symbol">:</span><span class="normal">                </span><span class="number">2</span><span class="symbol">,</span>
+<span class="normal">                </span><span class="string">'The code'</span><span class="symbol">:</span><span class="normal">                  </span><span class="number">3</span>
+<span class="normal">            </span><span class="cbracket">}</span><span class="symbol">[</span><span class="normal">ui</span><span class="symbol">.</span><span class="normal">newTab</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">].</span><span class="normal">children</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">].</span><span class="normal">text</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_activeTab </span><span class="symbol">===</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> g_activeTab </span><span class="symbol">===</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)</span>
+<span class="normal">                </span><span class="function">setupCanvasAndStartSimulation</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_activeTab </span><span class="symbol">===</span><span class="normal"> </span><span class="number">2</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_mathJax_configured </span><span class="symbol">===</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    g_mathJax_configured </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                    MathJax</span><span class="symbol">.</span><span class="normal">Hub</span><span class="symbol">.</span><span class="function">Configured</span><span class="symbol">();</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">        active</span><span class="symbol">:</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function">setupCanvasAndStartSimulation</span><span class="symbol">();</span>
+<span class="cbracket">}</span><span class="symbol">);</span>
+</tt></pre>
+
+</div>
+  </div>
+</div></p>
+
+<div class="redBox">
+If you liked this article, you'll probably also appreciate <a href="gravity.html">this one</a>.
+</div>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:08:34 2016</em></td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/wavePhysics.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

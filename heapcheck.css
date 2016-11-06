@@ -1,0 +1,28 @@
+body { 
+    margin-left: 6%; 
+    margin-right: 2%; 
+    margin-top: 3%; 
+    font: 82%/130% sans-serif;
+    font-style: normal;
+}
+pre {
+    background: #DDDDDD;
+    white-space: pre; 
+    margin: 1em;
+    padding: 0.5em;
+    border: none;
+    font: 110% monospace;
+}
+tt,code {
+    font: 110% monospace;
+}
+@media (min-width:799px) {
+    .desktop-only {
+        display:block !important;
+    }
+}
+@media (max-width: 800px) {
+    .desktop-only {
+        display:none !important;
+    }
+}

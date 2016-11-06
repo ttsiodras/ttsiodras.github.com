@@ -1,0 +1,76 @@
+Index: offline.wikipedia/mediawiki_sa/includes/Math.php
+===================================================================
+--- offline.wikipedia/mediawiki_sa/includes/Math.php	(revision 102)
++++ offline.wikipedia/mediawiki_sa/includes/Math.php	(working copy)
+@@ -24,6 +24,7 @@
+ 
+ 	function MathRenderer( $tex ) {
+ 		$this->tex = $tex;
++		$this->cachehash = md5( $this->tex );
+  	}
+ 
+ 	function setOutputMode( $mode ) {
+@@ -41,6 +42,15 @@
+ 		}
+ 
+ 		if( !$this->_recall() ) {
++			// ----------------------
++			// jsomers - 8/24/09 - read from "cache"
++			$cachepath = $this->_getCachePath();
++			if (is_dir($cachepath)) { // We've processed this input before
++				$this->hash = trim(`ls $cachepath`);
++				return $this->_doRender(); // images should be there already.
++			}
++			// ----------------------
++			
+ 			# Ensure that the temp and output directories are available before continuing...
+ 			if( !file_exists( $wgTmpDirectory ) ) {
+ 				if( !@mkdir( $wgTmpDirectory ) ) {
+@@ -144,7 +154,14 @@
+ 			if( !rename( "$wgTmpDirectory/{$this->hash}.png", "$hashpath/{$this->hash}.png" ) ) {
+ 				return $this->_error( 'math_output_error' );
+ 			}
+-
++			
++			// ----------------------
++			// jsomers - 8/24/09 - create a mapping between the input and output hashes:
++			if ( !is_dir( $cachepath ) ) {
++				mkdir($cachepath."/".$this->hash, 0777, true);
++			}
++			// ----------------------
++			
+ 			// fnatter 2006-11-05: don't use db for standalone mediawiki
+ 			# Now save it back to the DB:
+ 			if ( !wfReadOnly() and false) { // fnatter: NOTE "and false"!
+@@ -249,13 +266,13 @@
+ 	function _linkToMathImage() {
+ 		global $wgMathPath;
+ 		global $wgMathDirectory;
+-		
++
+ 		// michael nowak - 05.03.2007 - replaced: "$wgMathPath/" with: "pics://math/"
+-		$url = htmlspecialchars( "pics://math/" . substr($this->hash, 0, 1)
++		$url = htmlspecialchars( "/images/" . substr($this->hash, 0, 1)
+ 					.'/'. substr($this->hash, 1, 1) .'/'. substr($this->hash, 2, 1)
+ 					. "/{$this->hash}.png" );
+ 		$alt = trim(str_replace("\n", ' ', htmlspecialchars( $this->tex )));
+-		return "<img class='tex' src=\"$url\" alt=\"$alt\" />";
++		return "<img class=\"tex\" src=\"$url\" alt=\"$alt\"/>";
+ 	}
+ 
+ 	function _getHashPath() {
+@@ -266,6 +283,14 @@
+ 		wfDebug( "TeX: getHashPath, hash is: $this->hash, path is: $path\n" );
+ 		return $path;
+ 	}
++	
++	function _getCachePath() {
++		$path = '/users/jsomers/offline.wikipedia/mediawiki_sa/images/math/_cached/'. substr($this->cachehash, 0, 1)
++					.'/'. substr($this->cachehash, 1, 1)
++					.'/'. substr($this->cachehash, 2, 1)
++					.'/'. $this->cachehash;
++		return $path;
++	}
+ 
+ 	function renderMath( $tex ) {
+ 		global $wgUser;

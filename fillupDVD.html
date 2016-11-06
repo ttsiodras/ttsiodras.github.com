@@ -1,0 +1,719 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/fillupDVD.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Optimally filling up storage - to the rim (Dynamic Programming)</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Optimally filling up storage - to the rim (Dynamic Programming)</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+              <em>(September 2006)</em>
+
+  <p>My daily routine - as a developer writing code for a living -
+  involves visits to sites like <a href="http://www.slashdot.org">Slashdot</a>,
+  <a href="http://www.reddit.com/r/programming">Reddit</a> and
+  <a href="http://news.ycombinator.com/">Hacker News</a>.
+  These visits usually end up with me downloading "stuff"
+  that I can take back home for... research. I have
+  a directory set-up in my PC (at work) for these "R&amp;D"
+  materials, and periodically empty it to a rewritable DVD I carry
+  back and forth between work and home (<em><b>Edit, April 2011:</b>
+  DVDs are now all but obsolete; USB sticks are used in
+  their place, but the article is still valid - keep reading</em>).</p>
+
+  <p>After a busy month of hacking, I realized that a lot of "R&amp;D"
+  material was there; and decided to burn a DVD and take
+  it home. Only to find that more than 6GB were patiently waiting 
+  in the research folder...</p>
+
+  <center><em>"Oh well, I'll just take the files in two passes - one today
+  and one tomorrow."</em></center>
+
+  <p>And at that point, the question formed in my mind:</p>
+
+  <p><em>What would be the <b>optimal</b> way of doing that,
+  filling up a DVD with a myriad files, making sure that it gets
+  filled up as much as possible? With no free space left unused?</em></p>
+
+  <p>Think about it. When you have more than a hundred files, there
+  are literally millions of combinations you can try. Which one is
+  the best?</p>
+
+  <p>Is it really millions? Well, here's a quick "brute-force" attempt:</p>
+
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+<span class="preproc">import</span><span class="normal"> sys</span>
+
+<span class="normal">g_maxSize</span><span class="symbol">=</span><span class="number">4480</span><span class="normal">  </span><span class="comment"># we'll count in megabytes, and a DVD is ~4480M</span>
+
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">main</span><span class="symbol">():</span><span class="normal">           </span><span class="comment"># the sets formed from the combinations</span>
+<span class="normal">    collectionsToTest </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span><span class="normal">  </span><span class="comment"># will be stored in this variable</span>
+
+<span class="normal">    </span><span class="comment"># Now read integers from STDIN</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> newNo </span><span class="keyword">in</span><span class="normal"> sys</span><span class="symbol">.</span><span class="normal">stdin</span><span class="symbol">.</span><span class="function">readlines</span><span class="symbol">():</span>
+<span class="normal">        </span><span class="keyword">try</span><span class="symbol">:</span><span class="normal">                      </span><span class="comment"># Each integer is the size</span>
+<span class="normal">            newNo </span><span class="symbol">=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">newNo</span><span class="symbol">)</span><span class="normal">    </span><span class="comment"># in MB of one of the files</span>
+<span class="normal">        </span><span class="keyword">except</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"%s is not numeric"</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> newNo</span>
+<span class="normal">            </span><span class="keyword">continue</span>
+<span class="normal">        newWing </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">x</span><span class="symbol">+[</span><span class="normal">newNo</span><span class="symbol">]</span><span class="normal"> </span><span class="keyword">for</span><span class="normal"> x </span><span class="keyword">in</span><span class="normal"> collectionsToTest</span><span class="symbol">]</span>
+<span class="normal">        collectionsToTest</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">([</span><span class="normal">newNo</span><span class="symbol">])</span>
+<span class="normal">        collectionsToTest</span><span class="symbol">.</span><span class="function">extend</span><span class="symbol">(</span><span class="normal">newWing</span><span class="symbol">)</span>
+
+<span class="normal">                                   </span><span class="comment"># Now check all the sets</span>
+<span class="normal">    maximumLessThanMaxSize </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="normal">     </span><span class="comment"># and find the best one</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> set </span><span class="keyword">in</span><span class="normal"> collectionsToTest</span><span class="symbol">:</span><span class="normal">  </span><span class="comment"># (the one with the closest</span>
+<span class="normal">        total </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="normal">                  </span><span class="comment"># sum to g_maxSize)</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> elem </span><span class="keyword">in</span><span class="normal"> set</span><span class="symbol">:</span>
+<span class="normal">            total </span><span class="symbol">+=</span><span class="normal"> elem</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> total </span><span class="symbol">&gt;</span><span class="normal"> g_maxSize</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">continue</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> total </span><span class="symbol">&gt;</span><span class="normal"> maximumLessThanMaxSize</span><span class="symbol">:</span>
+<span class="normal">            maximumLessThanMaxSize </span><span class="symbol">=</span><span class="normal"> total</span>
+<span class="normal">            </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Set:"</span><span class="symbol">,</span><span class="normal"> set</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"maximum:"</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                maximumLessThanMaxSize</span>
+
+
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="function">main</span><span class="symbol">()</span>
+</tt></pre>
+
+</div>
+
+  <tt>main</tt> is split in two blocks. The first one
+  creates all possible sets you can form out of a series of
+  numbers, that are read from standard input. The second one checks each of
+  these sets to find the best set (the one that gets as close as
+  possible to 4480MB).
+
+  <p>Each new number that is input increases the sets to test: the
+  new <tt>collectionsToTest</tt> is made of:</p>
+
+  <ul>
+    <li>the previous collection of sets</li>
+
+    <li>the new element, in a single number set</li>
+
+    <li>each one of the sets of the previous collection augmented
+    to include the new number</li>
+  </ul>So, if you input numbers 4400,10,50,70, you get the
+  following <tt>collectionsToTest</tt>:
+
+    <pre>
+[4400]          (4400 is input)
+
+[10]            (10 is input)
+[4400, 10]
+
+[50]            (50 is input)
+[4400, 50]
+[10, 50]
+[4400, 10, 50]
+
+[70]            (70 is input)
+[4400, 70]
+[10, 70]
+[4400, 10, 70]
+[50, 70]
+[4400, 50, 70]
+[10, 50, 70]
+[4400, 10, 50, 70]
+</pre>
+  ..and the following result from the prototype:
+
+    <pre class="o">
+<b>bash$</b> ./brutus.py
+4400
+10
+50
+70
+<em>(Pressing Ctrl-D)</em>
+Set: [4400] maximum: 4400
+Set: [4400, 10] maximum: 4410
+Set: [4400, 50] maximum: 4450
+Set: [4400, 10, 50] maximum: 4460
+Set: [4400, 70] maximum: 4470
+Set: [4400, 10, 70] maximum: 4480
+</pre>
+
+  Now let's revisit the set creation: each new number that we input to a
+  previous collection of N sets, is adding a set of one element
+  (with the new member) and N new sets (the previous sets,
+  augmented to include the new number). This means that we go from
+  a collection of N sets to one with N+1+N sets. The work to perform therefore,
+  as we add elements, grows at a rate faster than 2^N; REALLY fast... 
+  
+  After just 20 numbers,
+  we have millions of combinations to test:
+
+<div class="scrollableContainer">
+<pre class="o">
+<b>bash$</b> perl -e \
+    'for($i=1; $i&lt;20; $i++) { print $i."\n"; }' | \
+    ./brutus.py
+
+(you'll run out of memory, you better Ctrl-C 
+ while you're ahead)
+</pre>
+</div>
+  
+  My "R&amp;D" directory has hundreds of
+  files, not just 20... we're in the area of billions, trillions,
+  zillions of combinations... 
+  <p>How do we cope?
+
+  <h4>Dynamic programming</h4>If you 've never heard of dynamic
+  programming and look it up in Wikipedia, you might get scared
+  from its technical description. You shouldn't. Its actually quite
+  easier to figure out what it is when you look at it from our -
+  somewhat limited - viewpoint.
+
+  <p>Our problem (optimally choosing a subset of integers from a
+  given set to fill up a fixed size container) is one of a class of
+  problems that share a common trait: they are difficult to solve
+  in brute-force, but they allow you to easily find an optimal
+  solution for problem "N+1" if you know the solution for problem
+  "N".</p>
+
+  <p>Let's look at it in detail for our problem. We'll build a
+  table:</p>
+
+  <table summary="Dynamic programming solver" width="60%" border=
+  "0" cellspacing="1" align="center">
+    <tr bgcolor="#BBBBBB">
+      <td align="center" colspan="6"><b>Dynamic programming solver
+      for my "R&amp;D" directory migration</b></td>
+    </tr>
+
+    <tr bgcolor="#CCCCCC">
+      <td width="16%">&nbsp;</td>
+
+      <td width="16%" align="center">1</td>
+
+      <td width="16%" align="center">2</td>
+
+      <td width="16%" align="center">3</td>
+
+      <td width="16%" align="center">...</td>
+
+      <td align="center">198</td>
+    </tr>
+
+    <tr bgcolor="#DDDDDD">
+      <td align="right">1 MB</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+    </tr>
+
+    <tr bgcolor="#DDDDDD">
+      <td align="right">2 MB</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+    </tr>
+
+    <tr bgcolor="#DDDDDD">
+      <td align="right">3 MB</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+    </tr>
+
+    <tr>
+      <td>...</td>
+    </tr>
+
+    <tr bgcolor="#DDDDDD">
+      <td align="right">4480 MB</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+
+      <td>&nbsp;</td>
+    </tr>
+  </table>
+
+  <p>The row index provides the container size: we start from 1MB
+  and move all the way up to 4480MB. The column index is <em>the
+  number of files we use from my directory to fill up the
+  container</em>. I currently have a total of 198 files in the
+  directory, so the table has 198 columns. 
+  <p>The table stores in each cell the <b>optimal (maximum)</b> sum 
+  of filesizes that we can achieve for each cell - that is, for
+  each combination of (container size, first j files). Notice that we have
+  arranged the files in a particular order, so</p>
+
+  <ul>
+    <li>in column j, we'll store the optimal result using only the
+    first j files</li>
+
+    <li>in column j+1, the optimal result using only the first j+1
+    files</li>
+
+    <li>etc...</li>
+  </ul>This means that if we somehow manage to fill this table, then
+  the cell at the bottom right will contain
+  the optimal (maximum) sum we can get for our set of 198 files. To be more precise:
+  the value in cell (N,M) is the optimal cumulative size that we can get - that is, the
+  sum of the file sizes of the optimal set, for a container of size
+  N using the first M files - so it will always be less than (or
+  equal) to the row index, N (which is the size of the container).
+
+  <p>Now imagine that we have filled up ALL lines up to line j, and
+  ALL cells of line j+1 up to column k. How do we fill cell (j+1,
+  k+1)?<br>&nbsp;<br>
+  
+  <table summary="Adding a new cell" width="45%" border=
+  "0" cellspacing="1" align="center">
+
+    <tr bgcolor="#DDDDDD">
+      <td width="15%" align="center">&nbsp;</td>
+      <td width="15%" align="center">Column k</td>
+      <td width="15%" align="center">Column k+1</td>
+    </tr>
+
+    <tr bgcolor="#CCCCCC">
+      <td width="15%" align="center">Line j</td>
+      <td width="15%" align="center">a</td>
+      <td width="15%" align="center">b</td>
+    </tr>
+
+    <tr bgcolor="#DDDDDD">
+      <td width="15%" align="center">Line j+1</td>
+      <td width="15%" align="center">c</td>
+      <td width="15%" align="center">?</td>
+    </tr>
+
+    <tr>
+      <td>...</td>
+    </tr>
+  </table>
+
+  That is, given that...
+  <ul>
+    <li>line j provides us with the optimal (maximum) cumulative
+    filesize for a container of size j if we use k files ("a")
+
+    <li>line j provides us with the optimal (maximum) cumulative
+    filesize for a container of size j if we use k+1 files ("b")</li>
+
+    <li>and that we have somehow managed to figure out the optimal
+    cumulative filesize for a container of size j+1 by using the first k
+    files ("c")</li>
+  </ul>...how do we fare with the extra megabyte provided by line
+  j+1 if we also use file k+1? Can we pack "more stuff", and thus
+  increase the value from "c" to something bigger?
+
+  <p>In order to fill cell (j+1,k+1) of line j+1, we need to see
+  whether the optimal sum of filesizes is the same as it was using
+  the k first files (i.e. the same as in cell (j+1,k), "c"), or whether
+  we can use the extra file (file k+1) and increase space coverage
+  by adding it to the mix.</p>
+
+  <p>To do that...</p>
+
+  <ul>
+    <li>we first check to see if file k+1 fits in a container
+    of size j+1. If not, we copy "c" from the cell on the left - that is,
+    the optimal result stays the same in this line between columns
+    k and k+1, since file k+1 can't fit in j+1 MB.</li>
+
+    <li>if it can fit, we check if we can increase the space
+    covered by using the file k+1 (compared to column k, which uses
+    only the first k files and achieves "c"). This is the most complicated part:
+    <br>&nbsp;<br>
+    <b><em>If we use file k+1 in the container of size j+1, then the remaining 
+    space will be <tt>j+1-filesizeOfFile(k+1)</tt>. The optimal result we can
+    achieve for a container of that size, is known - we can simply look it up 
+    in the table, since it is stored in a line above (remember, ALL lines
+    up to j+1 are filled-in); we then add filesizeOfFile(k+1) to that result, and check whether we
+    increased the coverage (i.e. whether we achieved a value greater than "c").</em></b>
+  </ul>If we can't improve the optimal result of the previous
+  column (by using file k+1), we just copy the value from the cell on the left
+  (i.e. we use only the first k files).
+
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+<span class="preproc">import</span><span class="normal"> sys</span>
+
+<span class="normal">g_maxSize</span><span class="symbol">=</span><span class="number">4480</span>
+
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">main</span><span class="symbol">():</span>
+
+<span class="normal">    </span><span class="comment"># Read file sizes from standard input as integers:</span>
+<span class="normal">    fileSizes </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> key </span><span class="keyword">in</span><span class="normal"> sys</span><span class="symbol">.</span><span class="normal">stdin</span><span class="symbol">.</span><span class="function">readlines</span><span class="symbol">():</span>
+<span class="normal">        </span><span class="keyword">try</span><span class="symbol">:</span>
+<span class="normal">            key </span><span class="symbol">=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">key</span><span class="symbol">)</span>
+<span class="normal">            fileSizes</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">key</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">except</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"%s is not numeric"</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> key</span>
+<span class="normal">            </span><span class="keyword">continue</span>
+
+<span class="normal">    </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Total of "</span><span class="symbol">,</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">fileSizes</span><span class="symbol">),</span><span class="normal"> </span><span class="string">"items"</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="normal"> fileSizes</span>
+
+<span class="normal">    </span><span class="comment"># Time for dynamic programming</span>
+
+<span class="normal">    optimalResults </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">{}</span>
+
+<span class="normal">    </span><span class="comment"># Line: from 0 .. g_maxSize</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> containerSize </span><span class="keyword">in</span><span class="normal"> </span><span class="function">xrange</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> g_maxSize</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">):</span>
+
+<span class="normal">        </span><span class="comment"># Column: enumerate gives tuple of (index, file size)</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> idx</span><span class="symbol">,</span><span class="normal"> fileSize </span><span class="keyword">in</span><span class="normal"> </span><span class="function">enumerate</span><span class="symbol">(</span><span class="normal">fileSizes</span><span class="symbol">):</span>
+
+<span class="normal">            </span><span class="comment"># We will index the "optimalResults" via tuples:</span>
+
+<span class="normal">            </span><span class="comment"># The current cell</span>
+<span class="normal">            cellCurrent </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">containerSize</span><span class="symbol">,</span><span class="normal"> idx</span><span class="symbol">)</span>
+
+<span class="normal">            </span><span class="comment"># The cell on our left</span>
+<span class="normal">            cellOnTheLeftOfCurrent </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">containerSize</span><span class="symbol">,</span><span class="normal"> idx</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span>
+
+<span class="normal">            </span><span class="comment"># Does the file on column "idx" fit inside containerSize?</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> containerSize</span><span class="symbol">&lt;</span><span class="normal">fileSize</span><span class="symbol">:</span>
+
+<span class="normal">                </span><span class="comment"># the file in column idx doesn't fit in containerSize</span>
+<span class="normal">                </span><span class="comment"># so copy optimal value from the cell on its left</span>
+<span class="normal">                optimalResults</span><span class="symbol">[</span><span class="normal">cellCurrent</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                    optimalResults</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">cellOnTheLeftOfCurrent</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+
+<span class="normal">            </span><span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="comment"># It fits!</span>
+
+<span class="normal">                </span><span class="comment"># Using file of column "idx", the remaining space is...</span>
+<span class="normal">                remainingSpace </span><span class="symbol">=</span><span class="normal"> containerSize </span><span class="symbol">-</span><span class="normal"> fileSize</span>
+
+<span class="normal">                </span><span class="comment"># and for that remaining space, the optimal result</span>
+<span class="normal">                </span><span class="comment"># using the first idx-1 files has been found to be:</span>
+<span class="normal">                optimalResultOfRemainingSpace </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                    optimalResults</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">((</span><span class="normal">remainingSpace</span><span class="symbol">,</span><span class="normal"> idx</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">),</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+
+<span class="normal">                </span><span class="comment"># so let's check: do we improve things by using "idx"?</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> optimalResultOfRemainingSpace </span><span class="symbol">+</span><span class="normal"> fileSize </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                        optimalResults</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">cellOnTheLeftOfCurrent</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">):</span>
+
+<span class="normal">                    </span><span class="comment"># we improved the best result, store it!</span>
+<span class="normal">                    optimalResults</span><span class="symbol">[</span><span class="normal">cellCurrent</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                        optimalResultOfRemainingSpace </span><span class="symbol">+</span><span class="normal"> fileSize</span>
+<span class="normal">                </span><span class="keyword">else</span><span class="symbol">:</span>
+
+<span class="normal">                    </span><span class="comment"># no improvement by using "idx" - copy from left...</span>
+<span class="normal">                    optimalResults</span><span class="symbol">[</span><span class="normal">cellCurrent</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                        optimalResults</span><span class="symbol">[</span><span class="normal">cellOnTheLeftOfCurrent</span><span class="symbol">]</span>
+
+<span class="normal">    </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Attainable:"</span><span class="symbol">,</span><span class="normal"> optimalResults</span><span class="symbol">[(</span><span class="normal">g_maxSize</span><span class="symbol">,</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">fileSizes</span><span class="symbol">)-</span><span class="number">1</span><span class="symbol">)]</span>
+
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="function">main</span><span class="symbol">()</span>
+</tt></pre>
+
+</div>
+
+<pre class="o">
+<b>bash$</b> ./dynprog1.py
+4400
+10
+50
+70
+<em>(Pressing Ctrl-D)</em>
+Total of  4 items
+[4400, 10, 50, 70]
+Attainable: 4480
+</pre>
+
+  We've found the optimal result (4480) - but how do
+  we get to it? What series of files led us to it?
+
+  <p>Simple - we augment the algorithm to not only keep the optimal sum per cell, but also the last
+  step we used to get it. To reproduce the steps that get us
+  to the final (optimal) result, we start from the optimal result, and go backwards, subtracting the
+  last "step" we used to reach each cell:
+
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">    </span><span class="comment"># Time for dynamic programming</span>
+
+<span class="normal">    optimalResults </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">{}</span>
+<span class="normal">    lastStep </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">{}</span>
+
+<span class="normal">    </span><span class="symbol">...</span>
+
+<span class="normal">            </span><span class="comment"># Does the file on column "idx" fit inside containerSize?</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> containerSize</span><span class="symbol">&lt;</span><span class="normal">fileSize</span><span class="symbol">:</span>
+
+<span class="normal">                </span><span class="comment"># the file in column idx doesn't fit in containerSize</span>
+<span class="normal">                </span><span class="comment"># so copy optimal value from the cell on its left</span>
+<span class="normal">                optimalResults</span><span class="symbol">[</span><span class="normal">cellCurrent</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                    optimalResults</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">cellOnTheLeftOfCurrent</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+
+<span class="normal">                </span><span class="comment"># Copy last step from cell on the left...</span>
+<span class="normal">                lastStep</span><span class="symbol">[</span><span class="normal">cellCurrent</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                    lastStep</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">cellOnTheLeftOfCurrent</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+
+<span class="normal">            </span><span class="keyword">else</span><span class="symbol">:</span>
+
+<span class="normal">                </span><span class="symbol">...</span>
+
+<span class="normal">                </span><span class="comment"># so let's check: do we improve things by using "idx"?</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> optimalResultOfRemainingSpace </span><span class="symbol">+</span><span class="normal"> fileSize </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                        optimalResults</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">cellOnTheLeftOfCurrent</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">):</span>
+
+<span class="normal">                    </span><span class="comment"># we improved the best result, store it!</span>
+<span class="normal">                    optimalResults</span><span class="symbol">[</span><span class="normal">cellCurrent</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                        optimalResultOfRemainingSpace </span><span class="symbol">+</span><span class="normal"> fileSize</span>
+
+<span class="normal">                    </span><span class="comment"># Store last step - i.e. using file "idx"</span>
+<span class="normal">                    lastStep</span><span class="symbol">[</span><span class="normal">cellCurrent</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> fileSize</span>
+<span class="normal">                </span><span class="keyword">else</span><span class="symbol">:</span>
+
+<span class="normal">                    </span><span class="comment"># no improvement by using "idx" - copy from left...</span>
+<span class="normal">                    optimalResults</span><span class="symbol">[</span><span class="normal">cellCurrent</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                        optimalResults</span><span class="symbol">[</span><span class="normal">cellOnTheLeftOfCurrent</span><span class="symbol">]</span>
+
+<span class="normal">                    </span><span class="comment"># Copy last step from cell on the left...</span>
+<span class="normal">                    lastStep</span><span class="symbol">[</span><span class="normal">cellCurrent</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                        lastStep</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">(</span><span class="normal">cellOnTheLeftOfCurrent</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+
+<span class="normal">    </span><span class="symbol">...</span>
+
+<span class="normal">    </span><span class="comment"># Navigate backwards... starting from the optimal result:</span>
+<span class="normal">    total </span><span class="symbol">=</span><span class="normal"> optimalResult</span><span class="symbol">[(</span><span class="normal">g_maxSize</span><span class="symbol">,</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">fileSizes</span><span class="symbol">)-</span><span class="number">1</span><span class="symbol">)]</span>
+
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> total</span><span class="symbol">&gt;</span><span class="number">0</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="comment"># The last step we used to get to "total" was...</span>
+<span class="normal">        lastFileSize </span><span class="symbol">=</span><span class="normal"> lastStep</span><span class="symbol">[(</span><span class="normal">total</span><span class="symbol">,</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">fileSizes</span><span class="symbol">)-</span><span class="number">1</span><span class="symbol">)]</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> total</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"removing"</span><span class="symbol">,</span><span class="normal"> lastFileSize</span>
+
+<span class="normal">        </span><span class="comment"># And the one before the last step was... (loop)</span>
+<span class="normal">        total </span><span class="symbol">-=</span><span class="normal"> lastFileSize</span>
+</tt></pre>
+
+</div>
+
+<pre class="o">
+<b>bash$</b> ./dynprog2.py
+4400
+10
+50
+70
+<em>(Pressing Ctrl-D)</em>
+Total of  4 items
+[4400, 10, 50, 70]
+Attainable: 4480
+4480 removing 70
+4410 removing 10
+4400 removing 4400
+</pre>
+
+  And now we can enjoy the real fruits of our labour: feeding the 
+  brute force implementation with the numbers 1-99 would lead to more 
+  than 2^100 sets - the universe would end while we waited for results
+  to appear...  Instead, our dynamic programming script only takes a couple of
+  seconds:<p>(<em>Note that numbers from 1 to 99
+  add up to 99*100/2 = 4950, so they accumulate to well above our 
+  target of 4480 - and the optimal sum of 4480 is achieved by dropping 
+  some files out, just as we wanted</em>):
+
+<pre class="o">
+<b>bash$</b> perl -e 'for($i=1; $i&lt;100; $i++) { print $i."\n"; }' | \
+	./dynprog2.py
+Total of  99 items
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
+18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 
+33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 
+48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,
+63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 
+78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 
+93, 94, 95, 96, 97, 98, 99]
+Attainable: 4480
+4480 removing 95
+4385 removing 94
+4291 removing 93
+4198 removing 92
+4106 removing 91
+4015 removing 90
+...
+...
+21 removing 6
+15 removing 5
+10 removing 4
+6 removing 3
+3 removing 2
+1 removing 1
+</pre>
+
+  It works. We can now <em>optimally</em> fill storage space.
+  <p>You can download an easy to use version <a href="fitToSize.py">here</a>.
+  <br>Usage is as plain as it gets:
+  <pre class="o">
+  <b>bash$</b> fitToSize.py inputDirectory/ outputDirectory/ 4475
+
+  (you can choose the desired capacity, 4475 is just an example)</pre>
+  <p><em>P.S. Using MBs to count is in fact cheating: the correct
+  solution is to use the allocation block of the filesystem as a
+  step size between lines. Well, it's close enough for my needs 
+  (using sectors - 512 bytes - would make the table taller by a factor
+  of 2048x, and thus the execution would slow down by that same factor).</em></p>
+  <p><B>Edit, May 2011:</b> An interesting 
+  <a href="http://stackoverflow.com/questions/5850243/fsharp-runs-my-algorithm-slower-than-python">discussion</a> 
+  arose when I tried to <a href="fsharp.slower.than.python.tar.gz">implement 
+  this algorithm in F#</a> - F# turned out to be slower than Python!</p>
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Fri Aug 9 22:48:30 2013</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/fillupDVD.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

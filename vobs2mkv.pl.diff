@@ -1,0 +1,22 @@
+--- vobs2mkv.pl.old	2006-08-12 02:14:53.000000000 +0200
++++ vobs2mkv.pl	2007-08-15 14:09:16.000000000 +0200
+@@ -505,8 +505,8 @@
+ 	}
+ 	if ($ans eq "2") { 
+ 	    $codec = "x264"; 
+-	    $codecSettingsPass1 = "-ovc x264 -oac copy -x264encopts bitrate=$intRate:pass=1:subq=6:4x4mv:8x8dct:me=3:frameref=5:bframes=3:b_pyramid:weight_b";
+-	    $codecSettingsPass2 = "-ovc x264 -oac copy -x264encopts bitrate=$intRate:pass=2:subq=6:4x4mv:8x8dct:me=3:frameref=5:bframes=3:b_pyramid:weight_b";
++	    $codecSettingsPass1 = "-ovc x264 -oac copy -x264encopts bitrate=$intRate:pass=1:subq=6:8x8dct:me=umh:frameref=5:bframes=3:b_pyramid:weight_b";
++	    $codecSettingsPass2 = "-ovc x264 -oac copy -x264encopts bitrate=$intRate:pass=2:subq=6:8x8dct:me=umh:frameref=5:bframes=3:b_pyramid:weight_b";
+ 	    last; 
+ 	}
+     }
+@@ -543,7 +543,7 @@
+ 	mySystem("mencoder $cropDeinterAndScale $codecSettingsPass2 -o $outputVideoFile $srcFile");
+     }
+ 
+-    my $cmd = "mkvmerge --engage allow_avc_in_vfw_mode -o $outputName -A $outputVideoFile tmp/audio.ogg\n";
++    my $cmd = "mkvmerge -o $outputName -A $outputVideoFile tmp/audio.ogg\n";
+     mySystem($cmd);
+ 
+     print "\nIf you made subtitles, check them with IDXchecker.pl !\n";

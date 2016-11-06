@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/pythonTypeChecking.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Python "compile-time" type checking</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Python "compile-time" type checking</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(August 2012)</em></p>
+
+<p>I <a href="python.html">love</a> Python. I <a href="pythonFlattenDictionaries.html">really</a>, really do. From it's extensive libraries, to its crystal-clear syntax, it's simply my favourite language. And I <a href="score4.html">speak quite a few</a>.</p>
+
+<p>That being said, I do appreciate compile-time safety. I love it that C++ or OCaml compilers will "bark" - during compile time, not run-time - when a string is passed to a function expecting an integer. Python unfortunately will just crash and burn at runtime.</p>
+
+<p>To compensate, I use tools - I've added flake8 support to <a href="myvim.html">my VIM settings</a>, so I can catch many errors by simply pressing F7 while I edit my code. <a href="http://pychecker.sourceforge.net/">PyChecker</a> is also a mandatory part of my release process. But neither of them can catch this:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">def</span><span class="normal"> </span><span class="function">foo</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="normal"> a </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"asfda"</span>
+
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="function">foo</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span>
+</tt></pre>
+</div>
+
+<p>...which crashes at run-time:</p>
+
+<pre class="o">
+  File "./c.py", line 2, in foo
+    print arg+1
+TypeError: cannot concatenate 'str' and 'int' objects
+</pre>
+
+<p>And the problem recently surfaced in my work: users of my code in the European Space Agency, are writing test scenarios by calling Python functions that I've written (more accurately, Python functions that my code-generators have created)... and are therefore exposed to the inherent risks of dynamic typing. They are supposed to pass hardcoded strings or integers to a series of calls to my functions - but if they mess up, they'll get an exception at run-time, potentially minutes or hours after the test scenario begun executing...</p>
+
+<p>And just like that, it hit me...</p>
+
+<p>...in the case of my particular problem, <em>I can handle this</em>!</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">import</span><span class="normal"> ast</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">foo</span><span class="symbol">(</span><span class="normal">arg</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="normal"> arg</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">aCall</span><span class="symbol">():</span>
+<span class="normal">    </span><span class="function">foo</span><span class="symbol">(</span><span class="string">"123"</span><span class="symbol">)</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">anotherCall</span><span class="symbol">():</span>
+<span class="normal">    </span><span class="function">foo</span><span class="symbol">(</span><span class="number">1234</span><span class="symbol">)</span>
+
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    a </span><span class="symbol">=</span><span class="normal"> ast</span><span class="symbol">.</span><span class="function">parse</span><span class="symbol">(</span><span class="function">open</span><span class="symbol">(</span><span class="normal">__file__</span><span class="symbol">).</span><span class="function">read</span><span class="symbol">())</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> e </span><span class="keyword">in</span><span class="normal"> ast</span><span class="symbol">.</span><span class="function">walk</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="function">isinstance</span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">,</span><span class="normal"> ast</span><span class="symbol">.</span><span class="normal">Call</span><span class="symbol">):</span>
+<span class="normal">            </span><span class="keyword">try</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> e</span><span class="symbol">.</span><span class="normal">func</span><span class="symbol">.</span><span class="normal">id </span><span class="symbol">==</span><span class="normal"> </span><span class="string">'foo'</span><span class="symbol">:</span>
+<span class="normal">                    </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"At line"</span><span class="symbol">,</span><span class="normal"> e</span><span class="symbol">.</span><span class="normal">lineno</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"you are calling 'foo' with: "</span><span class="symbol">,</span><span class="normal"> </span><span class="function">type</span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">.</span><span class="normal">args</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">])</span>
+<span class="normal">            </span><span class="keyword">except</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">pass</span>
+</tt></pre>
+</div>
+
+<p>...which gives:</p>
+
+<pre class="o">
+<b>bash$</b> python ./test.py
+At line 7 you are calling &#39;foo&#39; with:  &lt;class &#39;_ast.Str&#39;&gt;
+At line 10 you are calling &#39;foo&#39; with:  &lt;class &#39;_ast.Num&#39;&gt;
+</pre>
+
+<p>Python allows the script to parse its own "guts", via the <code>ast</code> module. You can therefore "parse" your own callers, and check at "compile-time" (actually, script startup-time) that they indeed called you with the types you are expecting - in my case, hardcoded strings or integers. Any such errors will be detected immediately upon startup - and therefore such crashes will NOT happen during execution of the test script.</p>
+
+<p>This is not bullet-proof, of course - e.g. what if the user code calling my functions actually passes a variable that contains a string? It immediately becomes much more difficult to figure out what type the argument is:</p>
+
+<div class='codegenWrapper'>
+<pre><tt>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">yetAnotherCall</span><span class="symbol">():</span>
+<span class="normal">    myVar </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1234</span>
+<span class="normal">    </span><span class="function">foo</span><span class="symbol">(</span><span class="normal">myVar</span><span class="symbol">)</span>
+
+</tt></pre>
+</div>
+
+<p>...yields:</p>
+
+<pre class="o">
+<b>bash$</b> python ./test.py
+At line 14 you are calling &#39;foo&#39; with:  &lt;class &#39;_ast.Name&#39;&gt;
+</pre>
+
+<p>Maybe Pypy or Shedskin can help - since they both try to "compile" Python code to static-typing languages (<em>any suggestions most welcome</em>).</p>
+
+<p>But regardless of the failings of this method, and even though it doesn't solve all potential forms of the problem... in special cases like mine, where auto-generated Python code is supposed to be called with hardcoded values from its users, the <code>ast</code> module can indeed save the day, by detecting such usage errors at "compile-time".</p>
+
+<p>Keep that in mind when coding your scripts.</p>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Mon Aug 6 15:56:04 2012</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/pythonTypeChecking.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

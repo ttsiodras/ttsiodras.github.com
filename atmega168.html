@@ -1,0 +1,383 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/atmega168.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Tinkering with an ATmega168</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Tinkering with an ATmega168</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+              <em>(June 2009)</em><p>
+  I am a software developer by vocation, but I recently discovered
+  that hardware tinkering can be just as fun... So I went ahead and
+  spent the amazing amount of 6 Euros (!) to buy the necessary parts
+  for tinkering with an ATmega168...<p>
+Many thanks to Denilson Figueiredo for the excellent <a href="http://my.opera.com/CrazyTerabyte/blog/2007/10/25/first-contact-with-atmega8-microcontroller-part-1">tutorial</a> that allowed me to program the microcontroller with just a parallel port circuit.
+  <h2>The 5.1 High Fidelity Audio in action</h2>
+After being programmed by my code, the ATmega168 started singing the
+"Happy Birthday" song...  The videos were taken with an old mobile phone 
+(hence the superb quality):<br>
+&nbsp;<br>
+<div style="margin:0 auto 0 auto; width:100%; text-align:center;">
+    <div style="float: left; margin: 0 1em;">
+        <center>
+            <video controls>
+                <source src='V21-06-09_13.13.mp4'>
+                Your browser does not support the video tag.
+                <a href="V21-06-09_13.13.mp4">Download video</a>.
+            </video>
+            <p><em>(An overall view,<br>zooming-in on the buzzer)</em>
+        </center>
+    </div>
+    <div style="float: right; margin: 0 1em;">
+        <center>
+            <video controls>
+                <source src='V26-06-09_14.12.mp4'>
+                Your browser does not support the video tag.
+                <a href="V26-06-09_14.12.mp4">Download video</a>.
+            </video>
+            <p><em>(Close-up recording,<br>with sound)</em>
+        </center>
+    </div>
+</div>
+<div style="clear:both">
+And here are some snaps:
+</div>
+<div class="scrollableContainer">
+  <table cellspacing="15" style="margin-left:auto; margin-right:auto;" summary="Breadboard ATmega168">
+  <tr>
+  <td>
+<center>
+  <a href="P20-06-09_18.33.jpg" rel="lightbox" title="First with just one LED, to test the parallel port programmer"><img alt="First with just one LED, to test the parallel port programmer" src="P20-06-09_18.33.thumb.jpg"><br>First with just one LED,<br>to test the parallel port programmer</a>
+</center>
+  </td>
+  <td>
+<center>
+  <a href="P20-06-09_18.33_1_.jpg" rel="lightbox" title="5 cables are soldered to a parallel port jack, and then the jack is plugged in"><img alt="5 cables are soldered to a parallel port jack, and then the jack is plugged in" src="P20-06-09_18.33_1_.thumb.jpg"><br>5 cables are soldered to a parallel port jack,<br>and then the jack is plugged in</a>
+</center>
+  </td>
+  </tr>
+  <tr>
+  <td>
+<center>
+  <a href="P20-06-09_18.33_2_.jpg" rel="lightbox" title="Using a PC power supply"><img alt="Using a PC power supply" src="P20-06-09_18.33_2_.thumb.jpg"><br>Using a PC power supply</a>
+</center>
+  </td>
+  <td>
+<center>
+  <a href="P21-06-09_13.45.jpg" rel="lightbox" title="Finally, using the buzzer"><img alt="Finally, using the buzzer" src="P21-06-09_13.45.thumb.jpg"><br>Finally, using the buzzer</a>
+</center>
+  </td>
+  </tr>
+  </table>
+</div>
+Don't you dare laugh, this is science at its best!&nbsp;:&#x2011;) There's no "beep" function in the
+microcontroller (obviously :&#x2011;), so I am driving the electrical signal to the 
+buzzer, oscillating it the appropriate times per second (min:587, max:1175Hz) to 
+play the notes...
+  <h2>Schematic and code</h2>
+  The schematic is... well... one buzzer added between ground and the controller's pin 24 :&#x2011;)<p>
+  You can download the code I wrote (and its Makefile) from <a href="birthday.tar.bz2">here</a>. Make sure you have avr-gcc installed (if you use Debian or Ubuntu, simply <tt>apt-get install gcc-avr</tt>).
+  Here's how I drive the microcontroller:
+
+
+<div class='codegenWrapper'>
+<pre><tt>
+<span class="comment">/*  Plays the birthday music on a buzzer attached to ATmega168 pin 24      */</span>
+<span class="comment">/*  Written by Thanassis Tsiodras, June 2009                               */</span>
+
+<span class="comment">/*  I've dropped the CKDIV8 in lfuse, so my ATmega168 runs at 8MHz         */</span>
+<span class="preproc">#define</span><span class="normal"> F_CPU </span><span class="number">8000000</span>
+
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;avr/io.h&gt;</span><span class="normal">          </span><span class="comment">/*  this contains all the IO port definitions */</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;util/delay.h&gt;</span><span class="normal">      </span><span class="comment">/*  for _delay_us and _delay_ms               */</span>
+
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">UPPER_LIMIT_IN_DELAY_US</span><span class="normal"> </span><span class="symbol">(</span><span class="number">768000000</span><span class="symbol">/</span><span class="normal">F_CPU</span><span class="symbol">)</span>
+
+<span class="comment">/*  The song, in pairs of frequency and duration (in milliseconds)         */</span>
+<span class="keyword">struct</span><span class="normal"> </span><span class="classname">_Note</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> frequency</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> durationMS</span><span class="symbol">;</span>
+<span class="cbracket">}</span><span class="normal"> g_Notes</span><span class="symbol">[]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="cbracket">{</span><span class="number">587</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">659</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">587</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">784</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">740</span><span class="symbol">,</span><span class="number">700</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">0</span><span class="symbol">,</span><span class="number">200</span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="cbracket">{</span><span class="number">587</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">659</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">587</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">880</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">784</span><span class="symbol">,</span><span class="number">700</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">0</span><span class="symbol">,</span><span class="number">200</span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="cbracket">{</span><span class="number">587</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">1175</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">988</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">784</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">740</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">659</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="cbracket">{</span><span class="number">1046</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">988</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">784</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">880</span><span class="symbol">,</span><span class="number">500</span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span><span class="cbracket">{</span><span class="number">784</span><span class="symbol">,</span><span class="number">700</span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="comment">/*  The calculation "cache" that helps us avoid floating point in the loop */</span>
+<span class="comment">/*  (read further below)                                                   */</span>
+<span class="type">unsigned</span><span class="normal"> g_remainderTicks</span><span class="symbol">[</span><span class="normal"> </span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">g_Notes</span><span class="symbol">)/</span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">_Note</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">];</span>
+
+<span class="comment">/*  Create a specific frequency for a specified amount of ms.              */</span>
+<span class="type">void</span><span class="normal"> </span><span class="function">buzz</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> idx</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">/*  From the desired frequency, we want the half-period, since we will */</span>
+<span class="normal">    </span><span class="comment">/*  set the buzzer on, sleep for half a period, set it off, sleep for  */</span>
+<span class="normal">    </span><span class="comment">/*  half a period, and then repeat...                                  */</span>
+
+<span class="normal">    </span><span class="comment">/*  &lt;--Period--&gt;                                                       */</span>
+<span class="normal">    </span><span class="comment">/*   ____       _____       _                                          */</span>
+<span class="normal">    </span><span class="comment">/*  |    |     |     |     |                                           */</span>
+<span class="normal">    </span><span class="comment">/*  |    |_____|     |_____|                                           */</span>
+
+<span class="normal">    </span><span class="comment">/*  &lt;-H-&gt;                                                              */</span>
+
+<span class="normal">    </span><span class="comment">/*  H=half period */</span>
+
+<span class="normal">    </span><span class="comment">/*  We want to use _delay_us to sleep for half a period, but...        */</span>
+<span class="normal">    </span><span class="comment">/*  _delay_us has a limitation: the largest value it can sleep for is  */</span>
+
+<span class="normal">    </span><span class="comment">/*     Upper limit in microSeconds = 768 / FrequencyInMHz              */</span>
+
+<span class="normal">    </span><span class="comment">/*  If using a 1MHz clock, this value is 768us... The lowest note in   */</span>
+<span class="normal">    </span><span class="comment">/*  the "Happy birthday" tune is however 587Hz, so it requires a half  */</span>
+<span class="normal">    </span><span class="comment">/*  period of 1000000/(2*587) = 851us, larger than the limit...        */</span>
+
+<span class="normal">    </span><span class="comment">/*  Not to mention that I have already removed the CKDIV8 fuse, so my  */</span>
+<span class="normal">    </span><span class="comment">/*  ATmega168 runs at 8MHz: the limit there is 96us !                  */</span>
+
+<span class="normal">    </span><span class="comment">/*  We therefore sleep the half periods in steps of "upper limit",     */</span>
+<span class="normal">    </span><span class="comment">/*  until we have a remainder less than UPPER_LIMIT_IN_DELAY_US.       */</span>
+
+<span class="normal">    </span><span class="type">int</span><span class="normal"> freq </span><span class="symbol">=</span><span class="normal"> g_Notes</span><span class="symbol">[</span><span class="normal">idx</span><span class="symbol">].</span><span class="normal">frequency</span><span class="symbol">,</span><span class="normal"> ms </span><span class="symbol">=</span><span class="normal"> g_Notes</span><span class="symbol">[</span><span class="normal">idx</span><span class="symbol">].</span><span class="normal">durationMS</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">/*  We first calculate the total micro-seconds for this note.          */</span>
+<span class="normal">    </span><span class="usertype">int32_t</span><span class="normal"> total_us </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(((</span><span class="normal">int32_t</span><span class="symbol">)</span><span class="normal"> ms</span><span class="symbol">)*</span><span class="normal">1000LL</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="keyword">register</span><span class="normal"> </span><span class="type">unsigned</span><span class="normal"> desiredHalfPeriod_us </span><span class="symbol">=</span><span class="normal"> </span><span class="number">500000</span><span class="symbol">/</span><span class="normal">freq</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">/* How many loops will we run, delaying one Period each time?          */</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> loops </span><span class="symbol">=</span><span class="normal"> total_us</span><span class="symbol">/(</span><span class="number">2</span><span class="symbol">*</span><span class="normal">desiredHalfPeriod_us</span><span class="symbol">);</span>
+
+<span class="normal">    </span><span class="comment">/*  Originally, at this point the following code existed: */</span>
+
+<span class="normal">    </span><span class="comment">/*  while(loops--) {                                                   */</span>
+<span class="normal">    </span><span class="comment">/*    PORTC ^= 0x02;                 // Buzzer on                      */</span>
+<span class="normal">    </span><span class="comment">/*    _delay_us(desiredHalfPeriod);  // sleep for...                   */</span>
+<span class="normal">    </span><span class="comment">/*    PORTC ^= 0x02                  // Buzzer off;                    */</span>
+<span class="normal">    </span><span class="comment">/*    _delay_us(desiredHalfPeriod);  // sleep for...                   */</span>
+<span class="normal">    </span><span class="comment">/*  } */</span>
+
+<span class="normal">    </span><span class="comment">/*  It turned out however, that this code did not work...              */</span>
+<span class="normal">    </span><span class="comment">/*  The implementation of _delay_us does floating point arithmetic     */</span>
+<span class="normal">    </span><span class="comment">/*  to calculate the number of ticks to wait, and since _delay_us is   */</span>
+<span class="normal">    </span><span class="comment">/*  called all the time, we end up doing lots of floating point work   */</span>
+<span class="normal">    </span><span class="comment">/*  which takes too much time and  messes up our timing...             */</span>
+
+<span class="normal">    </span><span class="comment">/*  Two things, after reading the code in util/delay.h :               */</span>
+
+<span class="normal">    </span><span class="comment">/*  First, we know that the UPPER_LIMIT_IN_DELAY_US is actually the    */</span>
+<span class="normal">    </span><span class="comment">/*  same as a _delay_loop_1(255), so we will be "eating up" the        */</span>
+<span class="normal">    </span><span class="comment">/*  desiredHalfPeriod calling this directly - and knowing that we      */</span>
+<span class="normal">    </span><span class="comment">/*  "eat" UPPER_LIMIT_IN_DELAY_US each time we do it.                  */</span>
+
+<span class="normal">    </span><span class="comment">/*  Second, this will eventually get us to a stage where the remaining */</span>
+<span class="normal">    </span><span class="comment">/*  microseconds will be less than UPPER_LIMIT_IN_DELAY_US; We can't   */</span>
+<span class="normal">    </span><span class="comment">/*  use _delay_us for them (floating point is slow...), so we...       */</span>
+<span class="normal">    </span><span class="comment">/*  pre-calculate the "remainder" for each note, at the beginning of   */</span>
+<span class="normal">    </span><span class="comment">/*  the main() function below, and store it inside g_remainderTicks... */</span>
+
+<span class="normal">    </span><span class="comment">/*  We therefore prepare a "calculation" cache, that we use per loop...*/</span>
+
+<span class="normal">    </span><span class="comment">/*  And here, in all its glory, the main oscillator loop, without any  */</span>
+<span class="normal">    </span><span class="comment">/*  slow floating point anywhere...                                    */</span>
+
+<span class="normal">    </span><span class="keyword">while</span><span class="symbol">(</span><span class="normal">loops</span><span class="symbol">--)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">register</span><span class="normal"> </span><span class="type">unsigned</span><span class="normal"> counter </span><span class="symbol">=</span><span class="normal"> desiredHalfPeriod_us</span><span class="symbol">;</span>
+<span class="normal">        </span>
+<span class="normal">        PORTC </span><span class="symbol">^=</span><span class="normal"> </span><span class="number">0x02</span><span class="symbol">;</span><span class="normal">                  </span><span class="comment">/*  Buzzer on                      */</span>
+<span class="normal">                                        </span><span class="comment">/*  Now sleep for half a period    */</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="symbol">(</span><span class="normal">counter</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">counter </span><span class="symbol">&gt;=</span><span class="normal"> UPPER_LIMIT_IN_DELAY_US</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="function">_delay_loop_1</span><span class="symbol">(</span><span class="number">255</span><span class="symbol">);</span>
+<span class="normal">                counter </span><span class="symbol">-=</span><span class="normal"> UPPER_LIMIT_IN_DELAY_US</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="function">_delay_loop_1</span><span class="symbol">(</span><span class="normal">g_remainderTicks</span><span class="symbol">[</span><span class="normal">idx</span><span class="symbol">]);</span>
+<span class="normal">                </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        PORTC </span><span class="symbol">^=</span><span class="normal"> </span><span class="number">0x02</span><span class="symbol">;</span><span class="normal">                  </span><span class="comment">/*  Buzzer off                     */</span>
+<span class="normal">                                        </span><span class="comment">/*  Now sleep for half a period    */</span>
+<span class="normal">        counter </span><span class="symbol">=</span><span class="normal"> desiredHalfPeriod_us</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="symbol">(</span><span class="normal">counter</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">counter </span><span class="symbol">&gt;=</span><span class="normal"> UPPER_LIMIT_IN_DELAY_US</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="function">_delay_loop_1</span><span class="symbol">(</span><span class="number">255</span><span class="symbol">);</span>
+<span class="normal">                counter </span><span class="symbol">-=</span><span class="normal"> UPPER_LIMIT_IN_DELAY_US</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="function">_delay_loop_1</span><span class="symbol">(</span><span class="normal">g_remainderTicks</span><span class="symbol">[</span><span class="normal">idx</span><span class="symbol">]);</span>
+<span class="normal">                </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+
+<span class="type">int</span><span class="normal"> </span><span class="function">main</span><span class="symbol">()</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> idx </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="normal">    DDRC  </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0x0F</span><span class="symbol">;</span><span class="normal">  </span><span class="comment">/*  PC0..PC3 as output                                  */</span>
+<span class="normal">    PORTC </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0x00</span><span class="symbol">;</span><span class="normal">  </span><span class="comment">/*  all PORTC output pins Off                           */</span>
+
+<span class="normal">    </span><span class="comment">/* First, update the "remainder" table for each note (a "cache",       */</span>
+<span class="normal">    </span><span class="comment">/* read the comments inside the function "buzz" above)                 */</span>
+
+<span class="normal">    </span><span class="keyword">while</span><span class="symbol">(</span><span class="normal">idx</span><span class="symbol">&lt;</span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">g_Notes</span><span class="symbol">)/</span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">_Note</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">unsigned</span><span class="normal"> desiredHalfPeriod_us </span><span class="symbol">=</span><span class="normal"> </span><span class="number">500000</span><span class="symbol">/</span><span class="normal">g_Notes</span><span class="symbol">[</span><span class="normal">idx</span><span class="symbol">].</span><span class="normal">frequency</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="usertype">uint8_t</span><span class="normal"> __ticks</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">double</span><span class="normal"> __tmp </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">F_CPU</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">/</span><span class="normal"> </span><span class="number">3e6</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span>
+<span class="normal">            </span><span class="symbol">(</span><span class="normal">desiredHalfPeriod_us </span><span class="symbol">%</span><span class="normal"> UPPER_LIMIT_IN_DELAY_US</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">__tmp </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">1.0</span><span class="symbol">)</span>
+<span class="normal">            __ticks </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">__tmp </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">255</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            __ticks </span><span class="symbol">=</span><span class="normal"> </span><span class="number">255</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span>
+<span class="normal">            __ticks </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">uint8_t</span><span class="symbol">)</span><span class="normal">__tmp</span><span class="symbol">;</span>
+<span class="normal">        g_remainderTicks</span><span class="symbol">[</span><span class="normal">idx</span><span class="symbol">++]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> __ticks</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="comment">/* Then, play the notes (and the silences), over and over again...     */</span>
+
+<span class="normal">    </span><span class="keyword">while</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        idx </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="symbol">(</span><span class="normal">idx</span><span class="symbol">&lt;</span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">g_Notes</span><span class="symbol">)/</span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="keyword">struct</span><span class="normal"> </span><span class="classname">_Note</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            PORTC </span><span class="symbol">^=</span><span class="normal"> </span><span class="number">0x01</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_Notes</span><span class="symbol">[</span><span class="normal">idx</span><span class="symbol">].</span><span class="normal">frequency </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">                </span><span class="function">_delay_ms</span><span class="symbol">(</span><span class="normal">g_Notes</span><span class="symbol">[</span><span class="normal">idx</span><span class="symbol">].</span><span class="normal">durationMS</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">else</span>
+<span class="normal">                </span><span class="function">buzz</span><span class="symbol">(</span><span class="normal">idx</span><span class="symbol">);</span>
+<span class="normal">            idx </span><span class="symbol">++;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+</tt></pre>
+
+</div>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Thu Apr 7 20:58:10 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/atmega168.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="SGML-Tools 1.0.9" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+ <link type="text/css" rel="stylesheet" href="heapcheck.css" />
+ <link rel="canonical" href="https://www.thanassis.space/HeapCheck-3.html" />
+ <TITLE>HeapCheck 1.34: Introduction</TITLE>
+</HEAD>
+<body background="book.jpg" bgcolor="white" text="black">
+<TABLE WIDTH="100%" summary="DTP table">
+<TR>
+<TD class="desktop-only" WIDTH="20%" VALIGN="top">
+<TABLE ALIGN="left" summary="index" bgcolor="#DDDDDD">
+<TR><TD><B><A NAME="toc0"></A> <A HREF="HeapCheck.html"><EM>HeapCheck:</EM></A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc1">1.</A> <A HREF="HeapCheck-1.html">Disclaimer/Authors</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc2">2.</A> <A HREF="HeapCheck-2.html">Features</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc3">3.</A> <A HREF="HeapCheck-3.html">Introduction</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc4">4.</A> <A HREF="HeapCheck-4.html">Usage</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc5">5.</A> <A HREF="HeapCheck-5.html">Configuration</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc6">6.</A> <A HREF="HeapCheck-6.html">Debugging tools</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc7">7.</A> <A HREF="HeapCheck-7.html">UNIX gurus</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc8">8.</A> <A HREF="HeapCheck-8.html">Stack techniques </A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc9">9.</A> <A HREF="HeapCheck-9.html">Known bugs</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc10">10.</A> <A HREF="HeapCheck-10.html">Contact me</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc11">11.</A> <A HREF="HeapCheck134.7z">Get 1.34</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc115">12.</A> <A HREF="HeapCheck12.7z">Get 1.2 (stable)</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc12">13.</A> <A HREF="HeapCheck12doc.7z">PDF manual</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc13">14.</A> <A HREF="hcdiff.html">WinCE patch for 1.2</A></B><br/></TD></TR>
+<TR><TD>&nbsp;</TD></TR>
+<TR><TD>
+<A HREF="index.html" TARGET="_top">Back to HomePage</A> 
+</TD>
+</TR>
+</TABLE>
+</TD>
+<TD>
+&nbsp;
+</TD>
+<TD VALIGN="top">
+<A HREF="HeapCheck-4.html">Next</A>
+<A HREF="HeapCheck-2.html">Previous</A>
+<hr/>
+<H2><A NAME="s3">3. Introduction</A></H2>
+
+<P>As you program with C or C++, you are bound to hit upon a heap-related
+bug sooner or later. What's a heap, you ask? Well, it's the system
+resource from which you remove chunks when you call <CODE>malloc()</CODE>, 
+<CODE>calloc()</CODE>, <CODE>new()</CODE>, etc. Unfortunately, it is associated with a 
+lot of really tough bugs. You see, in this code:
+<PRE>
+        main()
+        {
+                char *p = (char *) malloc(5);
+                strcpy( p, "12345");
+                puts(p);
+        }
+</PRE>
+<P>...you probably get away clean in the debugging phase. You only allocated
+5 bytes, you are writing 6 (5 for the string plus one trailing 0), but 
+nothing seems to happen, right?
+<P>Wrong.
+<P>The extra byte you are writing moves your program into 
+'undefined behavior' domain. Some operating systems/languages tolerate
+such things, others don't. Even those who seem to do, eventually don't.
+You see, the extra byte is written into memory not owned by the allocation.
+What is stored there can be anything from debugging info to application 
+code. 
+<P>Then again, we don't free the memory we allocated. It seems we forgot to:
+<PRE>
+                free(p);
+</PRE>
+
+Notice also that the call to 'puts' makes the system read 6 bytes, since
+puts is probably implemented in the C runtime library with something like
+this:
+<PRE>
+                while(*p)
+                     putchar(*p++);
+</PRE>
+
+...which means that not only your code, but also system and RTL (run-time
+library) code accesses memory it shouldn't. This can make your program
+behave in a non-predictable way - crash sometimes, work OK as long as
+you don't run WinAmp... (you get the idea).
+<P>If you want to quickly find heap-related bugs in your Win32 programming, 
+you can use this library in addition to any others you have found/bought.
+It is a simple little library, which I have found useful in my
+programming efforts. Why do I use it instead of others (like the builtin
+debugging heap of Visual C++ 6.0)? It's small (and thus, easily configurable)
+and it supports C++. It also lacks any complicated interfaces, and provides
+you with a quick and easy way to detect invalid READ as well as write
+accesses (this last reason is probably the strongest point of the library). 
+<P>HeapCheck employs a technique invented in the Unix's Electric Fence, created
+by Bruce Perens. It uses the virtual memory hardware of your computer to 
+place an inaccessible memory page immediately after (or before, at a 
+<CODE>#define</CODE>
+option) each memory  allocation.  When software reads or writes this 
+inaccessible page, the hardware issues a segmentation  fault, stopping the 
+program at the offending instruction. It is then trivial to find the erroneous
+statement since Visual C++ will point to the code doing the invalid access. 
+In a similar manner, memory that has been released is made 
+inaccessible, and any code that touches it will get a segmentation fault.
+<P>HeapCheck also checks for any allocations you forgot to free/delete, and
+prints a report when your application exits to the Output window of Visual
+C++. This report tells you also the allocation requirements of your program
+(how much memory it needed in the previous run).
+<hr/>
+<A HREF="HeapCheck-4.html">Next</A>
+<A HREF="HeapCheck-2.html">Previous</A>
+</TD>
+</TABLE>
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-746316-1";
+urchinTracker();
+</script>
+</BODY>
+</HTML>

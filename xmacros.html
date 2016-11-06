@@ -1,0 +1,418 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/xmacros.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Don't Repeat Yourself (via X-Macros)</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Don't Repeat Yourself (via X-Macros)</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(April 2012)</em></p>
+
+<h2>Don't Repeat Yourself (via X-Macros)</h2>
+
+<div class="rightFloat">
+<div class="scrollableContainer">
+<div><img alt="Rendered statue" src="lucyRaytraced.jpg"></div>
+<div>
+<em>My <a href="renderer.html">renderer</a> avoids code repetition</em><br>
+<em>via <a href="cpp.html">C++ templates</a> and X-macros.</em></div></div></div>
+<div>
+The principle of <a href="http://en.wikipedia.org/wiki/Don't_repeat_yourself">not repeating yourself in your code</a> sounds nice, in theory. Why would anyone choose to maintain two (or more) identical parts instead of just one?
+Well, it turns out that sometimes it's *really* hard to avoid repeating yourself. The repetition is not 'identical' - it's slightly off. Take this code section from <a href="renderer.html">my renderer</a>, for example:
+</div>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">struct</span><span class="normal"> </span><span class="classname">FatPointAmbient</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">/* The screen-space X coordinate */</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> _x</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="comment">/* The camera space Z coordinate */</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> _z</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="comment">/* The triangle color scaled by </span>
+<span class="comment">       the ambient occlusion factor */</span>
+<span class="normal">    </span><span class="usertype">Pixel</span><span class="normal"> _color</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="normal">    </span><span class="keyword">inline</span><span class="normal"> </span><span class="keyword">operator</span><span class="symbol">+=(</span>
+<span class="normal">            </span><span class="keyword">const</span><span class="normal"> FatPointAmbient</span><span class="symbol">&amp;</span><span class="normal"> rhs</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        _x </span><span class="symbol">+=</span><span class="normal"> rhs</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">;</span>
+<span class="normal">        _z </span><span class="symbol">+=</span><span class="normal"> rhs</span><span class="symbol">.</span><span class="normal">_z</span><span class="symbol">;</span>
+<span class="normal">        _color </span><span class="symbol">+=</span><span class="normal"> rhs</span><span class="symbol">.</span><span class="normal">_color</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">inline</span><span class="normal"> </span><span class="keyword">operator</span><span class="symbol">-=(</span>
+<span class="normal">            </span><span class="keyword">const</span><span class="normal"> FatPointAmbient</span><span class="symbol">&amp;</span><span class="normal"> rhs</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        _x </span><span class="symbol">-=</span><span class="normal"> rhs</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">;</span>
+<span class="normal">        _z </span><span class="symbol">-=</span><span class="normal"> rhs</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">;</span>
+<span class="normal">        _color </span><span class="symbol">-=</span><span class="normal"> rhs</span><span class="symbol">.</span><span class="normal">_color</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">inline</span><span class="normal"> </span><span class="keyword">operator</span><span class="symbol">*=(</span><span class="keyword">const</span><span class="normal"> </span><span class="type">float</span><span class="symbol">&amp;</span><span class="normal"> rhs</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        _x </span><span class="symbol">*=</span><span class="normal"> rhs</span><span class="symbol">;</span>
+<span class="normal">        _z </span><span class="symbol">*=</span><span class="normal"> rhs</span><span class="symbol">;</span>
+<span class="normal">        _color </span><span class="symbol">*=</span><span class="normal"> rhs</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">inline</span><span class="normal"> </span><span class="keyword">operator</span><span class="symbol">/=(</span><span class="keyword">const</span><span class="normal"> </span><span class="type">float</span><span class="symbol">&amp;</span><span class="normal"> rhs</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        _x </span><span class="symbol">/=</span><span class="normal"> rhs</span><span class="symbol">;</span>
+<span class="normal">        _z </span><span class="symbol">/=</span><span class="normal"> rhs</span><span class="symbol">;</span>
+<span class="normal">        _color </span><span class="symbol">/=</span><span class="normal"> rhs</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>This is a <code>struct</code> that is used to interpolate various values per-pixel, as the renderer draws a scanline from left to right.
+It's fields must therefore be incremented / decremented / multiplied / divided by the corresponding operators.</p>
+
+<p>Never mind the specifics of the logic, though - do you consider this code as adhering to "not repeating oneself"?</p>
+
+<p>Also, did you notice that in the <code>operator-=</code> we have a typo? We are decrementing <code>_z</code> by <code>rhs._x</code>, instead of <code>rhs._z</code>. It's not only more effort to maintain repetitive patterns - copy/paste also introduces errors, which will only be discovered at runtime (and force you to pay the price of debugging to fix them).</p>
+
+<p>The renderer is in fact using 5 such types:</p>
+
+<ul>
+<li>FatPointAmbient</li>
+<li>FatPointGouraud</li>
+<li>FatPointPhong</li>
+<li>FatPointPhongAndShadowed</li>
+<li>FatPointPhongAndSoftShadowed</li>
+</ul>
+
+<p>...and each one of them has its own fields - e.g. FatPointPhongAndSoftShadowed has...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">/* The screen-space X coordinate */</span>
+<span class="type">float</span><span class="normal"> _projx</span><span class="symbol">;</span>
+<span class="comment">/* The camera space coordinates */</span>
+<span class="type">float</span><span class="normal"> _x</span><span class="symbol">,</span><span class="normal">_y</span><span class="symbol">,</span><span class="normal">_z</span><span class="symbol">;</span>
+<span class="comment">/* The (hopefully available from shadevis) ambient occlusion factor */</span>
+<span class="type">float</span><span class="normal"> _ambientOcclusionCoeff</span><span class="symbol">);</span>
+<span class="comment">/* The normal vector will also be interpolated (in camera space, */</span>
+<span class="comment">/* so it is transformed in the FillerPhong) */</span>
+<span class="usertype">Vector3</span><span class="normal"> _normal</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<p>We could use inheritance to share the common fields, but that would do nothing about the repetition going on in the operators. Imagine my <code>Fillers.h</code>, the file that defines these <code>struct</code>s. It must be repeating information all over, right?</p>
+
+<p>Well... no.</p>
+
+<h2>First attempt: a couple of simple macros</h2>
+
+<p>It is clear that the 4 operators are sharing many similar parts - so we can do something like this:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">struct</span><span class="normal"> </span><span class="classname">FatPointAmbient</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">/* The screen-space X coordinate */</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> _x</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="comment">/* The camera space Z coordinate */</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> _z</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="comment">/* The triangle color scaled by the ambient occlusion factor */</span>
+<span class="normal">    </span><span class="usertype">Pixel</span><span class="normal"> _color</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="preproc">    #define</span><span class="normal"> </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">T</span><span class="symbol">,</span><span class="normal">action</span><span class="symbol">)</span><span class="normal">                      </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="keyword">inline</span><span class="normal"> </span><span class="keyword">operator</span><span class="normal"> action ## </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> T</span><span class="symbol">&amp;</span><span class="normal"> rhs</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal">    </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="usertype">_x</span><span class="normal"> action ## </span><span class="symbol">=</span><span class="normal"> rhs</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">;</span><span class="normal">                      </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="usertype">_z</span><span class="normal"> action ## </span><span class="symbol">=</span><span class="normal"> rhs</span><span class="symbol">.</span><span class="normal">_z</span><span class="symbol">;</span><span class="normal">                      </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="usertype">_color</span><span class="normal"> action ## </span><span class="symbol">=</span><span class="normal"> rhs</span><span class="symbol">.</span><span class="normal">_color</span><span class="symbol">;</span><span class="normal">              </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">FatPointAmbient</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">+)</span>
+<span class="normal">    </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">FatPointAmbient</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-)</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>The token-pasting preprocessor operator <code>##</code> is used to join '+' and '=' and form '+=' ; ditto for <code>-=</code>, <code>*=</code>, <code>/=</code>.</p>
+
+<p>This is already improving things a lot - but notice that there is still semantic repetition: the list of structure fields drives both the field declarations, and the work to be done inside each operator. If, for example, we find out that we must add another member field, we need to update both the list of declarations and the list of actions (in the <code>OPERATOR</code> macro).</p>
+
+<p>We also have to write two macros per FatPoint type, because the <code>*=</code> and <code>/=</code> operators take a <code>float</code>, not a <code>FatPoint...</code>.</p>
+
+<p>Is it possible to remove this duplication of effort?</p>
+
+<h2>X-Macros</h2>
+
+<p>It is. The idea behind X-Macros is very simple: <em>if you have a list of items that influence many parts of your code, you put that list inside a macro</em>. In our case, the list of structure fields is the base of everything, so we declare a macro with them:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#define</span><span class="normal"> X_MEMBERS                                                   </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="comment">/* The screen-space X coordinate */</span><span class="normal">                             </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="function">X</span><span class="symbol">(</span><span class="type">float</span><span class="symbol">,</span><span class="normal">_projx</span><span class="symbol">)</span><span class="normal">                                                 </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="comment">/* The camera space Z coordinate */</span><span class="normal">                             </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="function">X</span><span class="symbol">(</span><span class="type">float</span><span class="symbol">,</span><span class="normal">_z</span><span class="symbol">)</span><span class="normal">                                                     </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="comment">/* The triangle color scaled by the ambient occlusion factor */</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="function">X</span><span class="symbol">(</span><span class="normal">Pixel</span><span class="symbol">,</span><span class="normal">_color</span><span class="symbol">)</span>
+</tt></pre>
+</div>
+
+<p>The list must carry all the information we will need per element, taking under consideration all the places in the code that the list influences. In our case, we store the typespec and the fieldname.</p>
+
+<p>The <code>X_MEMBERS</code> macro, is itself invoking another macro, <code>X</code>, providing it with all the info per list entry. The <code>X</code> macro then does something with this information - it can e.g. emit our field declarations, by simply:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">struct</span><span class="normal"> </span><span class="classname">FatPointAmbient</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// Member declarations</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="usertype">typespec</span><span class="normal"> fieldname</span><span class="symbol">;</span>
+<span class="normal">    X_MEMBERS</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>When you first see this, it may confuse you a bit - but it's really quite simple: The <code>X</code> macro is <em>temporarily</em> set to emit <code>'typespec fieldname;'</code> lines, and when <code>X_MEMBERS</code> is invoked, output like this is generated:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">struct</span><span class="normal"> </span><span class="classname">FatPointAmbient</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> _projx</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> _z</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">Pixel</span><span class="normal"> _color</span><span class="symbol">;</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>In other words, you can consider <code>X_MEMBERS</code> as a code-generating "subroutine": it will invoke the <code>X</code> macro for each of the list elements.</p>
+
+<p>We apply the same technique for the operators - i.e. starting from the list of <code>struct</code> fields, we emit operator code:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">struct</span><span class="normal"> </span><span class="classname">FatPointAmbient</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// Member declarations</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="usertype">typespec</span><span class="normal"> fieldname</span><span class="symbol">;</span>
+<span class="normal">    X_MEMBERS</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+
+<span class="comment">// Operator += declaration</span>
+<span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">FatPointAmbient</span><span class="symbol">,+,</span><span class="normal">FatPointAmbient</span><span class="symbol">)</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>The <code>OPERATOR</code> macro invokes <code>X_MEMBERS</code>, performing the work we need per each field:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#define</span><span class="normal"> </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">T1</span><span class="symbol">,</span><span class="normal">action</span><span class="symbol">,</span><span class="normal">T2</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="keyword">inline</span><span class="normal"> T1</span><span class="symbol">&amp;</span><span class="normal"> </span><span class="keyword">operator</span><span class="normal"> action ## </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> T2</span><span class="symbol">&amp;</span><span class="normal"> rhs</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal">   </span><span class="symbol">\</span>
+<span class="normal">        X_MEMBERS </span><span class="symbol">;</span><span class="normal">                                     </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">*</span><span class="keyword">this</span><span class="symbol">;</span><span class="normal">                                   </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>This macro can in fact be seen as an evolution of the simple version shown in the previous section: </p>
+
+<ul>
+<li>It starts by doing the same work as before, i.e. generating the operator declaration: the op token ('+', '-', '*', '/') is joined with '=', emitting:</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">inline</span><span class="normal"> FatPointAmbient</span><span class="symbol">&amp;</span><span class="normal"> </span><span class="keyword">operator</span><span class="symbol">+=(</span><span class="keyword">const</span><span class="normal"> FatPointAmbient</span><span class="symbol">&amp;</span><span class="normal"> rhs</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+</tt></pre>
+</div>* It then proceeds to generate the operator body - it can do this, because it has access to all the field info, via the `X_MEMBERS` X-macro. `X` is set like this:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#define</span><span class="normal"> </span><span class="function">ACT1</span><span class="symbol">(</span><span class="normal">fieldname</span><span class="symbol">,</span><span class="normal"> action</span><span class="symbol">)</span><span class="normal">    </span><span class="usertype">fieldname</span><span class="normal"> action ## </span><span class="symbol">=</span><span class="normal"> rhs</span><span class="symbol">.</span><span class="normal"> fieldname</span><span class="symbol">;</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="function">ACT1</span><span class="symbol">(</span><span class="normal">fieldname</span><span class="symbol">,+)</span>
+</tt></pre>
+</div>  i.e. it ignores the typespec, and passes the fieldname and the actual op to ACT1, emiting the '+=' action for each field.
+
+So the end result for our `FatPointAmbient` type declaration including all 4 operators, is this:
+
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">//</span>
+<span class="comment">// Ambient-Occlusion-Only</span>
+<span class="comment">//</span>
+
+<span class="preproc">#define</span><span class="normal"> X_MEMBERS                                                   </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="comment">/* The screen-space X coordinate */</span><span class="normal">                             </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="function">X</span><span class="symbol">(</span><span class="type">float</span><span class="symbol">,</span><span class="normal">_projx</span><span class="symbol">)</span><span class="normal">                                                 </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="comment">/* The camera space Z coordinate */</span><span class="normal">                             </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="function">X</span><span class="symbol">(</span><span class="type">float</span><span class="symbol">,</span><span class="normal">_z</span><span class="symbol">)</span><span class="normal">                                                     </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="comment">/* The triangle color scaled by the ambient occlusion factor */</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="function">X</span><span class="symbol">(</span><span class="normal">Pixel</span><span class="symbol">,</span><span class="normal">_color</span><span class="symbol">)</span>
+</tt></pre>
+</div>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">struct</span><span class="normal"> </span><span class="classname">FatPointAmbient</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// Member declarations</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="usertype">typespec</span><span class="normal"> fieldname</span><span class="symbol">;</span>
+<span class="normal">    X_MEMBERS</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+
+<span class="normal">    </span><span class="comment">// Operator declarations (i.e '+=' on all fields, '-=' on all fields, etc)</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="function">ACT1</span><span class="symbol">(</span><span class="normal">fieldname</span><span class="symbol">,+)</span>
+<span class="normal">    </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">FatPointAmbient</span><span class="symbol">,+,</span><span class="normal">FatPointAmbient</span><span class="symbol">)</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="function">ACT1</span><span class="symbol">(</span><span class="normal">fieldname</span><span class="symbol">,-)</span>
+<span class="normal">    </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">FatPointAmbient</span><span class="symbol">,-,</span><span class="normal">FatPointAmbient</span><span class="symbol">)</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="function">ACT2</span><span class="symbol">(</span><span class="normal">fieldname</span><span class="symbol">,*)</span>
+<span class="normal">    </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">FatPointAmbient</span><span class="symbol">,*,</span><span class="type">float</span><span class="symbol">)</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="function">ACT2</span><span class="symbol">(</span><span class="normal">fieldname</span><span class="symbol">,/)</span>
+<span class="normal">    </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">FatPointAmbient</span><span class="symbol">,/,</span><span class="type">float</span><span class="symbol">)</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<p>We go one step further and eliminate the <code>FatPointAmbient</code> typespec:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#define</span><span class="normal"> T FatPointAmbient</span>
+<span class="keyword">struct</span><span class="normal"> </span><span class="classname">T</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// Member declarations</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="usertype">typespec</span><span class="normal"> fieldname</span><span class="symbol">;</span>
+<span class="normal">    X_MEMBERS</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+
+<span class="normal">    </span><span class="comment">// Operator declarations (i.e '+=' on all fields, '-=' on all fields, etc)</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="function">ACT1</span><span class="symbol">(</span><span class="normal">fieldname</span><span class="symbol">,+)</span>
+<span class="normal">    </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">T</span><span class="symbol">,+,</span><span class="normal">T</span><span class="symbol">)</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="function">ACT1</span><span class="symbol">(</span><span class="normal">fieldname</span><span class="symbol">,-)</span>
+<span class="normal">    </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">T</span><span class="symbol">,-,</span><span class="normal">T</span><span class="symbol">)</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="function">ACT2</span><span class="symbol">(</span><span class="normal">fieldname</span><span class="symbol">,*)</span>
+<span class="normal">    </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">T</span><span class="symbol">,*,</span><span class="type">float</span><span class="symbol">)</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">X</span><span class="symbol">(</span><span class="normal">typespec</span><span class="symbol">,</span><span class="normal">fieldname</span><span class="symbol">)</span><span class="normal"> </span><span class="function">ACT2</span><span class="symbol">(</span><span class="normal">fieldname</span><span class="symbol">,/)</span>
+<span class="normal">    </span><span class="function">OPERATOR</span><span class="symbol">(</span><span class="normal">T</span><span class="symbol">,/,</span><span class="type">float</span><span class="symbol">)</span>
+<span class="preproc">#undef</span><span class="normal"> X</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<p>...and we now have a concise, re-usable "FatPointGENERIC" declaration section, which we use for all our FatPoint types - we just provide the list of member fields in <code>X_MEMBERS</code>, and <code>#define T FatPoint...</code>.</p>
+
+<h2>Conclusion</h2>
+
+<p>The DRY principle is a very important part of coding. It can be a challenge, though - more so in some languages than others.</p>
+
+<p>In C and C++, X-macros can help. The end result is consice and significantly reduces repetition (and the associated copy/paste errors). It can, however, seem "cryptic" the first time you see it - so if you use them, add a comment in your code that points to this blog post :&#x2011;)</p>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/xmacros.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="SGML-Tools 1.0.9" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+ <link type="text/css" rel="stylesheet" href="heapcheck.css" />
+ <link rel="canonical" href="https://www.thanassis.space/HeapCheck-7.html" />
+ <TITLE>HeapCheck 1.34: For UNIX gurus and fanatics only</TITLE>
+</HEAD>
+<body background="book.jpg" bgcolor="white" text="black">
+<TABLE WIDTH="100%" summary="DTP table">
+<TR>
+<TD class="desktop-only" WIDTH="20%" VALIGN="top">
+<TABLE ALIGN="left" summary="index" bgcolor="#DDDDDD">
+<TR><TD><B><A NAME="toc0"></A> <A HREF="HeapCheck.html"><EM>HeapCheck:</EM></A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc1">1.</A> <A HREF="HeapCheck-1.html">Disclaimer/Authors</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc2">2.</A> <A HREF="HeapCheck-2.html">Features</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc3">3.</A> <A HREF="HeapCheck-3.html">Introduction</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc4">4.</A> <A HREF="HeapCheck-4.html">Usage</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc5">5.</A> <A HREF="HeapCheck-5.html">Configuration</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc6">6.</A> <A HREF="HeapCheck-6.html">Debugging tools</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc7">7.</A> <A HREF="HeapCheck-7.html">UNIX gurus</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc8">8.</A> <A HREF="HeapCheck-8.html">Stack techniques </A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc9">9.</A> <A HREF="HeapCheck-9.html">Known bugs</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc10">10.</A> <A HREF="HeapCheck-10.html">Contact me</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc11">11.</A> <A HREF="HeapCheck134.7z">Get 1.34</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc115">12.</A> <A HREF="HeapCheck12.7z">Get 1.2 (stable)</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc12">13.</A> <A HREF="HeapCheck12doc.7z">PDF manual</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc13">14.</A> <A HREF="hcdiff.html">WinCE patch for 1.2</A></B><br/></TD></TR>
+<TR><TD>&nbsp;</TD></TR>
+<TR><TD>
+<A HREF="index.html" TARGET="_top">Back to HomePage</A> 
+</TD>
+</TR>
+</TABLE>
+</TD>
+<TD>
+&nbsp;
+</TD>
+<TD VALIGN="top">
+<A HREF="HeapCheck-8.html">Next</A>
+<A HREF="HeapCheck-6.html">Previous</A>
+<hr/>
+<H2><A NAME="s7">7. For UNIX gurus and fanatics only</A></H2>
+
+<P>If you have a history using Electric Fence in UNIX, you'll remember that the only
+thing required was linking with libefence.a. Why can't we do something
+like this under Win32 for HeapCheck, too?
+<OL>
+<LI> Win32 ain't UNIX. I guess you knew that, but there's this little
+fact about libraries that makes them almost useless: if a library
+uses any function of the C run-time library (like memchr, strcpy, etc)
+it has to link with one of the six versions of the run-time library (RTL):
+
+<UL>
+<LI>Release, static,  no multithreading</LI>
+<LI>Release, static,  multithreading</LI>
+<LI>Release, dynamic, multithreading</LI>
+<LI>Debug,   static,  no multithreading</LI>
+<LI>Debug,   static,  multithreading</LI>
+<LI>Debug,   dynamic,  multithreading</LI>
+</UL>
+
+
+Now suppose that your library is linked with one of these RTLs. When you
+use your library inside one of your own projects, your project MUST
+be linked with the <EM>same</EM> RTL! Amazing. I don't know about you,
+but I prefer to just add two source files in the project and be
+done with it, instead of building six HeapCheck libraries.
+
+I could replace calls to the C run-time library with my own versions
+of things, but that would lead to the next problem:
+</LI>
+<LI> If HeapCheck was a library with implementations of standard
+functions (malloc, realloc, etc)
+then the projects using it would have to choose between using HeapCheck
+and using the C runtime library. Unless I am doing something wrong,
+the linker can't tolerate two libraries providing implementations
+of the same function. How is he to choose? The UNIX ld implements
+a first-serve attitude: Whichever library provides it first in the
+link line, is chosen.</LI>
+</OL>
+
+If anyone of you comes up with any ideas on these matters, do share.
+This is why HeapCheck is under the GNU license - I made it, it's your
+turn now to make it better!
+<hr/>
+<A HREF="HeapCheck-8.html">Next</A>
+<A HREF="HeapCheck-6.html">Previous</A>
+</TD>
+</TABLE>
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-746316-1";
+urchinTracker();
+</script>
+</BODY>
+</HTML>

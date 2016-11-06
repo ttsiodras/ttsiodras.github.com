@@ -1,0 +1,593 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/unblock.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Solving the "Unblock Me" puzzle</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Solving the "Unblock Me" puzzle</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(October 2012, <a href="http://redd.it/11wip6">Reddit-ed</a>)</em></p>
+
+<h2>Solving the "Unblock Me" puzzle</h2>
+
+<p><a href="https://github.com/ttsiodras/UnblockMeSolver"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a></p>
+
+<table border="1" frame="box" cellpadding="10" summary="for TL;DR people" bgcolor="#80DD80"> <tr><td><b>For the TL;DR crowd:</b>
+I liked playing the <a href="http://www.kiragames.com/games/unblockme-free/">Unblock Me</a> puzzle, so I coded an automatic solver, that works on screenshots taken from my phone. The code <a href="https://github.com/ttsiodras/UnblockMeSolver">is on GitHub</a>, and here is <a href="http://www.youtube.com/watch?v=6hfF_6KlAQk">a video of the results</a>.</td></tr></table>
+
+<p><br>
+Even since I can remember, I've always been fascinated with puzzles. This fascination has manifested itself in temporary obsessions of various natures - <a href="ladders.html">mathematical</a>, <a href="amIsick.html">probabilistic</a>, <a href="knightstour.html">chess related</a>, <a href="score4.html">AI</a> ... you name it, I've probably wasted time playing with it&nbsp;:&#x2011;)</p>
+
+<p>A natural consequence is the kind of computer games I am drawn to... that is, puzzle games. I still consider <a href="http://en.wikipedia.org/wiki/Sokoban">Sokoban</a> the best puzzle game I've ever played (and finished) - but also love most of <a href="http://www.chiark.greenend.org.uk/~sgtatham/puzzles/">Simon Tatham's collection</a>. And recently, I started passing my half-hour train commutes to and from work, playing <a href="http://www.kiragames.com/games/unblockme-free/">Unblock-Me</a> on my iPhone.</p>
+
+<div class="scrollableContainer">
+<img src="unblock.jpg" width="320" height="480" alt="Would you like to play a game?"><br>
+<em>Would you like to play a game? </em>
+</div>
+
+<p>This game is deceptively simple: you have to move horizontal blocks left or right, and vertical blocks up or down, in order to free ("unblock") the red block - i.e. allow it to escape from the exit to its right. The red block is always at the 3rd line, as is the exit. </p>
+
+<p>If you haven't played before, <a href="http://www.youtube.com/watch?v=9j2F2Tnrjc0">here's a link</a> to a random Youtube video I found with a quick search. Apparently I am not the only one who likes this puzzle; there are lots of similar videos, with players showcasing how they solved a level they had trouble with. <em>Obligatory warning: this game is very addictive, if you try it, there's no turning back</em>.</p>
+
+<p>My brain has more or less adapted, and quickly solves most of the levels. But now that I am close to completing the Expert set, there are some levels that torture me for minutes!</p>
+
+<p>How dare they!&nbsp;:&#x2011;)</p>
+
+<p>Time to use my brain - in a different way.</p>
+
+<h2>Stage 1: Detecting board sets from screenshots</h2>
+
+<p>On my iPhone, hitting both the main and the power button at the same time, results in an auto-saved 480x320 snapshot of the current screen (btw, that's how the picture you see above was obtained). Since the dimensions of this screenshot are constant,  the placement of the tile grid will also remain constant: at identical pixel positions in every such snapshot.</p>
+
+<p>(<em>Translation: if you want to replicate my results in phones with different screenshot sizes... you'll have to edit my code&nbsp;:&#x2011;)</em></p>
+
+<p>This means we can do a small number of tests, and identify the tile coordinates in these snapshots:</p>
+
+<div class="scrollableContainer">
+<img src="unblock-findLines.jpg" width="667" height="1001" alt="Hunting down the tile coordinates"><br>
+<em>Hunting down the tile coordinates</em>
+</div>
+
+<p>In the screenshot above, you see how I manipulated the .ppm data of the image (generated via ImageMagick: "<tt>convert IMG_0354.PNG old.ppm</tt>") and emitted horizontal lines. Fine-tuning the location of these white lines allowed me to find where the tile centers are located, in both horizontal, and (via a similar pass) vertical coordinates.</p>
+
+<p>At that point ...</p>
+
+<ul>
+<li>I sampled the color of the center pixel of each tile - and mapped the RGB values into the 3 tile categories (empty, block and prisoner) via threshold values that I experimented with.
+<li>I sampled the top center and the bottom center pixel of each tile - and stored whether it's RGB values thresholded as white, black, or non-border. The game uses these colors to "shade" the blocks, and thus allowed me to learn the vertical "borders" between blocks.
+</ul>
+
+<p>I could then write a simple algorithm that re-created the block information from these two arrays:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">// The board is SIZE x SIZE tiles</span>
+<span class="preproc">#define</span><span class="normal"> SIZE </span><span class="number">6</span>
+
+<span class="comment">// The tile "bodies" information - filled by DetectTileBodies()</span>
+<span class="comment">// via heuristics on the center pixel of the tile</span>
+<span class="comment">//</span>
+<span class="keyword">enum</span><span class="normal"> TileKind </span><span class="cbracket">{</span>
+<span class="normal">    empty    </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span>
+<span class="normal">    block    </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">,</span>
+<span class="normal">    prisoner </span><span class="symbol">=</span><span class="normal"> </span><span class="number">2</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">TileKind</span><span class="normal"> g_tiles</span><span class="symbol">[</span><span class="normal">SIZE</span><span class="symbol">][</span><span class="normal">SIZE</span><span class="symbol">];</span>
+
+<span class="comment">// The top and bottom "borders" of each tile</span>
+<span class="comment">// (hence the 2x in the vertical direction)</span>
+<span class="comment">// filled by DetectTopAndBottomTileBorders()</span>
+<span class="comment">//</span>
+<span class="keyword">enum</span><span class="normal"> BorderKind </span><span class="cbracket">{</span>
+<span class="normal">    notBorder </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span>
+<span class="normal">    white     </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">,</span>
+<span class="normal">    black     </span><span class="symbol">=</span><span class="normal"> </span><span class="number">2</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+<span class="keyword">static</span><span class="normal"> </span><span class="usertype">BorderKind</span><span class="normal"> g_borders</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">SIZE</span><span class="symbol">][</span><span class="normal">SIZE</span><span class="symbol">];</span>
+
+<span class="comment">// The board is a list of Blocks:</span>
+<span class="keyword">struct</span><span class="normal"> </span><span class="classname">Block</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">static</span><span class="normal"> </span><span class="type">int</span><span class="normal"> BlockId</span><span class="symbol">;</span><span class="normal"> </span><span class="comment">// class-global counter, used to...</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> _id</span><span class="symbol">;</span><span class="normal">            </span><span class="comment">// ...uniquely identify each block</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> _y</span><span class="symbol">,</span><span class="normal"> _x</span><span class="symbol">;</span><span class="normal">         </span><span class="comment">// block's top-left tile coordinates</span>
+<span class="normal">    </span><span class="type">bool</span><span class="normal"> _isHorizontal</span><span class="symbol">;</span><span class="normal"> </span><span class="comment">// whether the block is Horiz/Vert</span>
+<span class="normal">    </span><span class="usertype">TileKind</span><span class="normal"> _kind</span><span class="symbol">;</span><span class="normal">     </span><span class="comment">// can only be block or prisoner</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> _length</span><span class="symbol">;</span><span class="normal">        </span><span class="comment">// how many tiles long this block is</span>
+<span class="normal">    </span><span class="function">Block</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> y</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> </span><span class="type">bool</span><span class="normal"> isHorizontal</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">TileKind</span><span class="normal"> kind</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> length</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="function">_id</span><span class="symbol">(</span><span class="normal">BlockId</span><span class="symbol">++),</span><span class="normal"> </span><span class="function">_y</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">),</span><span class="normal"> </span><span class="function">_x</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">),</span><span class="normal"> </span><span class="function">_isHorizontal</span><span class="symbol">(</span><span class="normal">isHorizontal</span><span class="symbol">),</span>
+<span class="normal">        </span><span class="function">_kind</span><span class="symbol">(</span><span class="normal">kind</span><span class="symbol">),</span><span class="normal"> </span><span class="function">_length</span><span class="symbol">(</span><span class="normal">length</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="cbracket">{}</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+<span class="type">int</span><span class="normal"> Block</span><span class="symbol">::</span><span class="normal">BlockId </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="comment">// This function (called at startup) scans the g_tiles and g_borders</span>
+<span class="comment">// arrays, and understands where the blocks are.</span>
+<span class="comment">//</span>
+<span class="comment">// Returns a list of the detected Blocks</span>
+<span class="usertype">list&lt;Block&gt;</span><span class="normal"> </span><span class="function">ScanBodiesAndBordersAndEmitStartingBlockPositions</span><span class="symbol">()</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="usertype">list&lt;Block&gt;</span><span class="normal"> blocks</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">bool</span><span class="normal"> isTileKnown</span><span class="symbol">[</span><span class="normal">SIZE</span><span class="symbol">][</span><span class="normal">SIZE</span><span class="symbol">];</span>
+
+<span class="normal">    </span><span class="comment">// Initially, we don't have a clue what each tile has</span>
+<span class="normal">    </span><span class="function">memset</span><span class="symbol">(</span><span class="normal">isTileKnown</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">isTileKnown</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="keyword">true</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> y</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> y</span><span class="symbol">&lt;</span><span class="normal">SIZE</span><span class="symbol">;</span><span class="normal"> y</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> x</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> x</span><span class="symbol">&lt;</span><span class="normal">SIZE</span><span class="symbol">;</span><span class="normal"> x</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">isTileKnown</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">])</span>
+<span class="normal">                    </span><span class="comment">// Skip over tiles we already know</span>
+<span class="normal">                    </span><span class="keyword">continue</span><span class="symbol">;</span>
+
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">empty </span><span class="symbol">==</span><span class="normal"> g_tiles</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">])</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    </span><span class="comment">// Skip over empty tiles</span>
+<span class="normal">                    isTileKnown</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                    </span><span class="keyword">continue</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">                </span><span class="type">bool</span><span class="normal"> isMarker </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_tiles</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]==</span><span class="normal">prisoner</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">const</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">marker </span><span class="symbol">=</span><span class="normal"> isMarker</span><span class="symbol">?</span><span class="string">" (marker)"</span><span class="symbol">:</span><span class="string">""</span><span class="symbol">;</span>
+
+<span class="normal">                </span><span class="comment">// Use the border information:</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_borders</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> white </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span>
+<span class="normal">                        g_borders</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">y</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> black</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    </span><span class="comment">// If a tile has white on top and black on bottom,</span>
+<span class="normal">                    </span><span class="comment">// then it is part of a horizontal block</span>
+<span class="normal">                    isTileKnown</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                    </span><span class="type">int</span><span class="normal"> xend </span><span class="symbol">=</span><span class="normal"> x</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">                    </span><span class="comment">// Scan horizontally to find its end</span>
+<span class="normal">                    </span><span class="keyword">while</span><span class="symbol">(</span><span class="normal">xend</span><span class="symbol">&lt;</span><span class="normal">SIZE </span><span class="symbol">&amp;&amp;</span><span class="normal"> g_borders</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">y</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">][</span><span class="normal">xend</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> black </span><span class="symbol">&amp;&amp;</span>
+<span class="normal">                            g_borders</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">xend</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> white</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                        isTileKnown</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">xend</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                        xend</span><span class="symbol">++;</span>
+<span class="normal">                    </span><span class="cbracket">}</span>
+<span class="normal">                    </span><span class="comment">// two adjacent blocks of length 2 would lead</span>
+<span class="normal">                    </span><span class="comment">// to a 'block' of length 4...</span>
+<span class="normal">                    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">xend</span><span class="symbol">-</span><span class="normal">x</span><span class="symbol">==</span><span class="number">4</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                        </span><span class="comment">// ...in that case, emit two blocks of length 2</span>
+<span class="normal">                        cout </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">"Horizontal blocks at "</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> y </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">","</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="normal">                        cout </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">" of length 2 "</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> marker </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">"</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">;</span>
+<span class="normal">                        blocks</span><span class="symbol">.</span><span class="function">push_back</span><span class="symbol">(</span>
+<span class="normal">                            </span><span class="function">Block</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">,</span><span class="normal">x</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">,</span><span class="normal"> g_tiles</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">],</span><span class="normal"> </span><span class="number">2</span><span class="symbol">));</span>
+<span class="normal">                        blocks</span><span class="symbol">.</span><span class="function">push_back</span><span class="symbol">(</span>
+<span class="normal">                            </span><span class="function">Block</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">,</span><span class="normal">x</span><span class="symbol">+</span><span class="number">2</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">,</span><span class="normal"> g_tiles</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">+</span><span class="number">2</span><span class="symbol">],</span><span class="normal"> </span><span class="number">2</span><span class="symbol">));</span>
+<span class="normal">                    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                        </span><span class="comment">// ... otherwise emit only one block</span>
+<span class="normal">                        cout </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">"Horizontal block at "</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> y </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">","</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="normal">                        cout </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">" of length "</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> xend</span><span class="symbol">-</span><span class="normal">x </span><span class="symbol">&lt;&lt;</span><span class="normal"> marker </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">"</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">;</span>
+<span class="normal">                        blocks</span><span class="symbol">.</span><span class="function">push_back</span><span class="symbol">(</span>
+<span class="normal">                            </span><span class="function">Block</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">,</span><span class="normal">x</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">,</span><span class="normal"> g_tiles</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">],</span><span class="normal"> xend</span><span class="symbol">-</span><span class="normal">x</span><span class="symbol">));</span>
+<span class="normal">                    </span><span class="cbracket">}</span>
+<span class="normal">                </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">g_borders</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> white</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    </span><span class="comment">// If a tile has white on top, but no black</span>
+<span class="normal">                    </span><span class="comment">// on bottom, then it is part of a vertical block.</span>
+<span class="normal">                    isTileKnown</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                    </span><span class="type">int</span><span class="normal"> yend </span><span class="symbol">=</span><span class="normal"> y</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">                    </span><span class="comment">// Scan vertically to find its end</span>
+<span class="normal">                    </span><span class="keyword">while</span><span class="symbol">(</span><span class="normal">yend</span><span class="symbol">&lt;</span><span class="normal">SIZE </span><span class="symbol">&amp;&amp;</span><span class="normal"> g_borders</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">yend</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> black</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                        isTileKnown</span><span class="symbol">[</span><span class="normal">yend</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">                        yend</span><span class="symbol">++;</span>
+<span class="normal">                    </span><span class="cbracket">}</span>
+<span class="normal">                    cout </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">"Vertical   block at "</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> y </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">","</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> x</span><span class="symbol">;</span>
+<span class="normal">                    cout </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">" of length "</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> yend</span><span class="symbol">-</span><span class="normal">y</span><span class="symbol">+</span><span class="number">1</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> marker </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">"</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">;</span>
+<span class="normal">                    blocks</span><span class="symbol">.</span><span class="function">push_back</span><span class="symbol">(</span>
+<span class="normal">                        </span><span class="function">Block</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">,</span><span class="normal">x</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">false</span><span class="symbol">,</span><span class="normal"> g_tiles</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">],</span><span class="normal"> yend</span><span class="symbol">-</span><span class="normal">y</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">));</span>
+<span class="normal">                </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span>
+<span class="normal">                    </span><span class="comment">// either an empty, or a body-of-block tile</span>
+<span class="normal">                    isTileKnown</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="type">bool</span><span class="normal"> allDone </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> y</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> y</span><span class="symbol">&lt;</span><span class="normal">SIZE</span><span class="symbol">;</span><span class="normal"> y</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> x</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> x</span><span class="symbol">&lt;</span><span class="normal">SIZE</span><span class="symbol">;</span><span class="normal"> x</span><span class="symbol">++)</span>
+<span class="normal">                allDone </span><span class="symbol">=</span><span class="normal"> allDone </span><span class="symbol">&amp;&amp;</span><span class="normal"> isTileKnown</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">allDone</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> blocks</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p><br>
+With the exception of neighbouring horizontal blocks - which I had to hack around - it worked on the first try. Feeding it with screenshots, I saw it emit the board information:
+<br></p>
+
+<div class="scrollableContainer">
+<img src="blocks.jpg" alt="From screenshot to block data"><br>
+<em>From screenshot to block data</em>
+</div>
+
+<p><br></p>
+
+<h2>Stage 2: The Solver</h2>
+
+<p>So, I had a list of blocks that represented a board - what then?</p>
+
+<p>Well, from each such list, I could generate ... a list of such lists - that is, the list of possible boards that can be reached from this one, by moving a block one position to the left, right, top or bottom.</p>
+
+<p>Following the same approach I used in my <a href="knightstour.html">Knight's Tour</a>, I wrote a brute-force recursive traversal:<br></p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="type">void</span><span class="normal"> </span><span class="function">SolveBoard</span><span class="symbol">(</span><span class="normal"> board </span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    can </span><span class="usertype">prisoner</span><span class="normal"> escape</span><span class="symbol">?</span>
+<span class="normal">        </span><span class="usertype">he</span><span class="normal"> can</span><span class="symbol">!</span><span class="normal"> Bliss</span>
+<span class="normal">    </span><span class="usertype">he</span><span class="normal"> cant</span><span class="symbol">?</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> each possible board that can arise out of the current one</span>
+<span class="normal">            </span><span class="function">SolveBoard</span><span class="symbol">(</span><span class="normal">newBoard</span><span class="symbol">)</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p><br>
+I also added a <tt>set&lt;Board&gt;</tt> that was checked upon SolveBoard entry, so that the algorithm never went back to a position that it had already passed through before (in the call stack).</p>
+
+<p>And run it...</p>
+
+<p>And waited...</p>
+
+<p>Did some web browsing. Went for some coffee...</p>
+
+<p>Came back - still running.</p>
+
+<p>Apparently, the problem space of this puzzle is not as small as I thought - this recursive attempt at finding the solution, goes "deep" first, exhausts the "move" it tried, then tries another.</p>
+
+<p>In computer-science parlance, what I did was a "depth-first" search of the solution - meaning that the algorithm descended the tree of possible moves all the way to it's leaves (i.e. to the board states where there is no move left), and then backtracked back to try something else. And as is obvious on hindsight, this will only work for "small" problem spaces - like my <a href="knightstour.html">Knight's Tour</a> search. In UnblockMe however, the combinations of moves one can do at every level, multiply with the ones he can do on the next one - and basically, "explode" exponentially.</p>
+
+<p>Instead of diving "deep" in the tree, I had to visit it in "layers" of increasing depth - i.e. in Breadth First Search:<br></p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">Enqueue the current board</span>
+<span class="keyword">while</span><span class="normal"> Q </span><span class="usertype">not</span><span class="normal"> empty</span><span class="symbol">:</span>
+<span class="normal">    Dequeue a board and examine it</span>
+<span class="normal">    can </span><span class="usertype">prisoner</span><span class="normal"> escape</span><span class="symbol">?</span>
+<span class="normal">        </span><span class="usertype">he</span><span class="normal"> can</span><span class="symbol">!</span><span class="normal"> Bliss</span>
+<span class="normal">    </span><span class="usertype">he</span><span class="normal"> cant</span><span class="symbol">?</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> each possible board that can arise out of </span><span class="keyword">this</span><span class="normal"> one</span>
+<span class="normal">            add board to END of Q</span>
+</tt></pre>
+</div>
+
+<p>The pseudocode above visits the first level of available moves, then all the second-level moves, then the 3rd, etc. This means that it finds the optimal solution - the one the prisoner can use to escape, in the least amount of moves.</p>
+
+<p>The actual implementation, below, has to account for not visiting already visited boards, and for tracing back from the solved board into the one we started from - I used a <tt>map&lt;Board,MoveIusedToGetThere&gt;</tt> to do that.<br></p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">// When we find the solution, we also need to backtrack</span>
+<span class="comment">// to display the moves we used to get there...</span>
+<span class="comment">//</span>
+<span class="comment">// "Move" stores what block moved and to what direction</span>
+<span class="keyword">struct</span><span class="normal"> </span><span class="classname">Move</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> _blockId</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">enum</span><span class="normal"> Direction </span><span class="cbracket">{</span><span class="normal">left</span><span class="symbol">,</span><span class="normal"> right</span><span class="symbol">,</span><span class="normal"> up</span><span class="symbol">,</span><span class="normal"> down</span><span class="cbracket">}</span><span class="normal"> _move</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="function">Move</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> blockID</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Direction</span><span class="normal"> d</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="function">_blockId</span><span class="symbol">(</span><span class="normal">blockID</span><span class="symbol">),</span>
+<span class="normal">        </span><span class="function">_move</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{}</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+
+<span class="symbol">...</span>
+
+<span class="comment">// The brains of the operation - basically a Breadth-First-Search</span>
+<span class="comment">// of the problem space:</span>
+<span class="comment">//    http://en.wikipedia.org/wiki/Breadth-first_search</span>
+<span class="comment">//</span>
+<span class="type">void</span><span class="normal"> </span><span class="function">SolveBoard</span><span class="symbol">(</span><span class="normal">list</span><span class="symbol">&lt;</span><span class="normal">Block</span><span class="symbol">&gt;&amp;</span><span class="normal"> blocks</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    cout </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">"</span><span class="specialchar">\n</span><span class="string">Searching for a solution...</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">// We need to store the last move that got us to a specific</span>
+<span class="normal">    </span><span class="comment">// board state - that way we can backtrack from a final board</span>
+<span class="normal">    </span><span class="comment">// state to the list of moves we used to achieve it.</span>
+<span class="normal">    </span><span class="usertype">map&lt; Board, Move&gt;</span><span class="normal"> previousMoves</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="comment">// Start by storing a "sentinel" value, for the initial board</span>
+<span class="normal">    </span><span class="comment">// state - we used no Move to achieve it, so store a block id</span>
+<span class="normal">    </span><span class="comment">// of -1 to mark it:</span>
+<span class="normal">    previousMoves</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span>
+<span class="normal">        pair</span><span class="symbol">&lt;</span><span class="normal">Board</span><span class="symbol">,</span><span class="normal">Move</span><span class="symbol">&gt;(</span><span class="function">renderBlocks</span><span class="symbol">(</span><span class="normal">blocks</span><span class="symbol">),</span><span class="normal"> </span><span class="function">Move</span><span class="symbol">(-</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> Move</span><span class="symbol">::</span><span class="normal">left</span><span class="symbol">)));</span>
+
+<span class="normal">    </span><span class="comment">// We must not revisit board states we have already examined,</span>
+<span class="normal">    </span><span class="comment">// so we need a 'visited' set:</span>
+<span class="normal">    </span><span class="usertype">set&lt;Board&gt;</span><span class="normal"> visited</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">// Now, to implement Breadth First Search, all we need is a Queue</span>
+<span class="normal">    </span><span class="comment">// storing the states we need to investigate - so it needs to</span>
+<span class="normal">    </span><span class="comment">// be a list of board states... i.e. a list of list of Blocks!</span>
+<span class="normal">    </span><span class="usertype">list&lt; list&lt;Block&gt; &gt;</span><span class="normal"> queue</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">// Start with our initial board state</span>
+<span class="normal">    queue</span><span class="symbol">.</span><span class="function">push_back</span><span class="symbol">(</span><span class="normal">blocks</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="symbol">(!</span><span class="normal">queue</span><span class="symbol">.</span><span class="function">empty</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// Extract first element of the queue</span>
+<span class="normal">        </span><span class="usertype">list&lt;Block&gt;</span><span class="normal"> blocks </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">queue</span><span class="symbol">.</span><span class="function">begin</span><span class="symbol">();</span>
+<span class="normal">        queue</span><span class="symbol">.</span><span class="function">pop_front</span><span class="symbol">();</span>
+
+<span class="normal">        </span><span class="comment">// Create a Board for fast 2D access to tile state</span>
+<span class="normal">        </span><span class="usertype">Board</span><span class="normal"> board </span><span class="symbol">=</span><span class="normal"> </span><span class="function">renderBlocks</span><span class="symbol">(</span><span class="normal">blocks</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// Have we seen this board before?</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">visited</span><span class="symbol">.</span><span class="function">find</span><span class="symbol">(</span><span class="normal">board</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> visited</span><span class="symbol">.</span><span class="function">end</span><span class="symbol">())</span>
+<span class="normal">            </span><span class="comment">// Yep - skip it</span>
+<span class="normal">            </span><span class="keyword">continue</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// No, we haven't - store it so we avoid re-doing</span>
+<span class="normal">        </span><span class="comment">// the following work again in the future...</span>
+<span class="normal">        visited</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="normal">board</span><span class="symbol">);</span>
+
+<span class="normal">        </span><span class="comment">// Check if this board state is a winning state:</span>
+<span class="normal">        </span><span class="comment">// Find prisoner block...</span>
+<span class="normal">        list</span><span class="symbol">&lt;</span><span class="normal">Block</span><span class="symbol">&gt;::</span><span class="usertype">iterator</span><span class="normal"> it</span><span class="symbol">=</span><span class="normal">blocks</span><span class="symbol">.</span><span class="function">begin</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="symbol">(;</span><span class="normal"> it</span><span class="symbol">!=</span><span class="normal">blocks</span><span class="symbol">.</span><span class="function">end</span><span class="symbol">();</span><span class="normal"> it</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            Block</span><span class="symbol">&amp;</span><span class="normal"> block </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">it</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_kind </span><span class="symbol">==</span><span class="normal"> prisoner</span><span class="symbol">)</span>
+<span class="normal">                </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="function">assert</span><span class="symbol">(</span><span class="normal">it </span><span class="symbol">!=</span><span class="normal"> blocks</span><span class="symbol">.</span><span class="function">end</span><span class="symbol">());</span><span class="normal"> </span><span class="comment">// The prisoner is always there!</span>
+
+<span class="normal">        </span><span class="comment">// Can he escape? Check to his right!</span>
+<span class="normal">        </span><span class="type">bool</span><span class="normal"> allClear </span><span class="symbol">=</span><span class="normal"> </span><span class="keyword">true</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">int</span><span class="normal"> x</span><span class="symbol">=</span><span class="normal">it</span><span class="symbol">-&gt;</span><span class="normal">_x</span><span class="symbol">+</span><span class="normal">it</span><span class="symbol">-&gt;</span><span class="normal">_length</span><span class="symbol">;</span><span class="normal"> x</span><span class="symbol">&lt;</span><span class="normal">SIZE </span><span class="symbol">;</span><span class="normal"> x</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            allClear </span><span class="symbol">=</span><span class="normal"> allClear </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">!</span><span class="function">board</span><span class="symbol">(</span><span class="normal">it</span><span class="symbol">-&gt;</span><span class="normal">_y</span><span class="symbol">,</span><span class="normal"> x</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">allClear</span><span class="symbol">)</span>
+<span class="normal">                </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">allClear</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="comment">// Yes, he can escape - we did it!</span>
+<span class="normal">            cout </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">"Solved!</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">;</span>
+
+<span class="normal">            </span><span class="comment">// To print the Moves we used in normal order, we will</span>
+<span class="normal">            </span><span class="comment">// backtrack through the board states to print</span>
+<span class="normal">            </span><span class="comment">// the Move we used at each one...</span>
+<span class="normal">            </span><span class="usertype">list&lt;list&lt;Block&gt; &gt;</span><span class="normal"> solution</span><span class="symbol">;</span>
+<span class="normal">            solution</span><span class="symbol">.</span><span class="function">push_front</span><span class="symbol">(</span><span class="function">copyBlocks</span><span class="symbol">(</span><span class="normal">blocks</span><span class="symbol">));</span>
+
+<span class="normal">            map</span><span class="symbol">&lt;</span><span class="normal">Board</span><span class="symbol">,</span><span class="normal">Move</span><span class="symbol">&gt;::</span><span class="usertype">iterator</span><span class="normal"> itMove </span><span class="symbol">=</span><span class="normal"> previousMoves</span><span class="symbol">.</span><span class="function">find</span><span class="symbol">(</span><span class="normal">board</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">itMove </span><span class="symbol">!=</span><span class="normal"> previousMoves</span><span class="symbol">.</span><span class="function">end</span><span class="symbol">())</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">itMove</span><span class="symbol">-&gt;</span><span class="normal">second</span><span class="symbol">.</span><span class="normal">_blockId </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span>
+<span class="normal">                    </span><span class="comment">// Sentinel - reached starting board</span>
+<span class="normal">                    </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="comment">// Find the block we moved, and move it</span>
+<span class="normal">                </span><span class="comment">// (in reverse direction - we are going back)</span>
+<span class="normal">                </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">it</span><span class="symbol">=</span><span class="normal">blocks</span><span class="symbol">.</span><span class="function">begin</span><span class="symbol">();</span><span class="normal"> it</span><span class="symbol">!=</span><span class="normal">blocks</span><span class="symbol">.</span><span class="function">end</span><span class="symbol">();</span><span class="normal"> it</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">it</span><span class="symbol">-&gt;</span><span class="normal">_id </span><span class="symbol">==</span><span class="normal"> itMove</span><span class="symbol">-&gt;</span><span class="normal">second</span><span class="symbol">.</span><span class="normal">_blockId</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                        </span><span class="keyword">switch</span><span class="symbol">(</span><span class="normal">itMove</span><span class="symbol">-&gt;</span><span class="normal">second</span><span class="symbol">.</span><span class="normal">_move</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                        </span><span class="keyword">case</span><span class="normal"> Move</span><span class="symbol">::</span><span class="normal">left</span><span class="symbol">:</span><span class="normal">  it</span><span class="symbol">-&gt;</span><span class="normal">_x</span><span class="symbol">++;</span><span class="normal"> </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">                        </span><span class="keyword">case</span><span class="normal"> Move</span><span class="symbol">::</span><span class="normal">right</span><span class="symbol">:</span><span class="normal"> it</span><span class="symbol">-&gt;</span><span class="normal">_x</span><span class="symbol">--;</span><span class="normal"> </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">                        </span><span class="keyword">case</span><span class="normal"> Move</span><span class="symbol">::</span><span class="normal">up</span><span class="symbol">:</span><span class="normal">    it</span><span class="symbol">-&gt;</span><span class="normal">_y</span><span class="symbol">++;</span><span class="normal"> </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">                        </span><span class="keyword">case</span><span class="normal"> Move</span><span class="symbol">::</span><span class="normal">down</span><span class="symbol">:</span><span class="normal">  it</span><span class="symbol">-&gt;</span><span class="normal">_y</span><span class="symbol">--;</span><span class="normal"> </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">                        </span><span class="cbracket">}</span>
+<span class="normal">                        </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">                    </span><span class="cbracket">}</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">                </span><span class="function">assert</span><span class="symbol">(</span><span class="normal">it </span><span class="symbol">!=</span><span class="normal"> blocks</span><span class="symbol">.</span><span class="function">end</span><span class="symbol">());</span>
+<span class="normal">                </span><span class="comment">// Add this board to the front of the list...</span>
+<span class="normal">                solution</span><span class="symbol">.</span><span class="function">push_front</span><span class="symbol">(</span><span class="function">copyBlocks</span><span class="symbol">(</span><span class="normal">blocks</span><span class="symbol">));</span>
+<span class="normal">                board </span><span class="symbol">=</span><span class="normal"> </span><span class="function">renderBlocks</span><span class="symbol">(</span><span class="normal">blocks</span><span class="symbol">);</span>
+<span class="normal">                itMove </span><span class="symbol">=</span><span class="normal"> previousMoves</span><span class="symbol">.</span><span class="function">find</span><span class="symbol">(</span><span class="normal">board</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="comment">// Now that we have the full list, emit it in order</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">list</span><span class="symbol">&lt;</span><span class="normal">list</span><span class="symbol">&lt;</span><span class="normal">Block</span><span class="symbol">&gt;</span><span class="normal"> </span><span class="symbol">&gt;::</span><span class="usertype">iterator</span><span class="normal"> itState</span><span class="symbol">=</span><span class="normal">solution</span><span class="symbol">.</span><span class="function">begin</span><span class="symbol">();</span>
+<span class="normal">                itState </span><span class="symbol">!=</span><span class="normal"> solution</span><span class="symbol">.</span><span class="function">end</span><span class="symbol">();</span><span class="normal"> itState</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="function">printBoard</span><span class="symbol">(*</span><span class="normal">itState</span><span class="symbol">);</span>
+<span class="normal">                cout </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">"Press ENTER for next move</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">;</span>
+<span class="normal">                cin</span><span class="symbol">.</span><span class="function">get</span><span class="symbol">();</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            cout </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="string">"Run free, prisoner, run! :-)</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="function">exit</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+
+<span class="normal">        </span><span class="comment">// Nope, the prisoner is still trapped.</span>
+<span class="normal">        </span><span class="comment">//</span>
+<span class="normal">        </span><span class="comment">// Add all potential states arrising from immediate</span>
+<span class="normal">        </span><span class="comment">// possible moves to the end of the queue.</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">it</span><span class="symbol">=</span><span class="normal">blocks</span><span class="symbol">.</span><span class="function">begin</span><span class="symbol">();</span><span class="normal"> it</span><span class="symbol">!=</span><span class="normal">blocks</span><span class="symbol">.</span><span class="function">end</span><span class="symbol">();</span><span class="normal"> it</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            Block</span><span class="symbol">&amp;</span><span class="normal"> block </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">it</span><span class="symbol">;</span>
+
+<span class="preproc">#define</span><span class="normal"> </span><span class="function">COMMON_BODY</span><span class="symbol">(</span><span class="normal">direction</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="usertype">list&lt;Block&gt;</span><span class="normal"> copied </span><span class="symbol">=</span><span class="normal"> </span><span class="function">copyBlocks</span><span class="symbol">(</span><span class="normal">blocks</span><span class="symbol">);</span><span class="normal">                  </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="comment">/* Add to the end of the queue for further study :-) */</span><span class="normal">   </span><span class="symbol">\</span>
+<span class="normal">    queue</span><span class="symbol">.</span><span class="function">push_back</span><span class="symbol">(</span><span class="normal">copied</span><span class="symbol">);</span><span class="normal">                                  </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="comment">/* Store board and move, so we can backtrack later */</span><span class="normal">     </span><span class="symbol">\</span>
+<span class="normal">    previousMoves</span><span class="symbol">.</span><span class="function">insert</span><span class="symbol">(</span><span class="normal">                                     </span><span class="symbol">\</span>
+<span class="normal">        pair</span><span class="symbol">&lt;</span><span class="normal">Board</span><span class="symbol">,</span><span class="normal">Move</span><span class="symbol">&gt;(</span><span class="normal">                                     </span><span class="symbol">\</span>
+<span class="normal">            </span><span class="function">renderBlocks</span><span class="symbol">(</span><span class="normal">copied</span><span class="symbol">),</span><span class="normal">                             </span><span class="symbol">\</span>
+<span class="normal">            </span><span class="function">Move</span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_id</span><span class="symbol">,</span><span class="normal"> Move</span><span class="symbol">::</span><span class="normal">direction</span><span class="symbol">)));</span>
+
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_isHorizontal</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="comment">// Can the block move to the left?</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">&gt;</span><span class="number">0</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span>
+<span class="normal">                        empty</span><span class="symbol">==</span><span class="function">board</span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">,</span><span class="normal"> block</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    block</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">--;</span>
+<span class="normal">                    </span><span class="function">COMMON_BODY</span><span class="symbol">(</span><span class="normal">left</span><span class="symbol">)</span>
+<span class="normal">                    block</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">++;</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">                </span><span class="comment">// Can the block move to the right?</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">+</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_length</span><span class="symbol">&lt;</span><span class="normal">SIZE </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span>
+<span class="normal">                        empty</span><span class="symbol">==</span><span class="function">board</span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">,</span><span class="normal"> block</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">+</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_length</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    block</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">++;</span>
+<span class="normal">                    </span><span class="function">COMMON_BODY</span><span class="symbol">(</span><span class="normal">right</span><span class="symbol">)</span>
+<span class="normal">                    block</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">--;</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="comment">// Can the block move up?</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">&gt;</span><span class="number">0</span><span class="normal"> </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span>
+<span class="normal">                        empty</span><span class="symbol">==</span><span class="function">board</span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">-</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> block</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    block</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">--;</span>
+<span class="normal">                    </span><span class="function">COMMON_BODY</span><span class="symbol">(</span><span class="normal">up</span><span class="symbol">)</span>
+<span class="normal">                    block</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">++;</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">                </span><span class="comment">// Can the block move down?</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">+</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_length</span><span class="symbol">&lt;</span><span class="normal">SIZE </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span>
+<span class="normal">                        empty</span><span class="symbol">==</span><span class="function">board</span><span class="symbol">(</span><span class="normal">block</span><span class="symbol">.</span><span class="normal">_y </span><span class="symbol">+</span><span class="normal"> block</span><span class="symbol">.</span><span class="normal">_length</span><span class="symbol">,</span><span class="normal"> block</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    block</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">++;</span>
+<span class="normal">                    </span><span class="function">COMMON_BODY</span><span class="symbol">(</span><span class="normal">down</span><span class="symbol">)</span>
+<span class="normal">                    block</span><span class="symbol">.</span><span class="normal">_y</span><span class="symbol">--;</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="comment">// and go recheck the queue, from the top!</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>And to my immense delight, I saw it work:<br>
+&nbsp;<br>
+  <table summary="Solving the UnblockMe puzzle" align="center">
+  <tr>
+  <td>
+<center>
+<!--object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/M2cFz6190ZM&amp;hl=en_US&amp;fs=1&amp;rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/M2cFz6190ZM&amp;hl=en_US&amp;fs=1&amp;rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object-->
+<!--object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="http://www.youtube.com/v/M2cFz6190ZM&amp;hl=en_US&amp;fs=1&amp;rel=0"><param name="movie" value="http://www.youtube.com/v/0FrAZis6Wfk"><param name="allowFullScreen" value="true"></object-->
+<object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="https://www.youtube.com/v/6hfF_6KlAQk&amp;hl=en_US&amp;fs=1&amp;rel=0">
+    <param name="movie" value="https://www.youtube.com/v/6hfF_6KlAQk">
+    <param name="allowFullScreen" value="true">
+    <!-- Fallback content -->
+    <a href="https://www.youtube.com/watch?v=6hfF_6KlAQk">
+    <img src="unblock.jpg" width="480" height="360" alt="Solving the UnblockMe puzzle">
+    </a>
+</object>
+</center>
+  </td></tr></table>
+<p>
+Never again shall I be blocked for long on a level&nbsp;:&#x2011;)</p>
+
+<p>No, this is not cheating! It's a product of my own brain, addressing the same problem... in a different way. It just so happens... that I know how to extend my brain&nbsp;:&#x2011;)</p>
+
+<h2>Some thoughts</h2>
+
+<p>The code lives in <a href="https://github.com/ttsiodras/UnblockMeSolver">GitHub</a>, and it's relatively simple to follow through (I commented it a lot). However, if you compare this implementation with <a href="score4.html">the one I did for Score4</a>, you will naturally notice the verbosity of C++.
+Why didn't I use OCaml for this? Or even C++11, which would drastically cut down on e.g. iterator loops?</p>
+
+<p>Well - the problem parameters... are that I want to run this on my phone. And as it turns out, I have succeeded in installing a Linux-based cross compiler for my jailbroken iPhone - but it only works for old-style C++ (i.e. non-C++11).</p>
+
+<p>OCaml on the iPhone would be cool, though - if I ever get my hands on an iPhone OCaml compiler, I'll probably port my code.</p>
+
+<p><em>Update, Oct 22, 2012</em>: I did a quick "port" to C++11.</p>
+
+<p><em>Update, Oct 27, 2012</em>: I ported the code to OCaml.</p>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:29:00 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/unblock.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

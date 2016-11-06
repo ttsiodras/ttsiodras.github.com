@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/knightstour.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>The Knight's Tour</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">The Knight's Tour</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+              <em>(November 2008)</em><p>
+<A href="http://developers.slashdot.org/article.pl?sid=08/11/30/1722203">Slashdotted!</A>
+<div class="scrollableContainer rightFloat">
+  <img width="187" height="272" hspace="5" src="Knight.jpg" alt="Chess Knight" align="right">
+</div>
+When I was a kid, I used to play chess with my older brothers. Since they were
+much older than me, I was more or less a "punch bag", and was losing the matches
+in (usually) a matter of minutes. I was persistent though... and saddened by defeat
+after defeat, I occasionally "escaped" into the solitary game of the Knight's 
+Tour. From my <a href="buildWikipediaOffline.html">local copy of Wikipedia</a>:
+<div class="leftFloat scrollableContainer">
+  <img width="204" height="204" vspace="5" hspace="5" src="KnightTourAnimated.gif" alt="How to play" align="left">
+</div>
+<blockquote>
+<em>The&nbsp;Knight's&nbsp;Tour is a mathematical problem involving a knight on a chessboard.
+The knight is placed on the empty board and, moving according to the rules of chess,
+must visit each square exactly once.</em>
+</blockquote>
+<p>
+It was easy to understand, easy to try, but not so easy to accomplish.
+And it only required a pen and a piece of paper. Whenever I managed to 
+complete all 64 squares (by shear luck), I always felt a surge of exhilaration. 
+<p>Nowadays, I've more or less abandoned chess... But strangely enough, 
+I remembered my childhood refuge once again today, just by seeing some
+Sudoku puzzle in a magazine... and decided to take another swing at it. 
+With much better tools than pen and paper :&#x2011;)
+<h2>Python attacks Knight</h2>
+I started with <a href="knight1.py">this code</a>:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+<span class="preproc">import</span><span class="normal"> sys</span>
+
+<span class="normal">g_sqSize </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="normal">   </span><span class="comment"># the board size, passed at runtime</span>
+<span class="normal">g_board </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span><span class="normal">    </span><span class="comment"># the board will be constructed as a list of lists</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">main</span><span class="symbol">():</span>
+<span class="normal">    </span><span class="keyword">global</span><span class="normal"> g_sqSize</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="number">2</span><span class="symbol">:</span>
+<span class="normal">        g_sqSize </span><span class="symbol">=</span><span class="normal"> </span><span class="number">8</span><span class="normal">  </span><span class="comment"># Default: Fill the normal 8x8 chess board</span>
+<span class="normal">    </span><span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="keyword">try</span><span class="symbol">:</span><span class="normal"> g_sqSize </span><span class="symbol">=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">])</span><span class="normal"> </span><span class="comment"># or, the NxN the user wants</span>
+<span class="normal">        </span><span class="keyword">except</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">print</span><span class="symbol">(</span><span class="string">"Usage: "</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" &lt;squareSize&gt;"</span><span class="symbol">)</span>
+<span class="normal">            sys</span><span class="symbol">.</span><span class="function">exit</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> i </span><span class="keyword">in</span><span class="normal"> </span><span class="function">range</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> g_sqSize</span><span class="symbol">):</span>
+<span class="normal">        g_board</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">g_sqSize</span><span class="symbol">*[</span><span class="number">0</span><span class="symbol">])</span><span class="normal">  </span><span class="comment"># Fill the board with zeroes</span>
+<span class="normal">    </span><span class="function">Fill</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="number">0</span><span class="symbol">,</span><span class="number">1</span><span class="symbol">)</span><span class="normal">    </span><span class="comment"># Start the recursion with a 1 in the upper left</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="symbol">(</span><span class="string">"No solution found"</span><span class="symbol">)</span><span class="normal">  </span><span class="comment"># if the recursion returns, it failed</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">InRangeAndEmpty</span><span class="symbol">(</span><span class="normal">ty</span><span class="symbol">,</span><span class="normal">tx</span><span class="symbol">):</span><span class="normal">  </span><span class="comment"># check if coordinates are within the board</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> ty</span><span class="symbol">&gt;=</span><span class="number">0</span><span class="normal"> </span><span class="keyword">and</span><span class="normal"> tx</span><span class="symbol">&gt;=</span><span class="number">0</span><span class="normal"> </span><span class="keyword">and</span><span class="normal"> ty</span><span class="symbol">&lt;</span><span class="normal">g_sqSize </span><span class="keyword">and</span><span class="normal"> tx</span><span class="symbol">&lt;</span><span class="normal">g_sqSize </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="keyword">and</span><span class="normal"> g_board</span><span class="symbol">[</span><span class="normal">ty</span><span class="symbol">][</span><span class="normal">tx</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="comment"># and the square is empty</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">Fill</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">,</span><span class="normal">x</span><span class="symbol">,</span><span class="normal">counter</span><span class="symbol">):</span><span class="normal"> </span><span class="comment"># The recursive function that fills the board</span>
+<span class="normal">    </span><span class="keyword">assert</span><span class="normal"> g_board</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">    g_board</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> counter          </span><span class="comment"># Fill the square</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> counter </span><span class="symbol">==</span><span class="normal"> g_sqSize</span><span class="symbol">*</span><span class="normal">g_sqSize</span><span class="symbol">:</span><span class="normal"> </span><span class="comment"># Was this the last empty square?</span>
+<span class="normal">        </span><span class="function">PrintBoard</span><span class="symbol">()</span><span class="normal">                 </span><span class="comment"># Yes, print the board...</span>
+<span class="normal">        sys</span><span class="symbol">.</span><span class="function">exit</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span><span class="normal">                  </span><span class="comment"># ...and exit</span>
+<span class="normal">    jumps </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">((-</span><span class="number">2</span><span class="symbol">,</span><span class="number">1</span><span class="symbol">),(-</span><span class="number">1</span><span class="symbol">,</span><span class="number">2</span><span class="symbol">),(</span><span class="number">1</span><span class="symbol">,</span><span class="number">2</span><span class="symbol">),(</span><span class="number">2</span><span class="symbol">,</span><span class="number">1</span><span class="symbol">),(</span><span class="number">2</span><span class="symbol">,-</span><span class="number">1</span><span class="symbol">),(</span><span class="number">1</span><span class="symbol">,-</span><span class="number">2</span><span class="symbol">),(-</span><span class="number">1</span><span class="symbol">,-</span><span class="number">2</span><span class="symbol">),(-</span><span class="number">2</span><span class="symbol">,-</span><span class="number">1</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> jump </span><span class="keyword">in</span><span class="normal"> jumps</span><span class="symbol">:</span><span class="normal">  </span><span class="comment"># otherwise, try all the empty neighbours in turn</span>
+<span class="normal">        ty</span><span class="symbol">,</span><span class="normal">tx </span><span class="symbol">=</span><span class="normal"> y</span><span class="symbol">+</span><span class="normal">jump</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span><span class="normal"> x</span><span class="symbol">+</span><span class="normal">jump</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="function">InRangeAndEmpty</span><span class="symbol">(</span><span class="normal">ty</span><span class="symbol">,</span><span class="normal">tx</span><span class="symbol">):</span>
+<span class="normal">            </span><span class="function">Fill</span><span class="symbol">(</span><span class="normal">ty</span><span class="symbol">,</span><span class="normal">tx</span><span class="symbol">,</span><span class="normal">counter</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">)</span><span class="normal">    </span><span class="comment"># *** RECURSION! ***</span>
+<span class="normal">    g_board</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">][</span><span class="normal">x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="comment"># if we get here, all the neighbours failed,</span>
+<span class="normal">                      </span><span class="comment"># so reset the square and return</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">PrintBoard</span><span class="symbol">():</span><span class="normal"> </span><span class="comment"># print the board using nice ASCII art ('+' and '-')</span>
+<span class="normal">    scale </span><span class="symbol">=</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="function">str</span><span class="symbol">(</span><span class="normal">g_sqSize</span><span class="symbol">*</span><span class="normal">g_sqSize</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="symbol">(</span><span class="normal">g_sqSize</span><span class="symbol">*(</span><span class="string">"+"</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> scale</span><span class="symbol">*</span><span class="string">"-"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"+"</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> line </span><span class="keyword">in</span><span class="normal"> g_board</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> elem </span><span class="keyword">in</span><span class="normal"> line</span><span class="symbol">:</span>
+<span class="normal">            sys</span><span class="symbol">.</span><span class="normal">stdout</span><span class="symbol">.</span><span class="function">write</span><span class="symbol">(</span><span class="string">"|%*d"</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">scale</span><span class="symbol">,</span><span class="normal">elem</span><span class="symbol">))</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="symbol">(</span><span class="string">"|\n"</span><span class="symbol">+</span><span class="normal">g_sqSize</span><span class="symbol">*(</span><span class="string">"+"</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> scale</span><span class="symbol">*</span><span class="string">"-"</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">"+"</span><span class="symbol">)</span>
+
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="function">main</span><span class="symbol">()</span>
+</tt></pre>
+
+</div>
+The code performs a recursive attempt to <tt>Fill</tt> the board.
+Starting at the top left corner, it proceeds to identify the empty neighbours,
+trying each one of them in turn.
+<p>This naive approach is functional, but...
+<pre class="o">
+<b>bash$</b> ./knight1.py 5
++--+--+--+--+--+
+| 1|20|17|12| 3|
++--+--+--+--+--+
+|16|11| 2| 7|18|
++--+--+--+--+--+
+|21|24|19| 4|13|
++--+--+--+--+--+
+|10|15| 6|23| 8|
++--+--+--+--+--+
+|25|22| 9|14| 5|
++--+--+--+--+--+
+</pre>
+...only for small boards. It solves the 5x5 and 6x6 boards in less than 
+a second, but it takes 96 seconds to solve the 7x7 and 28 seconds to solve 
+the 8x8... I didn't even try with larger board sizes, since it was 
+clear that naive recursion is too slow.
+<p>I then proceeded to add some extra intelligence in the recursion,
+by <a href="knight2.py">filling the "lonesome" squares first</a>:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="symbol">...</span>
+<span class="normal">emptyNeighbours </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span><span class="normal">  </span><span class="comment"># find our empty neighbours for the recursion</span>
+<span class="normal">jumps </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">((-</span><span class="number">2</span><span class="symbol">,</span><span class="number">1</span><span class="symbol">),(-</span><span class="number">1</span><span class="symbol">,</span><span class="number">2</span><span class="symbol">),(</span><span class="number">1</span><span class="symbol">,</span><span class="number">2</span><span class="symbol">),(</span><span class="number">2</span><span class="symbol">,</span><span class="number">1</span><span class="symbol">),(</span><span class="number">2</span><span class="symbol">,-</span><span class="number">1</span><span class="symbol">),(</span><span class="number">1</span><span class="symbol">,-</span><span class="number">2</span><span class="symbol">),(-</span><span class="number">1</span><span class="symbol">,-</span><span class="number">2</span><span class="symbol">),(-</span><span class="number">2</span><span class="symbol">,-</span><span class="number">1</span><span class="symbol">))</span>
+<span class="keyword">for</span><span class="normal"> jump </span><span class="keyword">in</span><span class="normal"> jumps</span><span class="symbol">:</span>
+<span class="normal">    ty</span><span class="symbol">,</span><span class="normal">tx </span><span class="symbol">=</span><span class="normal"> y </span><span class="symbol">+</span><span class="normal"> jump</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span><span class="normal"> x </span><span class="symbol">+</span><span class="normal"> jump</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="function">InRangeAndEmpty</span><span class="symbol">(</span><span class="normal">ty</span><span class="symbol">,</span><span class="normal">tx</span><span class="symbol">):</span>
+<span class="normal">        emptyNeighbours</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">([</span><span class="normal">ty</span><span class="symbol">,</span><span class="normal">tx</span><span class="symbol">])</span>
+
+<span class="comment"># recurse using our neighbours, trying first the ones with the </span>
+<span class="comment"># least amount of free neighbours, i.e. the "loners"</span>
+<span class="keyword">for</span><span class="normal"> ty</span><span class="symbol">,</span><span class="normal">tx </span><span class="keyword">in</span><span class="normal"> </span><span class="function">sorted</span><span class="symbol">(</span><span class="normal">emptyNeighbours</span><span class="symbol">,</span><span class="normal"> key</span><span class="symbol">=</span><span class="keyword">lambda</span><span class="normal"> c</span><span class="symbol">:</span><span class="normal"> </span><span class="function">reduce</span><span class="symbol">(</span>
+<span class="normal">    </span><span class="keyword">lambda</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal">y</span><span class="symbol">:</span><span class="normal"> x</span><span class="symbol">+</span><span class="normal">y</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">    </span><span class="function">map</span><span class="symbol">(</span><span class="keyword">lambda</span><span class="normal"> j</span><span class="symbol">:</span><span class="normal"> </span><span class="function">InRangeAndEmpty</span><span class="symbol">(</span><span class="normal">c</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]+</span><span class="normal">j</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span><span class="normal"> c</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]+</span><span class="normal">j</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">])</span><span class="normal"> </span><span class="keyword">and</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="keyword">or</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">        jumps</span><span class="symbol">))):</span>
+<span class="normal">    </span><span class="function">Fill</span><span class="symbol">(</span><span class="normal">ty</span><span class="symbol">,</span><span class="normal">tx</span><span class="symbol">,</span><span class="normal">counter</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">)</span>
+<span class="symbol">...</span>
+</tt></pre>
+
+</div>
+I know, this code has 3 <tt>lambda</tt>s in 3 successive lines, I've
+gone a little too far :&#x2011;) Well, bear with me, what it does is in fact very simple.
+It sorts the emptyNeighbours list according to how "lonely" this neighbour
+is, that is, according to how many empty neighbours he has. To do that,
+it uses <tt>map</tt> to apply a lambda to all the elements of <tt>jumps</tt>:
+the innermost lambda checks in turn all neighbours to see if (a) they are within the 
+board and (b) they are empty. If a neighbour fulfils both, the lambda returns 
+1, otherwise it returns 0. <tt>reduce</tt> is then used to accumulate
+all 1s (up to a maximum of 8) and return their sum (via the <tt>lambda x,y: return x+y</tt>).
+Finally, we use this calculation process as the sort key for the call to
+<tt>sorted(emptyNeighbours)</tt>. In that way, the neighbouring empty squares
+that have the least "free space" around them, are used first during the 
+recursion.
+<p>Python also offers the <tt>sum</tt> function to implement the accumulation
+process, and it also offers list comprehensions to ease up the syntax further:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">for</span><span class="normal"> ty</span><span class="symbol">,</span><span class="normal">tx </span><span class="keyword">in</span><span class="normal"> </span><span class="function">sorted</span><span class="symbol">(</span><span class="normal">emptyNeighbours</span><span class="symbol">,</span><span class="normal"> key</span><span class="symbol">=</span><span class="keyword">lambda</span><span class="normal"> c</span><span class="symbol">:</span><span class="normal"> </span>
+<span class="normal">    </span><span class="function">sum</span><span class="symbol">([</span><span class="function">InRangeAndEmpty</span><span class="symbol">(</span><span class="normal">c</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]+</span><span class="normal">j</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span><span class="normal"> c</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]+</span><span class="normal">j</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">])</span><span class="normal"> </span><span class="keyword">and</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="keyword">or</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="keyword">for</span><span class="normal"> j </span><span class="keyword">in</span><span class="normal"> jumps</span><span class="symbol">])):</span>
+<span class="normal">    </span><span class="function">Fill</span><span class="symbol">(</span><span class="normal">ty</span><span class="symbol">,</span><span class="normal">tx</span><span class="symbol">,</span><span class="normal">counter</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">)</span>
+<span class="symbol">...</span>
+</tt></pre>
+
+</div>
+<p>By using this simple policy (which I clearly remember I was also following
+when I was a kid!), the solving time became less than 100 milliseconds, 
+<b>for all square sizes up to 31x31</b>! Beyond 31x31, at least on my 
+manually-compiled Python interpreter, the program run out of stack space and
+required an increase in Python's recursion limit (via <tt>sys.setrecursionlimit</tt>).
+After that little tweak, the 100x100 problem was solved just as quick :&#x2011;)
+
+<p><em>P.S. Not to be paternalistic, but allow me to suggest writing this sorting
+code in C (using qsort?), or in C++ using STL's sort algorithm. When you finish, 
+look at the code you wrote, and then look back at the Python code in its final
+form: 2 lines to implement the sorting! You'll have to agree that writing functions 
+just to pass to qsort (or functors in order to pass to std::sort) is... well,
+far behind. Python syntax has <a href="yield.html">tremendous advantages</a>... 
+Advantages that have nothing to do with libraries, and can be traced back to the 
+combination of (a) functional programming concepts and (b) the perfect syntax that 
+Python offers. I would truly be amazed to see anyone writing the same sorting logic 
+in C++ in anything less than 3 times the lines of code I wrote for it in Python. 
+And even if this is somehow possible (using external libraries like BOOST, I'd wager), 
+the sorting code will take longer to write, and it will be far more difficult to 
+comprehend or refactor...</em>
+<p><em>It took me less than an hour to write this, and I'm a "casual user" of Python, 
+not a Python expert...</em>
+<pre class="o">
+<b>bash$</b> ./knight2.py 31
++---+---+---+---+---+---+---+---+---+ ... +---+---+---+---+---+---+---+---+---+
+|  1|754| 65| 72|  3|756| 77| 80|  5|     |587|478| 13| 90|341|476| 15| 92| 95|
++---+---+---+---+---+---+---+---+---+     +---+---+---+---+---+---+---+---+---+
+| 66| 71|  2|755| 76| 73|  4|887|762|     | 12| 89|528|477| 14| 91| 94|335| 16|
++---+---+---+---+---+---+---+---+---+     +---+---+---+---+---+---+---+---+---+
+|753| 64|759| 74|757|886|761| 78| 81|     |535|586|479|340|481|342|475| 96| 93|
++---+---+---+---+---+---+---+---+---+     +---+---+---+---+---+---+---+---+---+
+...                                                                        ...
++---+---+---+---+---+---+---+---+---+     +---+---+---+---+---+---+---+---+---+
+|128|125|414| 49|130|123|410| 47|136|     |206| 39|172|113|162| 37| 34|111| 30|
++---+---+---+---+---+---+---+---+---+     +---+---+---+---+---+---+---+---+---+
+|415| 50|129|124|413| 48|131|122|133|     |159|114|161| 38|173|112| 31| 36| 33|
++---+---+---+---+---+---+---+---+---+ ... +---+---+---+---+---+---+---+---+---+
+</pre>
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/knightstour.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

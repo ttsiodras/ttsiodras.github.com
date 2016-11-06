@@ -1,0 +1,311 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/mp3pro.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Playing mp3PRO files under Linux</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Playing mp3PRO files under Linux</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <em>A reversing journey... (January 2008)</em><p>&nbsp;
+<h2>mp3PRO?</h2>
+From my <a href="buildWikipediaOffline.html">local copy of Wikipedia</a>:
+    <br><br>
+    <blockquote>
+    <em>mp3PRO is an audio compression algorithm (or codec) that combines the MP3 audio format with spectral band replication compression methods. It claims to achieve transparency at lower bitrates than MP3, resulting in a file nearly half the size of standard MP3.</em>
+    </blockquote>
+
+    <p>A different way of describing it:
+    <blockquote>
+    <em>It was a time long ago and <a href="http://www.xiph.org/">Ogg Vorbis</a> had not 
+    yet entered the picture. I was young. I was naive. I believed that even closed formats would stay forever.</em>
+    <p><em>I was out of hard disk space.</em>
+    <p><em>And this format was promising to halve my MP3 files in half!</em>
+    <p><em>In my tests I found out that it sounded pretty good, too, so I decided to go ahead and use mp3PRO
+    for my audio collection...</em>
+    </blockquote>
+    <p>And halved it, it did. And I got some much needed disk space. And I installed Linux...<p>
+    Time passed...<p>
+    And, as expected, Linux (and the BSDs) shook my world... I became an addict; I learned to worship Stallman and Raymond, I coded in C and C++ and Perl and Python... I read manuals and infopages... I became a hermit...
+    <p>...and after 10 years of working in silence, it dawned on me...  now that I was using open-source OSes, how would I listen to my music?
+    <h2>Closed formats: A Royal Pain In The...</h2>
+To add insult to injury, in the years that passed, not only had Ogg Vorbis emerged, it had also surpassed mp3PRO in terms of quality/bitrate. So not only did my music collection suffer silence at the hands of a closed format, it was also sounding inferior...
+    <p>I contemplated re-coding all my CDs in Vorbis... But I am lazy... I am also a somewhat-adept coder, so I started investigating...
+    <h3>Option 0: In-Duh-vidual</h3>
+Well, mp3PRO files are in fact valid MP3 files. You can listen to them with any MP3 decoder - but you are only listening to the first 22KHz of the spectrum... To hear the rest, you need an mp3PRO-aware decoder... So the quality of the sound is rather flat, similar to that of a radio station...
+    <h3>Option 1: Wine</h3>
+    <a href="http://www.winehq.org">WINE</a> is a great piece of software. Does it run Winamp, with its mp3PRO plugin?
+<div class="scrollableContainer">
+<img src="winamp.png" alt="Winamp under WINE">
+</div>
+Of course it does!<p>
+In the snapshot above, you can see the nice IceWM window decorations (I love spartan window managers). You can also see that the file being played is, in fact, an mp3PRO file - which sounds every bit as delicious as it does under Windows, at a smooth 44KHz.
+    <h3>Option 2: Mass conversion</h3>
+<p>Then again, WINE is a beast. Perhaps it is better to "bite the bullet" and transcode the files from mp3PRO to Vorbis... Harddisk space is now cheaper than air (almost), so I can use this nice "dBpowerAMP Music Converter" thingie that I downloaded from the Web, to convert my files to WAVs, and re-encode them in Vorbis. This tool supports mp3PRO through the Winamp plugin, so there, I am out of excuses...
+  <div class="scrollableContainer">
+<img src="musconv.png" alt="Music Converter">
+</div>
+Or am I?<p>
+Do I have to Cick/Click/Click for all the music files I have? Hundreds of them...?
+<h3>Option 3: XMMS</h3>
+Then again, why transcode? The frequency information is there, why re-encode it in another format?
+<p>All I want is to be able to listen to my files using a native Linux solution... Let's Google...
+<p>What do you know!... THOMSON released an mp3PRO plugin for XMMS, back in 2005!... Now there's something I did not expect.
+<p>Then again, people all over the web are complaining about it ("it doesn't work" - "it borks my XMMS") ... let's try it anyway...
+<pre class="o">
+<b>bash$</b> rpm -qip libmp3PRO-1.0.1-1.i386.rpm 
+Name        : libmp3PRO                    Relocations: (not relocateable)
+Version     : 1.0.1   Vendor: Coding Technologies GmbH &lt;mp3PRO@CodingTechnologies.com&gt;
+Release     : 1                             Build Date: Wed 14 Sep 2005 03:41:15 PM EEST
+Install Date: (not installed)               Build Host: linux.local
+Group       : Applications/Multimedia       Source RPM: libmp3PRO-1.0.1-1.src.rpm
+Size        : 391408                           License: distributable
+Signature   : (none)
+URL         : http://www.mp3PROzone.com
+Summary     : XMMS input plugin to play mp3PRO files and streams.
+Description :
+The Coding Technologies mp3PRO Decoder plugin is a complete
+ISO/IEC 11172-3 ("MPEG-1") and ISO/IEC 13818-3 ("MPEG-2") implementation
+of the MPEG Layer-3 decoding algorithm with the additional ability to
+handle the mp3PRO enhancement. The proprietary Fraunhofer IIS extension for
+sampling frequencies of 8, 11.025 and 12 kHz ("MPEG-2.5") is also supported.
+
+Install this plugin if you want to play mp3PRO files or streams. To ensure
+using this plugin for mp3PRO files it is recommended to disable the built-in
+MPEG Layer 1/2/3 Player.
+</pre>
+Hmm, looks nice enough. Extracting the contents with alien (I use Debian), copying <tt>libmp3PRO.so</tt> into <tt>/usr/lib/xmms/Input/</tt>...
+<p>Hooray, it worked! (<em>If it didn't work for you, keep reading...</em>)
+<h3>Option 4: MPlayer</h3>
+Well then, why did these people complain? It works fine, in both my Gentoo and my Debian Etch... And now that I have an XMMS plugin, I can even use MPlayer's <tt>xmms</tt> demuxer, and do <em>ANYTHING</em> I want with my mp3PRO files... filter them, transcode them, flip them sideways...
+<p>Let me show you - oh wait!
+<p>Here's something weird... I compiled my MPlayer with <tt>--enable-xmms</tt> and fed it (using <tt>-demuxer xmms</tt>) with an mp3PRO file...
+<p>I only get 22KHz!
+<pre class="o">
+<b>bash$</b> mplayer -demuxer xmms "SlaveChildrenCrusade.mp3"
+MPlayer 1.0rc2-4.2.2 (C) 2000-2007 MPlayer Team
+CPU: Intel(R) Core(TM)2 Duo CPU     E4500  @ 2.20GHz
+CPUflags:  MMX: 1 MMX2: 1 3DNow: 0 3DNow2: 0 SSE: 1 SSE2: 1
+Compiled for x86 CPU with extensions: MMX MMX2 SSE SSE2
+115 audio &amp; 237 video codecs
+
+Playing SlaveChildrenCrusade.mp3.
+Found plugin: libmp3PRO.so ().
+Found plugin: libmp4.so (MP4 &amp; MPEG2/4-AAC audio player - 1.2.x).
+Found plugin: libwav.so (Wave Player 1.2.10).
+Found plugin: libmikmod.so (MikMod Player 1.2.10).
+Found plugin: libmodplugxmms.so (ModPlug Player).
+Found plugin: libcdaudio.so (CD Audio Player 1.2.10).
+Found plugin: libtonegen.so (Tone Generator 1.2.10).
+Waiting for the XMMS plugin to start playback of 'SlaveChildrenCrusade.mp3'...
+XMMS file format detected.
+==========================================================================
+Opening audio decoder: [pcm] Uncompressed PCM audio decoder
+AUDIO: 22050 Hz, 2 ch, s16le, 705.6 kbit/100.00% (ratio: 88200->88200)
+Selected audio codec: [pcm] afm: pcm (Uncompressed PCM)
+==========================================================================
+AO: [oss] 22050Hz 2ch s16le (2 bytes per sample)
+Video: no video
+Starting playback...
+Closing plugin: /usr/lib/xmms/Input/libtonegen.so.
+Closing plugin: /usr/lib/xmms/Input/libcdaudio.so.
+Closing plugin: /usr/lib/xmms/Input/libmodplugxmms.so.
+Closing plugin: /usr/lib/xmms/Input/libmikmod.so.
+Closing plugin: /usr/lib/xmms/Input/libwav.so.
+Closing plugin: /usr/lib/xmms/Input/libmp4.so.
+Closing plugin: /usr/lib/xmms/Input/libmp3PRO.so.
+
+Exiting... (Quit)
+</pre>
+MPlayer DID use the XMMS plugin, but something went wrong... Why?
+<p>Hmm...
+<p>How can the same plugin - the same executable code - behave differently under MPlayer? Is it locked, maybe? To only run under XMMS? (<em>Binary blobs... Sigh... You can never tell...</em>)
+<p>Looking at the source code for <tt>libmpdemux/demux_xmms.c</tt>, I can see that a <tt>disk_open</tt> callback
+is called from code within the plugin, to provide the player with the "decoding details":
+<pre>
+static int disk_open(AFormat fmt, int rate, int nch) {
+    switch (fmt) {
+        case FMT_U8:
+            xmms_afmt=...
+</pre>
+In other words, it is the plugin that decides the quality of the output (parameter "rate"). The function pointer to "disk_open" is 
+passed to the plugin in a structure (of type OutputPlugin) during plugin initialization, and the plugin calls it when it knows enough about the input to decide what output it is going to generate.
+<p>The million dollar question, is why does the plugin call disk_open with 22KHz when used under MPlayer, but with 44KHz 
+when used under XMMS?
+<p>Well... it took <a href="tricks.html#gdb">some work with GDB</a> to figure this out...
+<p>The mp3PRO plugin contains a <b>getbits</b> function.
+<p>That's not so bad, in itself... unless the shared library in question (libmp3PRO.so) is NOT the ONLY library that uses such a function...
+<p>So what happens is this:
+<ul>
+<li>MPlayer starts, and all its shared libraries are loaded in its process space. 
+<li>One of them happens to be <tt>libmp3lame.so</tt> (the LAME mp3 encoder library)
+<li>Now this library contains a <b>getbits</b> function of its own. So "ld" (Linux's dynamic loader) notes it down: "Library libmp3lame.so contains symbols "a", "b", "c", ..., <b>getbits</b>, ...
+<li>Since we asked for <tt>-demuxer xmms</tt>, MPlayer tries to dynamically load (through <tt>dlopen</tt>) all the XMMS plugins existing under <tt>/usr/lib/xmms/Input/</tt>. One of them is <tt>libmp3PRO.so</tt>, and yes, one of the symbols referenced (as well as defined!) inside it, is <b>getbits</b>. This is of course a completely different function!
+</ul>
+At this point, "ld" has a problem. Which <b>getbits</b> definition (of the two addresses now available in MPlayer's process space) should it use to "patch" the invocations to <b>getbits</b> inside the newly loaded code of <tt>libmp3PRO.so</tt>?
+<p>It turns out, that in my case, it used the <b>getbits</b> from libmp3lame.so!
+<p>What this means, in plain terms, is that "ld" tried to put the shoes of a midget on Andre the Giant.
+<p>The results, could have been ANYTHING. I was amazed to see that this didn't cause a crash; pure luck, as it turned out: a function inside the plugin (SbrCrcCheckMp3) tried to use <b>getbits</b>, and ended up calling the COMPLETELY different implementation of the function offered by the code inside libmp3lame. This foreign code, returned a completely unexpected value to SbrCrcCheckMp3, and so the poor function considered the Sbr information (spectral band replication) to be "bad" - and disabled the decoding of the upper frequencies (the ones above 22KHz!).
+<p>This of course explains all the poor people that complain about this plugin "borking" their XMMS... What happens is truly random... In my case, I was lucky - my XMMS and its plugins didn't offer an alternative <b>getbits</b>, so everything was fine under XMMS. Under MPlayer, however, I could have gotten any kind of behaviour. Crash, corruption...
+<p>Other people, apparently, were not so lucky.
+<p><em>Executive summary: Friggin' binary blobs! If only we could dispose of them...</em>
+<h3>So how do I fix this?</h3>
+Easy. You just have to build an MPlayer that...
+<ul>
+<li>Doesn't contain any <b>getbits</b> implementation
+<li>Doesn't link to any library that contains a <b>getbits</b> implementation
+</ul>
+That's not as hard as it sounds. Basically, after configuring MPlayer with <tt>configure --enable-xmms</tt>, I had to do 2 things:
+<ul>
+<li>edit config.mak and remove <tt>-lmp3lame</tt> from the 2 places where it appeared
+<li>edit <tt>libavcodec/allcodecs.c</tt> and comment this...
+<pre>
+REGISTER_ENCODER (LIBMP3LAME, libmp3lame);
+</pre>
+...out...
+<pre>
+//REGISTER_ENCODER (LIBMP3LAME, libmp3lame);
+</pre>
+</ul>
+That was it. After <tt>make mplayer</tt>, I got my 44KHz decoding...
+<pre class="o">
+<b>bash$</b> ./mplayer -demuxer xmms "SlaveChildrenCrusade.mp3"
+...
+XMMS file format detected.
+==========================================================================
+Opening audio decoder: [pcm] Uncompressed PCM audio decoder
+AUDIO: 44100 Hz, 2 ch, s16le, 1411.2 kbit/100.00% (ratio: 176400->176400)
+Selected audio codec: [pcm] afm: pcm (Uncompressed PCM)
+==========================================================================
+AO: [oss] 44100Hz 2ch s16le (2 bytes per sample)
+Video: no video
+Starting playback...
+...
+</pre>
+And now, the sky's the limit... If I choose to, I can transcode my files into vorbis using pipes (and avoid the Gigabytes of WAVs that "Option 2" would require)... or I can apply any kind of runtime filter (e.g. -af sub, -af extrastereo, -af karaoke, etc).
+<p>I am happy - I can listen to my collection again...
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Fri Aug 9 22:48:30 2013</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/mp3pro.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

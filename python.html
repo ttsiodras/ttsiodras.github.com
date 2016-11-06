@@ -1,0 +1,357 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/python.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>A Python puzzle for Python newbies</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">A Python puzzle for Python newbies</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <em>(August 2006)</em><p>
+  I first met Python 4 years ago.<p> 
+  My initial reaction was "where are the braces?". 
+  Horror of horrors, it didn't have any block delimiters. Code blocks 
+  were defined based on indentation! Yikes. I immediately returned 
+  to my C++/Perl/awk and vowed never to look at this toy again.<p>
+
+  No matter how hard I tried though, I stumbled on it, again and again.
+  An alarmingly large number of programs were being written with it...
+  and to my bewilderment, whenever I chanced a look at Python code,
+  I figured things out effortlessly, quickly -
+  <em>and I didn't speak the language!</em> The first time this happened
+  I attributed it to the competence of the programmer and the nice comments
+  he had written. The second time there were no comments - and yet I figured things
+  out just as easily. The third time, I googled for Python and stumbled on
+  <a href="http://www.catb.org/~esr/">Eric Raymond</a>'s "Why Python".<p>
+  That was it. One of the high priests
+  was raving about this language - just like me, he had also been bitten by 
+  the indentation fright but had gotten over it, and persisted to quickly 
+  realize that this was a true gem. I followed suit.<p>
+  4 years later, I am writing Perl only for quick'n'dirty text-processing,
+  the... <pre class="o">process data | perl -ne 'm/([a-z]*) goo/ &amp;&amp; print $1;'</pre>...kind.
+  Anything bigger, it's a no brainer: if it's going to be a script, it's in Python. 
+  Incredible effort to gain ratio - compared to any other language I've used. 
+  Notorious ease of learning; I have only read the tutorial over a weekend, 
+  and that never got in the way of writing really large scripts. In fact, 
+  for enthusiasts like me, that can be a problem! It is so easy to write
+  in Python, that I get carried away - I end up writing really large scripts 
+  before I know it... I then have to stop and FORCE myself to refrain 
+  from writing code and to plan it out first!<p>
+  So where's the puzzle? you ask.<p>
+
+  This year's "lab rat" is Lisp. I read the gospels of 
+  <a href="http://www.paulgraham.com">Paul Graham</a> and decided to
+  check this language out - the high priests seem to agree that this is the be-all
+  and end-all of computer languages. I'm almost there myself, having written just
+  a couple of Lisp macro's and been thoroughly impressed by the "code is data, let your
+  code do the coding" revelation. Lisp isn't Python, you need a good book and a lot
+  of effort to understand it,
+  so I'm reading Paul's "ANSI Common Lisp". On page 52, I ended up on an old acquaintance,
+  the "find the shortest path in a graph" problem. I vaguely remembered having met
+  it 14 years ago, in the university exercises...
+  Before attempting to think of it in Lisp, I smirked to myself: "How much time would 
+  it take me to think up a recursive algorithm and write it in Python?". And 
+  20 minutes later I had this:
+
+<div style="position:relative">
+<div style="position:absolute; top:50%; margin-top:-162px">
+<div class="scrollableContainer">
+<img alt="Picture of the graph we will search" src="graph.png" width="149" height="324">
+</div>
+</div>
+<div style="margin-left:149px">
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">neighbours </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">{</span>
+<span class="normal">    </span><span class="string">"A"</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">{</span><span class="string">"B"</span><span class="symbol">:</span><span class="normal"> </span><span class="number">3</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"C"</span><span class="symbol">:</span><span class="normal"> </span><span class="number">4</span><span class="symbol">},</span>
+<span class="normal">    </span><span class="string">"B"</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">{</span><span class="string">"D"</span><span class="symbol">:</span><span class="normal"> </span><span class="number">2</span><span class="symbol">},</span>
+<span class="normal">    </span><span class="string">"C"</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">{</span><span class="string">"D"</span><span class="symbol">:</span><span class="normal"> </span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"E"</span><span class="symbol">:</span><span class="normal"> </span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"F"</span><span class="symbol">:</span><span class="normal"> </span><span class="number">6</span><span class="symbol">},</span>
+<span class="normal">    </span><span class="string">"D"</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">{</span><span class="string">"H"</span><span class="symbol">:</span><span class="normal"> </span><span class="number">1</span><span class="symbol">},</span>
+<span class="normal">    </span><span class="string">"E"</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">{</span><span class="string">"H"</span><span class="symbol">:</span><span class="normal"> </span><span class="number">7</span><span class="symbol">},</span>
+<span class="normal">    </span><span class="string">"F"</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">{</span><span class="string">"G"</span><span class="symbol">:</span><span class="normal"> </span><span class="number">1</span><span class="symbol">},</span>
+<span class="normal">    </span><span class="string">"G"</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">{},</span>
+<span class="normal">    </span><span class="string">"H"</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">{</span><span class="string">"G"</span><span class="symbol">:</span><span class="normal"> </span><span class="number">3</span><span class="symbol">}</span>
+<span class="symbol">}</span>
+
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">FindShortestPath</span><span class="symbol">(</span><span class="normal">begin</span><span class="symbol">,</span><span class="normal"> end</span><span class="symbol">,</span><span class="normal"> shortestPath</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"From %s to %s"</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">begin</span><span class="symbol">,</span><span class="normal"> end</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> begin </span><span class="symbol">==</span><span class="normal"> end</span><span class="symbol">:</span>
+<span class="normal">        shortestPath </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">end</span><span class="symbol">]</span><span class="normal">                           </span><span class="comment"># (1)</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">    currentBestLen </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1e10</span>
+<span class="normal">    currentBestRoute </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> neigh </span><span class="keyword">in</span><span class="normal"> neighbours</span><span class="symbol">[</span><span class="normal">begin</span><span class="symbol">].</span><span class="function">keys</span><span class="symbol">():</span>
+<span class="normal">        aiResult </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span>
+<span class="normal">        cost </span><span class="symbol">=</span><span class="normal"> </span><span class="function">FindShortestPath</span><span class="symbol">(</span><span class="normal">neigh</span><span class="symbol">,</span><span class="normal"> end</span><span class="symbol">,</span><span class="normal"> aiResult</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> cost </span><span class="symbol">+</span><span class="normal"> neighbours</span><span class="symbol">[</span><span class="normal">begin</span><span class="symbol">][</span><span class="normal">neigh</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> currentBestLen</span><span class="symbol">:</span>
+<span class="normal">            currentBestLen </span><span class="symbol">=</span><span class="normal"> cost </span><span class="symbol">+</span><span class="normal"> neighbours</span><span class="symbol">[</span><span class="normal">begin</span><span class="symbol">][</span><span class="normal">neigh</span><span class="symbol">]</span>
+<span class="normal">            currentBestRoute </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">begin</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> aiResult</span>
+<span class="normal">    shortestPath </span><span class="symbol">=</span><span class="normal"> currentBestRoute                    </span><span class="comment"># (2)</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"FindShortestPath from %s to %s has cost %d for %s "</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="symbol">%</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">begin</span><span class="symbol">,</span><span class="normal"> end</span><span class="symbol">,</span><span class="normal"> currentBestLen</span><span class="symbol">,</span><span class="normal"> shortestPath</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> currentBestLen</span>
+
+<span class="normal">bestRoute </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span>
+<span class="function">FindShortestPath</span><span class="symbol">(</span><span class="string">"A"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"G"</span><span class="symbol">,</span><span class="normal"> bestRoute</span><span class="symbol">)</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">"Best path is"</span><span class="symbol">,</span><span class="normal"> bestRoute</span>
+</tt></pre>
+
+</div>
+</div>
+</div>
+
+Resist the temptation to skip the code - have a look at it. It's a simple, nice, 
+recursive implementation: in order to compare alternate paths, use recursion to find 
+the paths and costs from the neighbours to the target, and then check the costs
+from the source to each of the neighbours. When you identify the best path,
+return it to the caller via the 'shortestPath' function argument (points 1 and 2).<p>
+Er... it didn't work.<p>
+When I sprinkled the code with debug printing of the paths, it turned out that 
+the resulting paths in (1)
+and (2) were not propagated to the callers. Why? I was passing mutable arguments,
+plain old lists, they ought to have been changed! I checked some other scripts
+I had written, and I was doing similar things there (sure enough) passing lists
+as arguments to functions, modifying them and returning them to the caller.<p>
+That was a first - the obvious thing appeared not to work (until then, Python
+had been 100% successful in reading my mind and doing whatever I desired).<p>
+With Python, when you are in doubt,
+you never look at the manual - you fire up the interpreter and try things to make
+sure you got it right (it's so much easier than reading manuals). Well, it was
+working! (see below):
+<pre class="o">
+Python 2.3.4 (#1, Apr 30 2005, 19:57:58) 
+[GCC 3.2.3 20030422 (Gentoo Linux 1.4 3.2.3-r1, propolice)]
+Type "help", "copyright", "credits" or "license" for more info.
+>>> def f(x):
+...    x[1]=2
+... 
+>>> a=[0, 0, 0, 0]
+>>> f(a)
+>>> a
+[0, 2, 0, 0]
+>>> 
+</pre>
+The function indeed changed the list I was passing in, why didn't it work in the 
+shortest path code?<p>
+I looked, and looked, and huffed and puffed - to no avail. I tried various alternatives
+(the most hideous one was using a global list to pass the returned results back to the
+callers - I almost choked from disgust and removed it immediately). What was happening?
+<p>
+Ah, the joy of programming.<p>
+It took me a while to notice that the test I did was not doing <em>exactly</em> what the
+shortest path code did. When I tried it in the same form...
+<pre class="o">
+Python 2.3.4 (#1, Apr 30 2005, 19:57:58) 
+[GCC 3.2.3 20030422 (Gentoo Linux 1.4 3.2.3-r1, propolice)]
+Type "help", "copyright", "credits" or "license" for more info.
+>>> def f(x):
+...   x=[2]
+... 
+>>> a=[0,0]
+>>> f(a)
+>>> a
+[0, 0]
+>>> 
+</pre>
+... it failed, just like the shortest path code! At least the thing was reproducible.
+Obviously something else was happening - if the <tt>x=[2]</tt> assignment didn't change
+the passed-in data, what was it changing?<p>
+At that point I decided to bite the bullet and have a look at the language docs. After
+a fair amount of searching I got to this part:<br><em>
+"The execution of a function introduces a new symbol table used for the local variables 
+of the function. More precisely, <font color="red">all variable assignments in a function store the value 
+in the local symbol table</font>; whereas variable references first look in the local symbol 
+table, then in the global symbol table, and then in the table of built-in names.<br>
+The actual parameters (arguments) to a function call are introduced in the local symbol 
+table of the called function when it is called; thus, arguments are passed using call 
+by value (where the value is always an object reference, not the value of the object).
+When a function calls another function, a new local symbol table is created for that
+call."</em><br>
+<p>
+There was the answer to the mystery - inside the tutorial, by Guido himself.
+Assignments are handled in a - special - way. In the first test I did, I was "referring" 
+to the passed-in argument, and invoking the 'x[1]' accessor to get to one of its data.
+In the second test, I am assigning - and as Guido says, assignments store the value 
+in the local symbol table!<p>
+The problem probably only exists in the mindsets of C++ programmers - when I originally
+read that paragraph of the tutorial, what I understood was the last part: that the value
+passed in is always an object reference. In the C++ world, this is equivalent to:
+<pre>
+returnType functionName(argumentType&amp; arg)
+{
+}
+</pre>
+...which in my mind meant, that if I do anything on arg, the caller will see the changes
+in the data. Not so, in Python: <em>all variable assignments in a function store the value 
+in the local symbol table.</em> It is more like this C/C++ code:
+<pre>
+returnType functionName(argumentType* arg)
+{
+}
+</pre>
+...so by assigning to arg (<tt>arg = "foo";</tt>) you won't be changing the data passed in; the caller will never see the change, because the assignment is simply re-assigning the local symbol.
+<p>So how do I pass the results back to the caller?
+<p>I need to somehow "refer" to the variable, but I want to assign data to it... In a moment 
+of inspiration, I tried:
+<pre>
+	shortestPath[:] = [end]			(1)
+and
+	shortestPath[:] = currentBestRoute	(2)
+</pre>
+...and to my intense satisfaction, I saw my code work:
+<pre class="o">
+From A to G
+From C to G
+From E to G
+From H to G
+From G to G
+FindShortestPath from H to G has cost 3 for ['H', 'G'] 
+FindShortestPath from E to G has cost 10 for ['E', 'H', 'G'] 
+From D to G
+From H to G
+From G to G
+FindShortestPath from H to G has cost 3 for ['H', 'G'] 
+FindShortestPath from D to G has cost 4 for ['D', 'H', 'G'] 
+From F to G
+From G to G
+FindShortestPath from F to G has cost 1 for ['F', 'G'] 
+FindShortestPath from C to G has cost 5 for ['C', 'D', 'H', 'G'] 
+From B to G
+From D to G
+From H to G
+From G to G
+FindShortestPath from H to G has cost 3 for ['H', 'G'] 
+FindShortestPath from D to G has cost 4 for ['D', 'H', 'G'] 
+FindShortestPath from B to G has cost 6 for ['B', 'D', 'H', 'G'] 
+FindShortestPath from A to G has cost 9 for ['A', 'C', 'D', 'H', 'G'] 
+Best path is ['A', 'C', 'D', 'H', 'G']
+</pre>
+<p> Yes, it happens a lot with Python - things
+tend to work on the first or second attempt. When they don't, it's because I'm lazy and 
+expect to use a language without properly reading a manual! Shame, coder, shame.
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Fri Aug 9 22:48:30 2013</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/python.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

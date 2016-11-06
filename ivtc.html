@@ -1,0 +1,337 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/ivtc.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>NTSC, telecine, and how to cope (using telecide and decimate)</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">NTSC, telecine, and how to cope (using telecide and decimate)</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <em>(August 2002)</em>
+  <h2>(using telecide and decimate)</h2>
+  <i>My NTSC deinterlacing filters, based on the excellent work of Donald Graft
+  (author of Decomb)</i>
+
+  <p><b>Filters current Version:</b></p>
+
+  <ul>
+    <li>ivtc 0.4.1 (part of transcode 0.6.12)</li>
+
+    <li>decimate 0.4 (part of transcode 0.6.12)</li>
+  </ul>
+
+  <h2>Introduction</h2>
+
+  <p>Before we start, lets clear up the field a bit.</p>
+
+  <p>You DO NOT need any of the two filters (telecide and decimate)
+  if you are working with "pure interlaced data" as opposed to
+  "artificially interlaced data". In plain terms: You don't need
+  these two filters AND YOU SHOULD NOT USE THEM if your source data
+  are coming from:</p>
+
+  <ul>
+    <li>a decrypted PAL DVD (all European DVDs, for example)</li>
+
+    <li>a captured .avi from a camera (be it PAL or NTSC)</li>
+  </ul>For the above, you can use one of the other filters, like
+  "-J dilyuvmmx", "-I 1" or "-I 3" (or even smartdeinter). Just
+  remember to read the instructions.
+
+  <p>Now that we've thrown away 90% of the readers, its time to
+  describe what is this artificial interlacing we (might) meet in
+  an NTSC DVD and why it requires special care.</p>
+
+  <h2>23.976 -&gt; 29.97</h2>NTSC television is broadcast at 29.97
+  frames per second. Films however, (movies) are shot at 24 frames
+  per second. How are Americans watching movies on their TVs then?
+  Where do the extra 5.97 frames come from? :&#x2011;)
+
+  <p>As one might guess, American engineers had to interpolate.
+  They also had to cope with the fact that TV isn't actually
+  showing 29.97 frames per sec, but 2 x 29.97 fields per second.
+  What are fields, you ask? Well, check this ASCII art:</p>
+  <pre>
+scanline 0 --------------------------------- Field 0, 1st line
+scanline 1 +++++++++++++++++++++++++++++++++ Field 1, 1st line
+scanline 2 --------------------------------- Field 0, 2nd line
+scanline 3 +++++++++++++++++++++++++++++++++ Field 1, 2nd line
+scanline 4 --------------------------------- Field 0, 3rd line
+</pre>
+etc...
+
+  <p>As you can see, each frame is composed from two fields. Each
+  of the fields has 240 lines, thus we finally get 480 scanlines.
+  So, to display film content, which is 24 frames per second, this
+  is what American engineers came up with:</p>
+
+  <ul>
+    <li>First, each film frame is split into two fields. We thus
+    get 48 fields per second (2 x 24)</li>
+
+    <li>Then, a process called 3:2 pulldown (telecine) is
+    performed, which "stretches" the 48 fields into the desired
+    number.</li>
+  </ul>It's better to see it with an example: Assume we have 5 film
+  frames, now split into 10 fields. The even scanlines are forming
+  the 'top' fields, while the odd ones the 'bottom'. For example,
+  the two first frames are split as follows:
+  <pre>
+    Frame 1                        Frame 2                         
+    =======                        =======
+    Top Field of Frame 1    (T1)   Top Field of Frame 2    (T2)    
+    Bottom Field of Frame 1 (B1)   Bottom Field of Frame 2 (B2)
+</pre>Now, if we had a 24fps Television set, we could see any film
+easily, if we sent it the following sequence:
+  <pre>
+    T1 B1   T2 B2   T3 B3   T4 B4   T5 B5   T6 B6 ...
+    ======  ======  ======  ======  ======  ====== 
+    Frame1  Frame2  Frame3  Frame4  Frame5  Frame6
+</pre>Unfortunately, we have a stupid 29.97 standard, so this is
+what we send:
+  <pre>
+    T1 B1 T2 B2 T2 B3 T3 B4 T4 B4 ...
+    ===== ===== ===== ===== =====
+      N     N     A     A     N
+</pre>As you can see, we have used fields from 4 film frames, but
+we have sent them in a way that produces 5 NTSC 'frames': 3 Normal
+(N) ones, and two Artificial (A) ones. The displaying is also
+slowed down, from 30 'frames' per sec to 29.97 fps.
+
+  <p>You see it? These Artificial frames are horribly interlaced!
+  And this interlacing has nothing to do with the normal
+  interlacing found in PAL and NTSC cameras... This is a different
+  monster.</p>
+
+  <p>Note that if you use one of transcode's deinterlacing filters
+  with such a sequence, you'll probably get something like
+  this:</p>
+  <pre>
+    T1 B1 T2 B2 T3 B3 T4 B4 T4 B4 ...
+    ===== ===== ===== ===== =====
+</pre>... that is, two completely identical frames (IF the
+deinterlacing algorithm is good enough). And yes, when you encode
+your sequence to MPEG4 or whatever, you waste bandwidth for these
+extra frames. Not to mention, that a skilled eye will notice that
+the film is not natural - any motion will appear jerky, because of
+the duplicate frames.
+
+  <p>Did I mention that this pattern shifts and jumps throughout
+  the video? In other words, this scheme is not constant; Video
+  editing is performed on fields, and if the DVD authoring studio
+  deletes a series of fields in the middle of the film, the
+  eventual field order is impossible to predict...</p>
+
+  <h3>What can we do?</h3>Well, first of all, as good as transcode
+  deinterlacing filters are, they were not designed for this
+  atrocity. Even "-I 3" falls back to keeping odd (or even)
+  scanlines and interpolates them to get the ones missing. This is
+  unacceptable.
+
+  <p>The recovery process (called IVTC - inverse telecine) is done
+  in two steps, from two filters. The first one, called 'ivtc',
+  tries to recreate the original film frames from the available
+  fields. It doesn't remove the duplicate frames; this is done from
+  the next filter, the 'decimate' one.</p>
+
+  <p>The algorithms used in these filters are the basic ones used
+  in the 'Decomb' package (made by Donald A. Graft and available -
+  unfortunately - only under Windows). Thanks for opening up the
+  source, Donald!</p>
+
+  <h3>Example</h3>To summarize, let's see an example. The Dolby
+  trailers are freely available on the Web, and yes, they are
+  purely telecined. Let's transcode 'City' in a two pass perfect
+  IVTC with Ogg sound:
+  <pre class="o">
+First pass:
+transcode -M 0 -f 23.976       -i dolby-city.vob -x vob \
+    -y xvid,null \
+    -w 740 -J ivtc,decimate -V -o /dev/null -R 1 -B 6,13,16 
+
+Second pass:
+transcode -M 0 -f 23.976 -b 64 -i dolby-city.vob -x vob \
+    -y xvid,ogg  \
+    -w 740 -J ivtc,decimate -V -o test.avi  -R 2 -m test.ogg \
+    -B 6,13,16 
+</pre>Adding video and audio together in an Ogg stream (you'll need
+ogmtools):
+  <pre class="o">
+ogmmerge -o dolby-city.ogm test.avi test.ogg
+</pre>Some explaining:
+  <pre>
+ -w 740         Target video bitrate is 740000 bits per second
+
+ -B 6,13,16     Resize from NTSC 720x480 to 512x384 (4:3 aspect)
+ 
+ -M 0 -f 23.976 it means that the demux must not drop frames on
+                its own; the filters will do that, producing a
+                23.976 frames per sec result.
+                    
+ -J ivtc,decimate Always use them in this order, and with no 
+                  other filter before them - especially no 
+		  deinterlacing and no resizing one!
+</pre>
+
+  <h3>Problems</h3>As good as these filters are, there are streams
+  out there that are simply impossible to IVTC. For example,
+  amazing as it may sound, some NTSC DVDs are switching from 29.97
+  to 23.976 IN THE MIDDLE of playback! When there is no constant
+  frame rate, the filters will fail.
+
+  <p>Additionally, when the telecine pattern shifts (as a result
+  of, maybe, field editing by the DVD authors) a couple of
+  interlaced frames will pass through. These should be deinterlaced
+  on their own. You shouldn't use global deinterlacing after ivtc -
+  it would blur out the otherwise perfect progressive frames that
+  get reconstructed from 'ivtc'. However, transcode's '32detect'
+  filter comes to the rescue: It first checks whether the frame is
+  interlaced, and only then it forces a frame deinterlacing. So,
+  this is what I recommend for your sessions:</p>
+  <pre class="o">
+transcode -M 0 -f 23.976 \
+	-J ivtc,32detect=force_mode=3,decimate ...
+</pre>To put it simply, 'ivtc' will try to fix the paranoia of
+telecine. When the pattern shifts (or the algorithm fails) a couple
+of interlaced frames will slip-by, which are detected and
+deinterlaced by '32detect'. Finally, the 29.97 frames produced for
+every second of input are fed into 'decimate', which removes the
+extra frame.
+
+  <p>Hope all this hasn't caused you a headache. If your NTSC DVD
+  contains a film, chances are these filters will help.</p>
+
+  <p>Since they work perfectly for my NTSC DVDs, I probably won't
+  mess them up anymore.<br>
+  Feel free to change them as you will, as they are available under
+  the GPL.</p>
+
+  <p><i>Thanassis Tsiodras, Dr.-Ing.</i></p>
+  <hr>
+  Additional <a href="ivtc_mod.html">modifications</a> for Version
+  0.4.1 made by Frederic Briere: fbriere at fbriere.net
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/ivtc.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

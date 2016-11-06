@@ -1,0 +1,436 @@
+<?xml version="1.0" ?>
+<rss version="2.0">
+ <channel xmlns:atom="http://www.w3.org/2005/Atom">
+  <title>Coding and administration articles by ttsiodras</title>
+  <link>https://www.thanassis.space/</link>
+  <description>I periodically blog about things from the coding/admin world that I find interesting. Some things you will find here: coding puzzles, Python/C++/OCaml articles, embedded programming, Linux/Windows administration hints, real-time graphics, CUDA, SSE, ...</description>
+  <language>en-us</language>
+  <lastBuildDate>Sun, 8 May 2016 09:15:32 +0200</lastBuildDate>
+  <atom:link href="https://www.thanassis.space/rss.xml" rel="self" type="application/rss+xml" />
+
+<item>
+<title>Freeing my tablet (Android hacking, SW and HW)</title>
+<guid>https://www.thanassis.space/android.html</guid>
+<link>https://www.thanassis.space/android.html</link>
+<description>Freeing my tablet (Android hacking, SW and HW)</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>23 October 2016 18:52:19 +0300</pubDate>
+</item>
+
+<item>
+<title>Code coverage analysis on embedded targets</title>
+<guid>https://www.thanassis.space/coverage.html</guid>
+<link>https://www.thanassis.space/coverage.html</link>
+<description>Code coverage analysis on embedded targets</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>27 April 2016 20:52:19 +0300</pubDate>
+</item>
+
+<item>
+<title>The long tail of Lisp</title>
+<guid>https://www.thanassis.space/longtail.html</guid>
+<link>https://www.thanassis.space/longtail.html</link>
+<description>The long tail of Lisp</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>12 November 2015 01:41:19 +0300</pubDate>
+</item>
+
+<item>
+<title>Score4JS in React/TypeScript</title>
+<guid>https://www.thanassis.space/score4jsreact.html</guid>
+<link>https://www.thanassis.space/score4jsreact.html</link>
+<description>Score4JS in React/TypeScript</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>12 September 2015 13:53:05 +0200</pubDate>
+</item>
+
+<item>
+<title>What is running inside my bash?</title>
+<guid>https://www.thanassis.space/bashheimer.html</guid>
+<link>https://www.thanassis.space/bashheimer.html</link>
+<description>What is running inside my bash?</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>3 October 2014 13:53:05 +0200</pubDate>
+</item>
+
+
+<item>
+<title>Python, the Ulam spiral and PyPy</title>
+<guid>https://www.thanassis.space/primes.html</guid>
+<link>https://www.thanassis.space/primes.html</link>
+<description>Python, the Ulam spiral and PyPy</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>5 Jan 2014 20:01:19 +0300</pubDate>
+</item>
+
+<item>
+<title>Building a tiny ARM-based server</title>
+<guid>https://www.thanassis.space/arm.html</guid>
+<link>https://www.thanassis.space/arm.html</link>
+<description>Building a tiny ARM-based server</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>15 Dec 2013 23:51:49 +0300</pubDate>
+</item>
+
+<item>
+<title>Simulating waves in Javascript</title>
+<guid>https://www.thanassis.space/physics.html</guid>
+<link>https://www.thanassis.space/physics.html</link>
+<description>Simulating waves in Javascript</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>1 Dec 2013 11:01:48 +0300</pubDate>
+</item>
+
+<item>
+<title>ASN.1, ASN1SCC - and a TASTE teaser</title>
+<guid>https://www.thanassis.space/asn1.html</guid>
+<link>https://www.thanassis.space/asn1.html</link>
+<description>ASN.1, ASN1SCC - and a TASTE teaser</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>18 Jun 2013 18:35:48 +0300</pubDate>
+</item>
+
+<item>
+<title>Optimizing code for the European Space Agency (CUDA/SSE/etc)</title>
+<guid>https://www.thanassis.space/straylight.html</guid>
+<link>https://www.thanassis.space/straylight.html</link>
+<description>Optimizing code for the European Space Agency (CUDA/SSE/etc)</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>3 Jun 2013 14:30:51 +0300</pubDate>
+</item>
+
+<item>
+<title>VIM, XML and regexp mysteries</title>
+<guid>https://www.thanassis.space/regexp.html</guid>
+<link>https://www.thanassis.space/regexp.html</link>
+<description>VIM, XML and regexp mysteries</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>9 Mar 2013 18:18:09 +0200</pubDate>
+</item>
+
+<item>
+<title>Automatically solving the UnblockMe puzzle</title>
+<guid>https://www.thanassis.space/unblock.html</guid>
+<link>https://www.thanassis.space/unblock.html</link>
+<description>Automatically solving the UnblockMe puzzle</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>21 Oct 2012 12:03:06 +0300</pubDate>
+</item>
+
+<item>
+<title>Python "compile-time" type checking</title>
+<guid>https://www.thanassis.space/pythonTypeChecking.html</guid>
+<link>https://www.thanassis.space/pythonTypeChecking.html</link>
+<description>Python "compile-time" type checking</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>6 Aug 2012 15:42:51 +0300</pubDate>
+</item>
+
+<item>
+<title>X macros</title>
+<guid>https://www.thanassis.space/xmacros.html</guid>
+<link>https://www.thanassis.space/xmacros.html</link>
+<description>X macros</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>14 Apr 2012 12:13:52 +0300</pubDate>
+</item>
+
+<item>
+<title>Offline playback of Youtube videos with their annotations</title>
+<guid>https://www.thanassis.space/youtube.html</guid>
+<link>https://www.thanassis.space/youtube.html</link>
+<description>Offline playback of Youtube videos with their annotations</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>27 Mar 2012 23:18:56 +0300</pubDate>
+</item>
+
+<item>
+<title>Functional-style Python</title>
+<guid>https://www.thanassis.space/pythonFlattenDictionaries.html</guid>
+<link>https://www.thanassis.space/pythonFlattenDictionaries.html</link>
+<description>Functional-style Python</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>23 Mar 2012 16:56:20 +0200</pubDate>
+</item>
+
+<item>
+<title>Why I use VIM</title>
+<guid>https://www.thanassis.space/myvim.html</guid>
+<link>https://www.thanassis.space/myvim.html</link>
+<description>Why I use VIM</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>10 Mar 2012 15:44:44 +0200</pubDate>
+</item>
+
+<item>
+<title>Euler 31 - Dynamic programming</title>
+<guid>https://www.thanassis.space/euler31.html</guid>
+<link>https://www.thanassis.space/euler31.html</link>
+<description>Euler 31 - Dynamic programming</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>29 Dec 2011 15:27:27 +0200</pubDate>
+</item>
+
+<item>
+<title>Yield differences amongst languages</title>
+<guid>https://www.thanassis.space/yieldDifferences.html</guid>
+<link>https://www.thanassis.space/yieldDifferences.html</link>
+<description>Yield differences amongst languages</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>30 Nov 2011 11:05:41 +0200</pubDate>
+</item>
+
+<item>
+<title>Stack-checking a program that will execute in orbit</title>
+<guid>https://www.thanassis.space/stackusage.html</guid>
+<link>https://www.thanassis.space/stackusage.html</link>
+<description>Stack-checking a program that will execute in orbit</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>16 Sep 2011 18:19:11 +0300</pubDate>
+</item>
+
+<item>
+<title>Porting Score4 to Javascript</title>
+<guid>https://www.thanassis.space/score4js.html</guid>
+<link>https://www.thanassis.space/score4js.html</link>
+<description>Porting Score4 to Javascript</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>26 Jul 2011 17:52:52 +0300</pubDate>
+</item>
+
+<item>
+<title>Automatically playing the ConnectFour puzzle</title>
+<guid>https://www.thanassis.space/score4.html</guid>
+<link>https://www.thanassis.space/score4.html</link>
+<description>Automatically playing the ConnectFour puzzle</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>9 Jul 2011 15:29:32 +0300</pubDate>
+</item>
+
+<item>
+<title>For C programmers that hate C++</title>
+<guid>https://www.thanassis.space/cpp.html</guid>
+<link>https://www.thanassis.space/cpp.html</link>
+<description>For C programmers that hate C++</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>8 Mar 2011 19:29:11 +0200</pubDate>
+</item>
+
+<item>
+<title>Real-time raytracing with CUDA - a month later</title>
+<guid>https://www.thanassis.space/cudarenderer-BVH.html</guid>
+<link>https://www.thanassis.space/cudarenderer-BVH.html</link>
+<description>Real-time raytracing with CUDA - a month later</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>6 Feb 2011 13:44:54 +0200</pubDate>
+</item>
+
+<item>
+<title>Real-time raytracing with CUDA</title>
+<guid>https://www.thanassis.space/cudarenderer.html</guid>
+<link>https://www.thanassis.space/cudarenderer.html</link>
+<description>Real-time raytracing with CUDA</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>2 Jan 2011 14:57:59 +0200</pubDate>
+</item>
+
+<item>
+<title>The sickness puzzle</title>
+<guid>https://www.thanassis.space/amIsick.html</guid>
+<link>https://www.thanassis.space/amIsick.html</link>
+<description>The sickness puzzle</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>21 Nov 2010 23:32:21 +0200</pubDate>
+</item>
+
+<item>
+<title>100 prisoners - I want to break free</title>
+<guid>https://www.thanassis.space/100prisoners.html</guid>
+<link>https://www.thanassis.space/100prisoners.html</link>
+<description>100 prisoners - I want to break free</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>12 Jul 2010 23:05:26 +0300</pubDate>
+</item>
+
+<item>
+<title>Simulating gravity</title>
+<guid>https://www.thanassis.space/gravity.html</guid>
+<link>https://www.thanassis.space/gravity.html</link>
+<description>Simulating gravity</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>18 Jun 2010 00:04:43 +0300</pubDate>
+</item>
+
+<item>
+<title>A SW-only realtime 3D renderer</title>
+<guid>https://www.thanassis.space/renderer.html</guid>
+<link>https://www.thanassis.space/renderer.html</link>
+<description>A SW-only realtime 3D renderer</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>18 Apr 2010 20:59:18 +0300</pubDate>
+</item>
+
+<item>
+<title>SDL-based simulations of snow, waves, etc</title>
+<guid>https://www.thanassis.space/games.html</guid>
+<link>https://www.thanassis.space/games.html</link>
+<description>SDL-based simulations of snow, waves, etc</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>29 Jul 2009 11:39:02 +0300</pubDate>
+</item>
+
+<item>
+<title>Playing with an ATmega168</title>
+<guid>https://www.thanassis.space/atmega168.html</guid>
+<link>https://www.thanassis.space/atmega168.html</link>
+<description>Playing with an ATmega168</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>22 Jun 2009 00:03:19 +0300</pubDate>
+</item>
+
+<item>
+<title>Windows backups</title>
+<guid>https://www.thanassis.space/win32backup.html</guid>
+<link>https://www.thanassis.space/win32backup.html</link>
+<description>Windows backups</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>15 Apr 2009 15:16:29 +0300</pubDate>
+</item>
+
+<item>
+<title>Automatically solving the Knight's Tour puzzle</title>
+<guid>https://www.thanassis.space/knightstour.html</guid>
+<link>https://www.thanassis.space/knightstour.html</link>
+<description>Automatically solving the Knight's Tour puzzle</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>29 Nov 2008 23:11:07 +0200</pubDate>
+</item>
+
+<item>
+<title>Visualize real-time data streams with Gnuplot</title>
+<guid>https://www.thanassis.space/gnuplotStreaming.html</guid>
+<link>https://www.thanassis.space/gnuplotStreaming.html</link>
+<description>Visualize real-time data streams with Gnuplot</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>21 Sep 2008 00:21:34 +0300</pubDate>
+</item>
+
+<item>
+<title>Shielding your files with Reed-Solomon codes</title>
+<guid>https://www.thanassis.space/rsbep.html</guid>
+<link>https://www.thanassis.space/rsbep.html</link>
+<description>Shielding your files with Reed-Solomon codes</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>31 Jul 2008 01:21:39 +0300</pubDate>
+</item>
+
+<item>
+<title>Playing mp3PRO files under Linux</title>
+<guid>https://www.thanassis.space/mp3pro.html</guid>
+<link>https://www.thanassis.space/mp3pro.html</link>
+<description>Playing mp3PRO files under Linux</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>26 Apr 2008 14:59:43 +0300</pubDate>
+</item>
+
+<item>
+<title>Offline rsync</title>
+<guid>https://www.thanassis.space/Offline-rsync.html</guid>
+<link>https://www.thanassis.space/Offline-rsync.html</link>
+<description>Offline rsync</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>16 Mar 2008 20:58:18 +0300</pubDate>
+</item>
+
+<item>
+<title>Optimal remote backups with rsync over Samba</title>
+<guid>https://www.thanassis.space/backup.html</guid>
+<link>https://www.thanassis.space/backup.html</link>
+<description>Optimal remote backups with rsync over Samba</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>27 Oct 2007 10:51:11 +0300</pubDate>
+</item>
+
+<item>
+<title>The power of Python's yield</title>
+<guid>https://www.thanassis.space/yield.html</guid>
+<link>https://www.thanassis.space/yield.html</link>
+<description>The power of Python's yield</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>7 Oct 2007 16:56:27 +0300</pubDate>
+</item>
+
+<item>
+<title>Building a (fast) Wikipedia offline reader</title>
+<guid>https://www.thanassis.space/buildWikipediaOffline.html</guid>
+<link>https://www.thanassis.space/buildWikipediaOffline.html</link>
+<description>Building a (fast) Wikipedia offline reader</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>13 Aug 2007 14:59:08 +0300</pubDate>
+</item>
+
+<item>
+<title>Playing with statistics and Python</title>
+<guid>https://www.thanassis.space/stats_nostalgia.html</guid>
+<link>https://www.thanassis.space/stats_nostalgia.html</link>
+<description>Playing with statistics and Python</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>17 Jun 2007 10:58:18 +0300</pubDate>
+</item>
+
+<item>
+<title>Optimally filling-up storage with dynamic programming</title>
+<guid>https://www.thanassis.space/fillupDVD.html</guid>
+<link>https://www.thanassis.space/fillupDVD.html</link>
+<description>Optimally filling-up storage with dynamic programming</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>17 Sep 2006 17:08:18 +0300</pubDate>
+</item>
+
+<item>
+<title>A Python puzzle for python newbies</title>
+<guid>https://www.thanassis.space/python.html</guid>
+<link>https://www.thanassis.space/python.html</link>
+<description>A Python puzzle for python newbies</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>20 Aug 2006 19:21:18 +0300</pubDate>
+</item>
+
+<item>
+<title>UNIX/Linux tricks</title>
+<guid>https://www.thanassis.space/tricks.html</guid>
+<link>https://www.thanassis.space/tricks.html</link>
+<description>UNIX/Linux tricks</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>6 Aug 2006 19:31:08 +0300</pubDate>
+</item>
+
+<item>
+<title>The crossing ladders puzzle (Python, Octave, SAGE, ...)</title>
+<guid>https://www.thanassis.space/ladders.html</guid>
+<link>https://www.thanassis.space/ladders.html</link>
+<description>The crossing ladders puzzle (Python, Octave, SAGE, ...)</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>16 Jul 2006 19:58:18 +0300</pubDate>
+</item>
+
+<item>
+<title>Writing Makefiles</title>
+<guid>https://www.thanassis.space/makefile.html</guid>
+<link>https://www.thanassis.space/makefile.html</link>
+<description>Writing Makefiles</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>2 Jul 2006 13:48:08 +0300</pubDate>
+</item>
+
+<item>
+<title>Mandelbrot zoomer in SSE (and CUDA)</title>
+<guid>https://www.thanassis.space/mandelSSE.html</guid>
+<link>https://www.thanassis.space/mandelSSE.html</link>
+<description>Mandelbrot zoomer in SSE (and CUDA)</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>21 Jul 2002 19:53:31 +0300</pubDate>
+</item>
+
+</channel>
+</rss>

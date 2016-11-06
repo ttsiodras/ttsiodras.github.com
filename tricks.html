@@ -1,0 +1,1794 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/tricks.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>UNIX/Linux tips (potpourri)</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">UNIX/Linux tips (potpourri)</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <em>(Started: August 2006)</em><p>
+  I've been using Linux for almost a decade now, so over the
+  years I've collected a number of digital notes on various
+  issues. Some of them could be out of date - they are 
+  here mostly as an online reference for myself, but they may
+  also prove useful to others...
+  <br>
+  <ul>
+    <li>Video and audio stuff<br>
+      <ul>
+	<li><a href="#deinterlace">Different ways to deinterlace with MPlayer</a><br>
+	<li><a href="#dvdmenu">Make a DVD with menus using tovid</a><br>
+	<li><a href="#dvddecrypter">A one-liner equivalent to DVD Decrypter</a><br>
+	<li><a href="#mp4">Create QuickTime-compatible .mp4 files</a><br>
+	<li><a href="#cddb">Batch reading of CDDB entries for many CDs over dialup Internet</a><br>
+	<li><a href="#rip">Flawless ripping of audio CDs</a><br>
+	<li><a href="#sox">Fool around with sox audio</a><br>
+	<li><a href="#vobsub1">Cope with difficult VOBSUBs</a><br>
+	<li><a href="#midi">Better sounding MIDI through timidity and sox</a><br>
+	<li><a href="#vobsub2">Forgot the IFO when encoding, VOBSUBs are black</a><br>
+	<li><a href="#srt2dvd">Add subtitles to a DVD from an SRT file</a><br>
+	<li><a href="#massconv">Mass conversion via tovid and make</a><br>
+	<li><a href="#slideshow">Creating a DVD slideshow</a><br>
+	<li><a href="#coreavc">Re-multiplex broken H264 MKVs</a><br>
+	<li><a href="#stabilize">Stabilize video recorded from shaky camera</a><br>
+	<li><a href="#publicVideo">Encode screen-video for perfect web publishing via VideoLAN</a><br>
+	<li><a href="#x264trans">Transcode full-HD video to 0.06 bits per pixel via mplayer and x264</a><br>
+      </ul>
+    </li>
+    <li>Administration<br>
+      <ul>
+        <li><a href="#cpanlwp">Disable LWP and Net::FTP for CPAN</a><br>
+        <li><a href="#stunnel">Talk to an SSL-enabled site with non-SSL clients: stunnel</a><br>
+        <li><a href="#fasterVmware">Make VMWARE images run faster</a><br>
+        <li><a href="#cpuVmware">Make VMWARE Player use more than two cores</a><br>
+        <li><a href="#removeservice">Remove a Debian service from startup scripts</a><br>
+        <li><a href="#aptsource">Build debian package from its sources</a><br>
+        <li><a href="#sizes">Show package sizes under Debian</a><br>
+        <li><a href="#minideb">Create a minimal Debian for chrooted SSH</a><br>
+        <li><a href="#debianalternatives">Use Debian alternatives to set multiple C/C++ compiler versions</a><br>
+        <li><a href="#mdadm">Migrate to a RAID1 config</a><br>
+        <li><a href="#dmsetup">Setup a RAID1 (mirror) of two loop devices</a><br>
+        <li><a href="#sudo">Allow a user to be sudo-root</a><br>
+	<li><a href="#aes">Converting a raw filesystem image to/from AES encryption using aespipe in one pass</a><br>
+	<li><a href="#aescryptsetup">Mounting a loop-AES partition/DVD using cryptsetup</a><br>
+	<li><a href="#tar">Backing up with tar</a><br>
+	<li><a href="#lan">Learning about a LAN</a><br>
+	<li><a href="#afio">Using afio to back up (with gzip compression) to CD images</a><br>
+	<li><a href="#qemu">Access Internet from within QEMU</a><br>
+	<li><a href="#raid1">The simplest of software RAID1, two partitions</a><br>
+	<li><a href="#pap">Use a PAP-based modem account</a><br>
+	<li><a href="#bsd">Connect to the BSD console over a null cable</a><br>
+	<li><a href="#ssh">Password-less logins through SSH</a><br>
+	<li><a href="#reiser">Undelete from a ReiserFS partition</a><br>
+	<li><a href="#ntfs">Backing up my NTFS partition at work over the network to the server</a><br>
+	<li><a href="#passwd">Cracking Windows passwords in case of human memory failure</a><br>
+	<li><a href="#simpleApache">Serving files over the Web in a one-liner</a><br>
+	<li><a href="#massxargs">Using multicores via xargs</a><br>
+        <li><a href="#cpan">Install stuff with CPAN</a><br>
+        <li><a href="#histogram">Build histogram with Gnuplot</a><br>
+        <li><a href="#animatedGif">Build animated .gif with Gnuplot</a><br>
+        <li><a href="#loops">Increase number of loop devices (more than 8 squashfs)</a><br>
+        <li><a href="#squid">Squid simple authentication</a><br>
+        <li><a href="#pip">Python administration with pip and virtualenv</a><br>
+        <li><a href="#sshtips">SSH productivity tips</a><br>
+        <li><a href="#centosrpm">CentOS RPM build from source</a><br>
+        <li><a href="#sedandtr">Sed and Tr wizardry</a><br>
+        <li><a href="#tmux">Perfect tmux config</a><br>
+        <li><a href="#vim">CLang,NERDTree,EasyMotion in my VIM</a><br>
+        <li><a href="#vim2">HTML entities inside VIM</a><br>
+        <li><a href="#vimodeinbash">Use VI mode in bash but keep ESC-.</a><br>
+        <li><a href="#xresources">My .Xresources</a><br>
+        <li><a href="#ps1">My bash PS1 setting</a><br>
+        <li><a href="#qemudrive">Create a "drive" for QEMU out of a partition image</a><br>
+        <li><a href="#htaccess">Password protect an Apache folder</a><br>
+        <li><a href="#cronscreen">At bootup, spawn a screen session via cron</a><br>
+        <li><a href="#downgradeDebian">Downgrade a hybrid Debian into "pure" stable or testing</a><br>
+      </ul>
+    </li>
+    <li>Coding, pdf, Tex, ...<br>
+      <ul>
+        <li><a href="#sortXML">Python code for sorting XML in preparation for diff</a><br>
+        <li><a href="#autorunner">Automatically execute code whenever any files under a folder tree change</a><br>
+        <li><a href="#csv2html">Python code for converting csv to html</a><br>
+        <li><a href="#cerr">Redirecting cerr to a stringstream</a><br>
+        <li><a href="#supergrep">Using Perl as a super-grep</a><br>
+        <li><a href="#mancolor">Man pages with colors (a la OpenBSD console)</a><br>
+	<li><a href="#b2v">Convert a bitmap to a vector for use from LaTEX</a><br>
+	<li><a href="#a4">Make a two-pages-per-A4 booklet from a PS file</a><br>
+	<li><a href="#cvs">Import sources in a local CVS repository</a><br>
+	<li><a href="#git">Git-svn generated .cvsignore files into .git/info/exclude</a><br>
+	<li><a href="#gitquote">Git status unescaped UTF8 output</a><br>
+	<li><a href="#pdfpng">Create PNGs from a pdf presentation</a><br>
+	<li><a href="#indent">Indent C or C++ code</a><br>
+	<li><a href="#defmacro">Show default defines of GCC</a><br>
+	<li><a href="#mysqlwww">Execute queries on MySQL and have html output viewed via w3m</a><br>
+	<li><a href="#mysqlutf8">Change MySQL tables to UTF8</a><br>
+	<li><a href="#octave">Use octave to solve polynomials</a><br>
+	<li><a href="#oprof">Use oprofile for detailed stats on runtime</a><br>
+	<li><a href="#baddvd">Read a damaged CD/DVD valid parts and get the rest with rsync</a><br>
+	<li><a href="#static">Convert a static lib (.a) into a dynamic one (.so)</a><br>
+	<li><a href="#smartdynamic">Link with a shared library and store the path (avoid LD_LIBRARY_PATH)</a><br>
+	<li><a href="#x11swf">Create live presentations from your X11</a><br>
+	<li><a href="#wget">wget sometimes fails because the site checks the referrer</a><br>
+	<li><a href="#iconv">Convert text between different encodings</a><br>
+	<li><a href="#gdb">Programmable debugging with GDB</a><br>
+	<li><a href="#colorcode">Create syntax-highlighted HTML from code</a><br>
+	<li><a href="#timewarp">Turn the clock back for an application</a><br>
+	<li><a href="#hexdump">Dump hex and ASCII data</a><br>
+	<li><a href="#unbuffered">Unbuffered pipes (driven to grep, etc)</a><br>
+	<li><a href="#ipdb">Python debugging</a><br>
+	<li><a href="#cassert">Compile-time C assert</a><br>
+	<li><a href="#cyield">Yield (coroutines) in C</a><br>
+	<li><a href="#mingwdll">Creating a MinGW import library from a .dll</a><br>
+	<li><a href="#readline">Simple readline example</a><br>
+	<li><a href="#fft">Simple FFT example</a><br>
+	<li><a href="#clang">Catch undefined behaviour with clang</a><br>
+	<li><a href="#ctags">Use ctags for /usr/include/ (skip boost)</a><br>
+      </ul>
+    </li>
+  </ul>
+  <h2>Video and audio stuff</h2>
+  <ul>
+    <li><b><a name="deinterlace"></a>Different ways to deinterlace with MPlayer:<br></b>
+<pre class="o">
+Blend: -vf pp=lb
+Bob: -vf tfields=1 -fps 50 -ofps 50
+Single field: -vf field=1
+Swap fields: -vf phase=t
+Adaptive: -vf kerndeint or -vf lavcdeint
+</pre>
+    </li>
+    <li><b><a name="dvdmenu"></a>Make a DVD with menus using tovid:<br></b>
+<pre class="o">
+tovid -pal -dvd -in A-ha-TakeOnMe.mpg -out A-ha-TakeOnMe.vob
+
+tovid -pal -dvd -in Every\ Breath\ You\ Take.mpg -out \
+    Every\ Breath\ You\ Take.vob
+
+makemenu -pal -dvd -align left -textcolor '#FFF' \
+    -highlightcolor '#FF0?' -selectcolor '#F00?' \
+    -font Helvetica \
+    "A-Ha Take On Me" \
+    "Police Every Breath You Take" 
+    -background Earth.jpg \
+    -out Main_menu 
+
+makexml -dvd -menu Main_menu.mpg A-ha-TakeOnMe.vob.mpg \
+    Every\ Breath\ You\ Take.vob.mpg MyPopDVD
+
+makedvd MyPopDVD.xml
+</pre>
+    </li>
+    <li><b><a name="dvddecrypter"></a>A one-liner equivalent to DVD Decrypter:<br></b>
+<pre class="o">
+dvdbackup -i /dev/dvd -v 3 -o . -M
+</pre>
+    </li>
+    <li><b><a name="mp4"></a>Create QuickTime-compatible .mp4 files:<br></b>
+<pre class="o">
+From a source video at 25 fps, sized at 352x288, 
+named test.mpg.
+
+Audio:
+<b>bash$</b> mplayer -really-quiet -ao pcm:file=audio.wav \
+	-vo null -vc dummy test.mpg
+<b>bash$</b> normalize audio.wav
+<b>bash$</b> faac -b 96 --mpeg-vers 4 -o audio.aac audio.wav 
+
+Video:
+    <b>bash$</b> mkfifo stream.yuv
+(from window 1):
+    <b>bash$</b> mencoder -nosound -ovc raw -noskip \
+    	-vf format=i420 \
+	-of rawvideo -o stream.yuv test.mpg
+(from window 2):
+    <b>bash$</b> x264 --pass 1 --bitrate 256 --stats stats  \
+    	--bframes 2 \
+	--fps 25.0 -o test.264 stream.yuv 352x288 
+    <b>bash$</b> x264 --pass 2 --bitrate 256 --stats stats  \
+    	--bframes 2 \
+	--fps 25.0 -o test.264 stream.yuv 352x288 
+
+multiplexing:
+MP4Box -add test.264:fps=25 -add audio.aac test.mp4
+</pre>
+    </li>
+    <li><b><a name="cddb"></a>Batch reading of CDDB entries for many CDs over dialup Internet:<br></b>
+<pre class="o">
+Insert the audio CDs, one by one, and run 
+cddb.pl -o
+Then, when you've passed them all, connect to the web and
+cddb.pl -g
+Use the screen output (Perl)...
+</pre>
+    </li>
+    <li><b><a name="rip"></a>Flawless ripping of audio CDs:<br></b>
+<pre class="o">
+cdparanoia -p -r  1 - | oggenc -Q -b 96 -r - -o track01.ogg
+cdparanoia -p -r  2 - | oggenc -Q -b 96 -r - -o track02.ogg
+...
+</pre>
+    </li>
+    <li><b><a name="sox"></a>Fool around with sox audio:<br></b>
+<pre class="o">
+mpg123 -s -q voice.mp3 | sox -t raw -r 44100 -s -w -c 2 - \
+    -t ossdsp -r 44100 -s -w -c 2 /dev/dsp pitch -490 30 \
+    cubic cos
+timidity -Ow ~/midi/Movie/swfinal1.mid -o - | sox -t wav - \
+    -t ossdsp -r 44100 -s -w -c 1 /dev/dsp filter 0-16000
+</pre>
+    </li>
+    <li><b><a name="vobsub1"></a>Cope with difficult VOBSUBs:<br></b>
+<pre class="o">
+You need a complete dump of IFO and VOBs.
+First, find out what your subtitles hex id is.
+Sometimes, mplayer can't cut it (can't show the sub,
+especially when the DVD is the result of DVDShrink).
+In theses case, look at the output of...
+
+<b>bash$</b> mpegdemux -c -k -s all -p all  < VTS_01_1.VOB
+
+and identify lines like:
+0000400e: sid=bd[80] MPEG2 pts=25854[0.2873]
+0008b80e: sid=bd[21] MPEG2 pts=605454[6.7273]
+014ad80e: sid=bd[20] MPEG2 pts=5159454[57.3273]
+014cf80e: sid=bd[24] MPEG2 pts=5177454[57.5273]
+                  |
+------------------'
+
+These numbers (80, 21, 20, 24) are our candidates...
+For each one, say 24, try:
+
+cat VTS_01_1.VOB | tcextract -x ps1 -t vob -a 0x24 \
+	> subtitle.ps
+
+Now morph this subtitle.ps into a nice vobsub file by...
+
+<b>bash$</b> tar zxvf ~/stuff/transcode/subtitleripper-0.3-4.tgz
+<b>bash$</b> cd subtitleripper/
+<b>bash$</b> make
+<b>bash$</b> ./subtitle2vobsub -p ../subtitle.ps \
+	-i VTS_01_0.IFO -o MAMA
+
+A MAMA.sub and a MAMA.idx have been made.
+</pre>
+    </li>
+    <li><b><a name="midi"></a>Better sounding MIDI through timidity and sox:<br></b>
+<pre class="o">
+timidity -Ow -o - xg/Vangelis\ -\ Finale.mid | \
+    sox -t .wav - -t .wav - echo 0.1 0.9 | bplay
+</pre>
+    </li>
+    <li><b><a name="vobsub2"></a>Forgot the IFO when encoding, VOBSUBs are black:<br></b>
+<pre class="o">
+Simply add this line:
+
+custom colors: ON,tridx:0000,colors: 000000,000000,FF0000,000000
+
+in your .idx file. You might have to move the FF from the 3rd to
+any of the other 3 values. If in doubt, permute :&#x2011;)
+</pre>
+    </li>
+    <li><b><a name="srt2dvd"></a>Add subtitles to a DVD from an SRT file:<br></b>
+<pre class="o">
+First, create an SRT file from your text subfile:
+    mplayer -dumpsrtsub  ...
+    iconv -f UTF-8 -t WINDOWS-1253 ...
+
+Then, lots of WINE...
+
+Use VobEdit to split the input VOB file into its parts (MPEG file (video), 
+and whatever audio and subs you want). Use txt2sup to create the SUP file 
+from the SRT file - but take care to fix the 4 pallete indexes, so that 
+they are all different (initially two of them point to 0!). 
+Finally, use IfoEdit:
+
+- DVD Author/new DVD
+- Select the Video, audio and subs (SUP) files you want
+- select the output dir
+- when it finishes, change the palette colors:
+
+In the upper part of the window select VTS_01_0.IFO, then VTS_PGCITI and 
+finally VTS_PGC_1. Find the lines describing the subtitle color codes 
+(Color 0 Y Cr CB, Color 1 Y Cr CB, Color 2 Y Cr CB and Color 3 Y Cr CB) 
+and enter the new values:
+
+Color 0 Y Cr CB = 00 80 80
+Color 1 Y Cr CB = 55 80 80
+Color 2 Y Cr CB = AA 80 80
+Color 3 Y Cr CB = FF 80 80
+
+Click on "Save" to save the modified VTS_01_0.IFO. Check the sub colors
+with "mplayer -dvd-device /path/to/VIDEO_TS".
+
+Finally, click "Disc Image" in IfoEdit. Done.
+</pre>
+    </li>
+    <li><b><a name="massconv"></a>Mass conversion via tovid and make:<br></b>
+<pre class="o">
+%.mpg: %.avi
+        tovid -ntsc -dvd -noask -ffmpeg -in "$<" -out "$(basename $@)"
+
+all: $(subst .avi,.mpg,$(wildcard */*.avi))
+</pre>
+    </li>
+    <li><b><a name="slideshow"></a>Creating a DVD slideshow:<br></b>
+Assuming you have a directory called <tt>img/</tt> with images of lions, cheetahs, eagles, etc...
+<pre class="o">
+<b>bash$</b> dir2slideshow \
+    -o ./ -t 5 -c 1 -n Animals -notitle -p -a /path/to/music1.mp3,/path/to/music2.mp3 img/
+(creates ./Animals.txt)
+
+<b>bash$</b> dvd-slideshow \
+    -n Animals -o Animals -p  -smp -f Animals.txt
+(creates a nice .vob file)
+
+<b>bash$</b> makexml Animals/Animals.vob -out MyDisc
+(creates MyDisc.xml)
+
+<b>bash$</b> makedvd MyDisc.xml
+(creates MyDisc/ folder, with VIDEO_TS/AUDIO_TS)
+</pre>
+    <li><b><a name="coreavc"></a>Re-multiplex broken H264 MKVs:<br></b>
+<pre class="o">
+Use mkvinfo to identify the track IDs (TIDs), and then note the frame
+rate of the video track. Once you figure out the track IDs...
+
+<b>bash$</b> mkvextract tracks Broken.mkv 1:video 2:audio 3:subs
+<b>bash$</b> mkvmerge --default-language eng -o Fixed.mkv \
+		--default-duration 0:23.976fps video audio subs
+
+That was enough to fix all the MKVs I've ever met...
+</pre>
+    <li><b><a name="stabilize"></a>Stabilize video recorded from shaky camera:<br></b>
+<pre class="o">
+This is how I stabilized my iPhone videos:
+
+1. First this:
+transcode -J stabilize=accuracy=8,preview  -i IMG_0223.MOV \
+    -x mplayer,null -g 640x480
+
+2. Then this:
+transcode -J transform -i IMG_0223.MOV -x mplayer,null \
+    -g 640x480 -y xvid -o IMG_0223_stable.avi
+
+3. Then extracting and encoding the audio:
+mplayer -vo null  -benchmark -ao pcm:file=a.wav IMG_0223.MOV
+lame a.wav
+
+4. Finally, merging:
+mkvmerge -o final.mkv -A IMG_0223_stable.avi a.wav.mp3
+
+This is the script I used to create a BEFORE/AFTER video:
+
+============
+#!/bin/bash
+transcode -i v1 -x mplayer,null -g 640x480 -y ppm,null -o f1_
+transcode -i v2 -x mplayer,null -g 640x480 -y ppm,null -o f2_
+for F in f1_*; do
+    echo $F
+    montage -background "#444444" -geometry +10+5 \
+	$F f2${F#f1} f3${F#f1}
+done
+ls -1 f3_* > list
+RES=$(identify -format "%wx%h" $(head -n 1 list))
+transcode -i list -g $RES -V rgb24 -f 30,4 -x imlist,null \
+    -y xvid,null -o v1and2.avi
+rm f1_* f2_* f3_*
+============
+</pre>
+    <li><b><a name="publicVideo"></a>Encode screen-video for perfect web publishing via VideoLAN:<br></b>
+<pre>
+# for a 6-core machine:
+ffmpeg.exe \
+    -i recorded.avi \
+    -vcodec libx264 \
+    -vpre lossless_fast -crf 22 -threads 6 perfect.flv
+</pre>
+    <li><b><a name="x264trans"></a>Transcode full-HD video to 0.06 bits per pixel via mplayer and x264:<br></b>
+    <ul>
+    <li>1920 x 1080 x 29.97 x 0.06bits/pixel = 3728747bits (3.7MBits)
+    <li>We use mplayer to decode the input (it decodes everything) and feed the output to x264 (i.e. the standalone, formal implementation of x264 from the company that makes the codec):
+<pre class="o">
+<b>bash$</b> mplayer -nosound -benchmark -vo yuv4mpeg:file=>(x264 \
+    --demuxer y4m --threads auto --pass 1 --bitrate 3728 \
+    -o Amazing.Scenes.video.mkv - 2>x264.log) IMG_1123.MOV
+<b>bash$</b> mplayer -nosound -benchmark -vo yuv4mpeg:file=>(x264 \
+    --demuxer y4m --threads auto --pass 2 --bitrate 3728 \
+    -o Amazing.Scenes.video.mkv - 2>x264.log) IMG_1123.MOV
+</pre>
+    <li>Finally, we copy (a) the audio-only info from the original video (with -D) and (b) the newly encoded video (-A):
+<pre class="o">
+<b>bash$</b> mkvmerge  -o AmazingScenes.mkv -A Amazing.Scenes.video.mkv -D IMG_1123.MOV
+</pre>
+    <li>If we also want to resize down to HD-ready, we should pass <tt>-vf scale=1280:720</tt> to the two mplayer invocations.
+    </ul>
+&nbsp;<br>
+The generated output showcases the supremacy of x264 - at 0.06 bits per pixel, I have difficulty separating the transcoded result from the original, when looking at both of them on my TV!
+  </ul>
+  <h2>System administration, coding, pdf, Tex, ...</h2>
+  <ul>
+    <li><b><a name="cpanlwp"></a>Disable LWP and Net::FTP for CPAN<br></b>
+Edit /etc/perl/CPAN/Config.pm and change dontload_hash to...
+<pre>
+...
+'dontload_hash' => {"Net::FTP" => 1, "LWP" =>1 }, # disable Net::FTP and LWP
+...
+</pre>
+    <li><b><a name="stunnel"></a>Talk to an SSL-enabled site with non-SSL clients: stunnel<br></b>
+<pre class="o">
+From window 1:
+    stunnel -d 5000 -c -f -r www.semantix.gr:443
+From window 2:
+    non-ssl-wget http://localhost:5000
+</pre>
+    <li><b><a name="fasterVmware"></a>Make VMWARE images run faster:<br></b>
+Add these lines to the .vmx file:
+<pre class="o">
+sched.mem.pshare.enable = "FALSE"
+prefvmx.useRecommendedLockedMemSize = "TRUE"
+prefvmx.minVmMemPct = "100"
+mainMem.partialLazySave = "FALSE"
+mainMem.partialLazyRestore = "FALSE"
+mainMem.useNamedFile = "FALSE"
+</pre>
+    <li><b><a name="cpuVmware"></a>Make VMWARE Player use more than two cores:<br></b>
+<pre>
+Edit your .vmx file and change the following:
+
+config.version = "8"
+virtualHW.version = "7"
+numvcpus = "4"
+maxvcpus = "4"
+cpuid.coresPerSocket="2"
+
+(remember to give adequate memory, too)
+memsize = "1024"
+</pre>
+    <li><b><a name="removeservice"></a>Remove a Debian service from startup scripts:<br></b>
+<pre class="o">
+update-rc.d -f nameOfServiceAsExistsUnderEtcInitD remove
+</pre>
+    <li><b><a name="aptsource"></a>Build debian package from its sources:</b><p>
+When I want to install a version of a program that only exists in the unstable branch, 
+I don't want to mess up all my Debian installation - I just...
+<pre class="o">
+apt-get -b source  -t unstable pbzip2
+</pre>
+...which creates a nice .deb file, installable with "dpkg -i whatever.deb".
+If the program has build dependencies, I install them first with...
+<pre class="o">
+apt-get build-dep pbzip2
+</pre>
+    <li><b><a name="cerr"></a>Redirecting cerr to a stringstream:</b>
+<pre>
+// When you try this, don't output to cerr...
+streambuf * cerr_strbuf(cerr.rdbuf());
+ostringstream output;
+cerr.rdbuf(output.rdbuf());
+...
+// Restore cerr
+cerr.rdbuf(cerr_strbuf);
+</pre>
+    <li><b><a name="supergrep"></a>Using Perl as a super-grep:</b><p>
+I prefer to use Perl regexps instead of grep's. <a href="supergrep.pl">Here</a> is a supergrep 
+that uses Perl. It supports the '-i', '-n' and '-v' options that grep has (Update: 
+or you can use <b>pcregrep</b>).
+    <li><b><a name="mdadm"></a>Migrate to a RAID1 config:</b><p>
+My non-RAID config was simple: I had one (and only one!) Linux partition, which was of course,
+my root partition: <tt>/dev/hda5</tt>. After adding a second (and much bigger) drive, I decided
+to migrate to a RAID1 configuration. I first used <tt>fdisk -u -l /dev/hda</tt>, to find out
+the size (in sectors) of my partition:
+<pre class="o">
+<b>home root#</b> fdisk -u -l /dev/hda
+
+Disk /dev/hda: 40.0 GB, 40020664320 bytes
+255 heads, 63 sectors/track, 4865 cylinders, total 78165360 sectors
+Units = sectors of 1 * 512 = 512 bytes
+
+   Device Boot    Start       End    Blocks   Id  System
+/dev/hda1   *        63   8193149   4096543+   7  HPFS/NTFS
+/dev/hda2       8193150  78156224  34981537+   5  Extended
+/dev/hda5       8193213  78156224  34981506   83  Linux
+<b>home root#</b> bc -l
+bc 1.06
+Copyright 1991-1994, 1997, 1998, 2000 Free Software Foundation, Inc.
+This is free software with ABSOLUTELY NO WARRANTY.
+For details type `warranty'. 
+78156224-8193213
+69963011               <============= The number of sectors =====
+</pre>
+I then proceeded to create a partition with exactly the same size, on the 
+new drive (hdb):
+<pre class="o">
+<b>home root#</b> fdisk -u /dev/hdb
+
+The number of cylinders for this disk is set to 38913.
+There is nothing wrong with that, but this is larger than 1024,
+and could in certain setups cause problems with:
+1) software that runs at boot time (e.g., old versions of LILO)
+2) booting and partitioning software from other OSes
+   (e.g., DOS FDISK, OS/2 FDISK)
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p                                      --------- The number of sectors ---------,
+Partition number (1-4): 1                                                       | 
+First sector (63-625142447, default 63): 63                                     V
+Last sector or +size or +sizeM or +sizeK (63-625142447, default 625142447): +69963011
+
+Command (m for help): t
+...(set the filesystem type for /dev/hdb1 to 0xfd, Linux raid auto-detect)
+Command (m for help): p
+...
+Command (m for help): w
+...
+Command (m for help): q
+</pre>
+I then proceeded to create the RAID1 device, md0, <em>setting it up to only have the
+<tt>/dev/hdb1</tt> partition, with the other one set to <tt>missing</tt></em>:
+<pre class="o">
+<b>home root#</b> mdadm --create /dev/md0 --level=1 --raid-disks=2 missing /dev/hdb1
+<b>home root#</b> mkreiserfs /dev/md0
+<b>home root#</b> mkdir /mnt/tmp
+<b>home root#</b> mount /dev/md0 /mnt/tmp
+<b>home root#</b> cp -a /boot /dev /root /.... /... /mnt/tmp/
+<b>home root#</b> vi /mnt/tmp/etc/fstab (change the root to be /dev/md0)
+<b>home root#</b> vi /boot/grub/menu.lst (change the root=/dev/hda5 to root=/dev/md0)
+</pre>
+At this point, after a reboot, the kernel identified the /dev/md0 automatically,
+and the boot process went fine... Only one thing remained: to add the <tt>/dev/hda5</tt> to 
+the array <tt>/dev/md0</tt>, and allow it to automatically sync up:
+<pre class="o">
+<b>home root#</b> mdadm /dev/md0 -a /dev/hda5
+<b>home root#</b> cat /proc/mdstat
+</pre>
+The last command showed the process of synchronization. When it finished, my RAID1 setup 
+was completed. My fears for faulty drives were finally put to rest... <p>&nbsp;
+    <li><b><a name="mancolor"></a>Man pages with colors (ala OpenBSD console):<br></b>
+    <pre class="o">
+Put these in your .bashrc (or whatever your shell initialization script is):
+
+	export LESS_TERMCAP_mb=$'\E[01;31m'
+	export LESS_TERMCAP_md=$'\E[01;37m'
+	export LESS_TERMCAP_me=$'\E[0m'
+	export LESS_TERMCAP_se=$'\E[0m'
+	export LESS_TERMCAP_so=$'\E[01;44;33m'
+	export LESS_TERMCAP_ue=$'\E[0m'
+	export LESS_TERMCAP_us=$'\E[01;32m'
+
+Oh, and make sure 'less' is your PAGER (or MANPAGER).
+</pre>
+    <li><b><a name="dmsetup"></a>Setup a RAID1 (mirror) of two loop devices:<br></b>
+<pre class="o">
+<b>bash$</b> blockdev --getsize /dev/loop0
+2048000
+<b>bash$</b> blockdev --getsize /dev/loop1
+2048000
+(outputs must be the same!)
+<b>bash$</b> echo 0 2048000 mirror core 2 16 nosync 2 \
+    /dev/loop0 0 /dev/loop1 0 | dmsetup create myraid1
+<b>bash$</b> ls -l /dev/mapper/myraid1
+<b>bash$</b> blockdev --getsize /dev/mapper/myraid1
+2048000
+</pre>
+You can find our more examples (e.g. stripe(RAID0) and linear) in 
+the NTFS documentation that comes with the Linux kernel
+(Documentation/filesystems/ntfs.txt) - look at the Device Mapper
+section of the file.<br><br>
+    <li><b><a name="sizes"></a>Show package sizes under Debian:<br></b>
+<pre class="o">
+dpkg-query -Wf '${Package}\t${Installed-Size}\n'
+</pre><br>
+    <li><b><a name="minideb"></a>Create a minimal Debian for chrooted SSH:<br></b>
+<pre class="o">
+<b>root#</b> debootstrap etch /opt/chroot \
+	http://ftp.x.y/pub/linux/debian/
+<b>root#</b> chroot /opt/chroot
+....# adduser userlogin
+....# logout
+<b>root#</b> apt-get install libpam-chroot
+<b>root#</b> echo 'session    required   pam_chroot.so' >> \
+	/etc/pam.d/ssh
+<b>root#</b> echo 'userlogin  /opt/chroot' >> \
+	/etc/security/chroot.conf
+</pre>
+...and then, modify the /etc/passwd and /etc/group IDs of the user
+to mirror those of the chrooted environment.<br>
+<br>
+    <li><b><a name="debianalternatives"></a>Use Debian alternatives to set multiple C/C++ compiler versions:<br></b>
+<pre class="o">
+<b>root#</b> update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 10
+<b>root#</b> update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 20
+<b>root#</b> update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30
+<b>root#</b> update-alternatives --set cc /usr/bin/gcc
+<b>root#</b> update-alternatives --config gcc
+<b>root#</b> 
+<b>root#</b> update-alternatives --install '/usr/bin/g++' 'g++' '/usr/bin/g++-4.6' 10
+<b>root#</b> update-alternatives --install '/usr/bin/g++' 'g++' '/usr/bin/g++-4.7' 20
+<b>root#</b> update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
+<b>root#</b> update-alternatives --set c++ /usr/bin/g++
+<b>root#</b> update-alternatives --config g++
+</pre>
+    <li><b><a name="sudo"></a>Allow a user to be sudo-root:<br></b>
+<pre class="o">
+<b>root#</b> visudo
+...and add a line for account, say, rootfriend:
+rootfriend&lt;TAB&gt;ALL=(root) ALL
+</pre>
+That's it. User rootfriend can do anything root can, as long as he types
+<b>his own</b> password the first time he "sudo cmd args"...
+    <li><b><a name="tar"></a>Backing up with tar:<br></b>
+<pre class="o">
+tar jcplSf /mnt/backup/`date +"%Y%m%d%H%M%S"`.tar.bz2 /
+</pre>
+<ul>
+<li>j: compress with bzip2
+<li>c: create volume
+<li>p: preserve permissions
+<li>l: stay in this filesystem
+<li>S: handle sparse files
+<li>f: store in this file
+</ul><br>
+    <li><b><a name="aes"></a>Converting a raw filesystem image to/from AES encryption using aespipe in one pass:<br></b>
+<pre class="o">
+Encrypt:
+dd if=/dev/XXX bs=512 | aespipe -e aes256 | \
+	dd of=/dev/XXX bs=512 conv=notrunc
+
+Decrypt:
+dd if=/dev/XXX bs=512 | aespipe -d -e aes256 | \
+	dd of=/dev/XXX bs=512 conv=notrunc
+</pre>
+    </li>
+    <li><b><a name="aescryptsetup"></a>Mounting a loop-AES partition/DVD using cryptsetup:<br></b>
+<pre class="o">
+sh# losetup /dev/loop0 /path/to/whatever/file/or/volume
+sh# cryptsetup -c aes-plain -h sha512 create crypted /dev/loop0
+Enter passphrase:
+sh# mount /dev/mapper/crypted /mnt/heaven
+</pre>
+    </li>
+    <li><b><a name="lan"></a>Learning about a Samba LAN:<br></b>
+<pre class="o">
+#!/bin/bash
+for i in `nmap -sP 192.168.0.0/24 | grep 'appears to be up' \
+	| perl -ne '/(192.168.\d+\.\d+)/ &amp;&amp; print $1."\n";'`
+do
+        nmblookup -A $i
+done
+</pre>
+    </li>
+    <li><b><a name="afio"></a>Using afio to back up (with gzip compression) to CD images:<br></b>
+<pre class="o">
+Make it:
+find / -xdev -print | afio -Z -G 1 -s 650m \
+	-o /mnt/cdimage.afio
+(will prompt you before overwriting cdimage.afio with 
+ the next image...)
+
+Use it:
+make a symbolic link from Disk to Disk1,
+    afio -Z -G 1 -s 0 -i Dsk
+and when prompted, change the link to point 
+to Dsk2, Dsk3, etc...
+</pre>
+    </li>
+    <li><b><a name="ntfs"></a>Backing up my NTFS partition at work over the network to the server:<br></b>
+<pre class="o">
+Mount the ntfs partition on /iso1:
+        mount -t ntfs -o iocharset=utf8 /dev/hda1 /iso1
+or, depending on kernel version:
+        mount -t ntfs -o nls=utf8 /dev/hda1 /iso1
+
+and in the server, cd into /opt/Backup/Laptop-NTFS/ and run:
+        rsync -avz dell:/iso1/ .
+</pre>
+    </li>
+    <li><b><a name="b2v"></a>Convert a bitmap to a vector for use from LaTEX:<br></b>
+<pre class="o">
+<b>bash$</b> autotrace -filter-iteration 9 -output-file fig1.eps \
+    fig1.pnm
+<b>bash$</b> epstopdf fig1.eps
+
+and use graphicx in the .tex file:
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.85\textwidth]{../fig1} % fig1.pdf
+\caption{Blah blah}
+\label{figure1}
+\end{center}
+\end{figure}
+</pre>
+    </li>
+    <li><b><a name="a4"></a>Make a two-pages-per-A4 booklet from a PS file:<br></b>
+<pre class="o">
+ps2pdf file.ps
+acroread file.ps (print to file, Postscript Level 2)
+psbook -s4 newfile.ps | mpage -2 -bA4 -m0 -o > booklet.ps
+</pre>
+    </li>
+    <li><b><a name="passwd"></a>Cracking Windows passwords in case of human memory failure:<br></b>
+<pre class="o">
+mkdir /var/tmp/a 
+cd /mnt/ntfs/WINDOWS/system32/
+cp -a config/ /var/tmp/a
+cd /var/tmp/a
+/usr/local/bin/bkhive ./config/system /tmp/op2.tmp
+/usr/local/bin/samdump2 ./config/SAM /tmp/op2.tmp > \
+    /tmp/ophcrack.tmp
+ophcrack /tmp/ophcrack.tmp 1
+</pre>
+    </li>
+    <li><b><a name="simpleApache"></a>Serving files over the Web in a one-liner:<br></b>
+<pre class="o">
+<b>bash$</b> cd /path/to/datafiles
+<b>bash$</b> python -m SimpleHTTPServer
+</pre>
+    <li><b><a name="massxargs"></a>Using multicores via xargs:<br></b>
+<pre class="o">
+find . -type f -iname \*dds | xargs -n 1 -P 4 -I 'crap' convert crap crap.png
+</pre>
+This command will find all .dds files and execute ImageMagick's "convert" on them...
+but it will do so by always keeping 4 instances of "convert", and thus keeping 4 cores busy.
+    <li><b><a name="cpan"></a>Install stuff with CPAN:<br></b>
+<pre class="o">
+bash$ sudo perl -MCPAN -e shell
+cpan shell -- CPAN exploration and modules installation (v1.9402)
+Enter 'h' for help.
+
+cpan[1]> i /LinkCheck/
+...
+Module    Rubric::CLI::Command::linkcheck (RJBS/Rubric-0.144.tar.gz)
+Module  = W3C::LinkChecker       (SCOP/W3C-LinkChecker-4.5.tar.gz)
+...
+11 items found
+
+cpan[2]> install W3C::LinkChecker
+...
+cpan[3]> exit
+
+bash$
+</pre>
+    <li><b><a name="sortXML"></a>Python code for sorting XML in preparation for diff:<br></b>
+Download from <a href="sortXML.py">here</a>, and use like this:
+<pre class="o">
+bash$ sortXML.py old.xml > old.xml.sorted
+bash$ sortXML.py new.xml > new.xml.sorted
+bash$ xxdiff old.xml.sorted new.xml.sorted
+</pre>
+    <li><b><a name="autorunner"></a>Automatically execute code whenever any files under a folder tree change:<br></b>
+<pre>
+#!/bin/bash
+
+command=&quot;$1&quot;
+shift
+fileSpec=&quot;$@&quot;
+sentinel=/tmp/t.$$
+
+touch -t197001010000 $sentinel
+while :
+do
+  files=$(find . -newer $sentinel -a &#39;(&#39; $fileSpec &#39;)&#39;)
+  if [ $? != 0 ]; then
+    exit 1;
+  fi
+  if [ &quot;$files&quot; != &quot;&quot; ]; then
+    $command
+    touch $sentinel
+  fi
+  sleep 0.1
+done
+</pre>
+    <li><b><a name="csv2html"></a>Python code for converting csv to html:<br></b>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+<span class="preproc">import</span><span class="normal"> csv</span>
+<span class="preproc">import</span><span class="normal"> sys</span>
+
+<span class="keyword">if</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">)&lt;</span><span class="number">2</span><span class="symbol">:</span>
+<span class="normal">   </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Usage:"</span><span class="symbol">,</span><span class="normal"> sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span><span class="normal"> </span><span class="string">"file1 &lt;file2&gt; ..."</span>
+<span class="normal">   sys</span><span class="symbol">.</span><span class="function">exit</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">"&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;&lt;table&gt;"</span>
+<span class="keyword">for</span><span class="normal"> f </span><span class="keyword">in</span><span class="normal"> sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">:]:</span>
+<span class="normal">   </span><span class="keyword">for</span><span class="normal"> line </span><span class="keyword">in</span><span class="normal"> csv</span><span class="symbol">.</span><span class="function">reader</span><span class="symbol">(</span><span class="function">open</span><span class="symbol">(</span><span class="normal">f</span><span class="symbol">,</span><span class="string">'r'</span><span class="symbol">)):</span>
+<span class="normal">      </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"&lt;tr&gt;"</span>
+<span class="normal">      </span><span class="keyword">for</span><span class="normal"> elem </span><span class="keyword">in</span><span class="normal"> line</span><span class="symbol">:</span>
+<span class="normal">         </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"&lt;td&gt;"</span><span class="symbol">,</span><span class="normal"> </span><span class="function">str</span><span class="symbol">(</span><span class="normal">elem</span><span class="symbol">),</span><span class="normal"> </span><span class="string">"&lt;/td&gt;"</span>
+<span class="normal">      </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"&lt;/tr&gt;"</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">"&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;"</span>
+</tt></pre>
+
+</div>
+    <li><b><a name="histogram"></a>Build histogram with Gnuplot:<br></b>
+Starting from a 'stats.txt' file, containing frames per second measurements, this
+script will create 'bins' of size 5 (ie. it will accumulate all sample values from 0-5
+into bin 1, 5-10 into bin 2, etc) and then plot the bin heights in a histogram.
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">#</span><span class="symbol">!/</span><span class="normal">usr</span><span class="symbol">/</span><span class="normal">bin</span><span class="symbol">/</span><span class="normal">perl </span><span class="symbol">-</span><span class="normal">w</span>
+<span class="normal"># </span>
+<span class="normal"># </span><span class="string">"stats.txt"</span><span class="normal"> has frames per second</span><span class="symbol">,</span><span class="normal"> e</span><span class="symbol">.</span><span class="normal">g</span><span class="symbol">.</span><span class="normal"> values from </span><span class="number">1</span><span class="normal"> to </span><span class="number">78</span><span class="normal"> fps</span>
+<span class="normal"># </span><span class="variable">This</span><span class="normal"> script will generate </span><span class="string">"stats.png"</span><span class="normal"> via gnuplot</span><span class="symbol">.</span>
+<span class="normal">#</span>
+<span class="normal"># </span><span class="variable">For</span><span class="normal"> better fonts</span><span class="symbol">,</span><span class="normal"> before calling </span><span class="keyword">this</span><span class="symbol">,</span><span class="normal"> use</span><span class="symbol">:</span>
+<span class="normal">#   export </span><span class="variable">GDFONTPATH</span><span class="symbol">=/</span><span class="normal">usr</span><span class="symbol">/</span><span class="normal">share</span><span class="symbol">/</span><span class="normal">fonts</span><span class="symbol">/</span><span class="normal">truetype</span><span class="symbol">/</span><span class="normal">msttcorefonts</span><span class="symbol">/</span>
+<span class="normal">#   export </span><span class="variable">GNUPLOT_DEFAULT_GDFONT</span><span class="symbol">=</span><span class="normal">times</span>
+<span class="normal">#                  </span>
+<span class="normal">use strict</span><span class="symbol">;</span>
+<span class="normal">my $total </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">my </span><span class="comment">%bins;</span>
+<span class="normal">open </span><span class="variable">DATA</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"stats.txt"</span><span class="normal"> </span><span class="keyword">or</span><span class="normal"> die </span><span class="string">"No stats\n"</span><span class="symbol">;</span>
+<span class="normal">open </span><span class="variable">PLOTDATA</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"&gt;histogram.txt"</span><span class="symbol">;</span>
+<span class="function">while</span><span class="symbol">(&lt;</span><span class="variable">DATA</span><span class="symbol">&gt;)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    # place sample values in bins of width </span><span class="number">5</span>
+<span class="normal">    $bins</span><span class="cbracket">{</span><span class="number">2.5</span><span class="symbol">+</span><span class="number">5</span><span class="symbol">*</span><span class="function">int</span><span class="symbol">(</span><span class="normal">$</span><span class="variable">_</span><span class="symbol">/</span><span class="number">5</span><span class="symbol">)</span><span class="cbracket">}</span><span class="symbol">++;</span><span class="normal"> </span>
+<span class="normal">    $total</span><span class="symbol">++;</span>
+<span class="cbracket">}</span>
+<span class="normal">my @keys </span><span class="symbol">=</span><span class="normal"> sort </span><span class="cbracket">{</span><span class="normal"> $a </span><span class="symbol">&lt;=&gt;</span><span class="normal"> $b </span><span class="cbracket">}</span><span class="normal"> keys </span><span class="comment">%bins;</span>
+<span class="normal"># print the bin cardinalities</span>
+<span class="normal">foreach my $</span><span class="function">k</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">@keys</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+<span class="normal">    print </span><span class="variable">PLOTDATA</span><span class="normal"> $k</span><span class="symbol">.</span><span class="string">" "</span><span class="symbol">;</span>
+<span class="normal">    print </span><span class="variable">PLOTDATA</span><span class="normal"> </span><span class="number">100</span><span class="symbol">*</span><span class="normal">$bins</span><span class="cbracket">{</span><span class="normal">$k</span><span class="cbracket">}</span><span class="symbol">/</span><span class="normal">$total</span><span class="symbol">;</span>
+<span class="normal">    print </span><span class="variable">PLOTDATA</span><span class="normal"> </span><span class="string">"\n"</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+<span class="normal"># </span><span class="variable">Plot</span><span class="normal"> the bins </span><span class="keyword">as</span><span class="normal"> histogram</span>
+<span class="normal">open </span><span class="variable">PIPE</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"|gnuplot"</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> die </span><span class="string">"Can't initialize gnuplot ...\n"</span><span class="symbol">;</span>
+<span class="normal">print </span><span class="variable">PIPE</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="variable">END</span>
+<span class="normal"># set term postscript eps enhanced color</span>
+<span class="normal"># set output </span><span class="string">"stats.eps"</span>
+<span class="normal"># set style line </span><span class="number">1</span><span class="normal"> lt </span><span class="number">1</span><span class="normal"> lw </span><span class="number">20</span>
+<span class="normal">set term png</span>
+<span class="normal">set output </span><span class="string">"stats.png"</span>
+<span class="normal">set yrange </span><span class="symbol">[</span><span class="number">0</span><span class="symbol">:</span><span class="number">17</span><span class="symbol">]</span>
+<span class="normal">set boxwidth </span><span class="number">0.8</span><span class="normal"> relative</span>
+<span class="normal">set xlabel </span><span class="string">"Frames per second"</span>
+<span class="normal">set ylabel </span><span class="string">"Percentage with this speed"</span>
+<span class="normal">plot </span><span class="string">'histogram.txt'</span><span class="normal"> using </span><span class="number">1</span><span class="symbol">:</span><span class="number">2</span><span class="normal"> with boxes fs solid </span><span class="number">0.7</span><span class="normal">  title </span><span class="string">'Reported speeds, Oct 2010  '</span>
+<span class="variable">END</span>
+</tt></pre>
+
+</div>
+    <li><b><a name="animatedGif"></a>Build animated .gif with Gnuplot:<br></b>
+<pre>
+Just use this:
+
+    print PIPE "set term gif animate 300 optimize\n";
+    print PIPE "set output \"graph.gif\"\n";
+
+...and then plot as usual.
+</pre>
+    <li><b><a name="loops"></a>Increase number of loop devices (more than 8 squashfs):<br></b>
+<pre class="o">
+Edit/create this file in Debian...
+
+<b>bash$</b> cat /etc/modprobe.d/local-loop
+options loop max_loop=24
+</pre>
+    <li><b><a name="squid"></a>Squid simple authentication:<br></b>
+Edit squid.conf (in IPCOP, located under /etc/squid):
+<pre>
+Add these lines on top:
+
+  auth_param basic program /usr/lib/squid/ncsa_auth /etc/squid/passwds.proxy
+  acl auth_users proxy_auth REQUIRED
+  http_access allow auth_users
+
+And maintain the passws.proxy via htpasswd...
+</pre>
+    <li><b><a name="sshtips"></a>SSH productivity tips:<br></b>
+<pre class="o">
+<b>bash$</b> cat ~/.ssh/config 
+ControlMaster auto
+ControlPath /tmp/ssh_mux_%h_%p_%r
+ControlPersist 4h
+</pre>
+More SSH tips are <a href="http://blogs.perl.org/users/smylers/2011/08/ssh-productivity-tips.html">here</a>.
+    <li><b><a name="centosrpm"></a>CentOS RPM build from source:<br></b>
+<pre class="o">
+<b>bash$</b> cd /usr/src/redhat/SOURCES/
+<b>bash$</b> wget http://mirror.mcs.anl.gov/openssh/portable/openssh-5.9p1.tar.gz
+<b>bash$</b> tar zxvf openssh-5.9p1.tar.gz
+<b>bash$</b> cp openssh-5.9p1/contrib/redhat/openssh.spec /usr/src/redhat/SPECS/
+<b>bash$</b> rm -rf  openssh-5.9p1/
+<b>bash$</b> cd /usr/src/redhat/SPECS/
+<b>bash$</b> rpmbuild -bb openssh.spec
+<b>bash$</b> cd /usr/src/redhat/RPMS/i386
+<b>bash$</b> rpm -Uvh ...
+</pre>
+    <li><b><a name="sedandtr"></a>Sed and Tr wizardry:<br></b>
+<pre class="o">
+<b>bash$</b> cat nice.sh
+    tr -cs A-Za-z '\n' |
+    tr A-Z a-z |
+    sort |
+    uniq -c |
+    sort -rn |
+    sed ${1}q
+
+<b>bash$</b> cat README | nice.sh 5
+    3 the
+    2 of
+    2 a
+    1 with
+    1 up
+
+Explanation:
+- Make one-word lines by transliterating the complement (-c) 
+  of the alphabet into newlines (note the quoted newline), 
+  and squeezing out (-s) multiple newlines.
+- Transliterate upper case to lower case.
+- Sort to bring identical words together.
+- Replace each run of duplicate words with a single 
+  representative and include a count (-c).
+- Sort in reverse (-r) numeric (-n) order.
+- Pass through the stream editor; quit (q) after printing 
+  the number of lines designated by the script's 
+  first argument.
+</pre>
+    <li><b><a name="tmux"></a>Perfect tmux config:<br></b>
+<pre class="o">
+<b>bash$</b> cat ~/.tmux.conf
+set -g prefix C-a
+unbind %
+bind \ split-window -h
+bind - split-window -v
+bind-key k select-pane -U
+bind-key j select-pane -D
+bind-key h select-pane -L
+bind-key l select-pane -R
+
+<b>bash$</b> tmux
+Ctrl-a \  (vertical split)
+Ctrl-a -  (horiz split)
+Ctrl-a cursors (or h/j/k/l): move amongst windows
+Ctrl-a d  (detach)
+<b>bash$</b> tmux list-sessions
+...
+<b>bash$</b> tmux attach -t 0
+</pre>
+    <li><b><a name="vim2"></a>HTML entities inside VIM:<br></b>
+<pre>
+$ cat /usr/local/bin/htmlEntities.pl
+#!/usr/bin/perl -w
+use HTML::Entities;
+while(&lt;&gt;) {
+        print encode_entities($_);
+}
+$ vi whatever.html
+...
+Then select using visual mode and...
+    '<,'>!/usr/local/bin/htmlEntities.pl
+or using classic ranges:
+    (go to start and mark with marker 'a') ma
+    (go to end   and mark with marker 'b') mb
+    'a,'b!/usr/local/bin/htmlEntities.pl
+</pre>
+    <li><b><a name="vimodeinbash"></a>Use VI mode in bash but keep ESC-.<br></b>
+<pre>
+Inside your .bashrc, add these:
+
+    set -o vi
+    # Read my comment in this SO post for explanation:
+    #    http://stackoverflow.com/questions/6839273/
+    bind -m vi-command ".":insert-last-argument
+    # Restore Ctrl-L, Ctrl-A, Ctrl-E, Ctrl-W
+    bind -m vi-insert "\C-l.":clear-screen
+    bind -m vi-insert "\C-a.":beginning-of-line
+    bind -m vi-insert "\C-e.":end-of-line
+    bind -m vi-insert "\C-w.":backward-kill-word
+</pre>
+    <li><b><a name="xresources"></a>My .Xresources:<br></b>
+<pre>
+$ cat .Xresources
+*VT100*foreground: wheat
+*VT100*background: black
+*VT100*saveLines:  2500
+*VT100*scrollBar:  true
+*VT100*visualBell: true
+*XTerm*font:       -b&amp;h-lucida console-medium-r
+    -semi condensed--0-0-0-0-m-0-iso8859-7
+*XTerm*faceName:   -b&amp;h-lucida console-medium-r
+    -semi condensed--0-0-0-0-m-0-iso8859-7
+*XTerm*faceSize:   12
+*XTerm*renderFont: true
+! To write in Greek, set this in your .bashrc
+!    XTERM_LOCALE=el_GR.iso88597
+! and uncomment this:
+!*XTerm*locale:          true
+
+$ grep .Xresources .bashrc
+xrdb -merge $HOME/.Xresources
+</pre>
+    <li><b><a name="ps1"></a>My bash PS1 setting:<br></b>
+<pre>
+$ grep PS1 .bashrc
+export PS1='\n\[\e[32;1m\]\u@\h\[\e[37;1m\] \w\]\n\[\e[0m\]\$ '
+</pre>
+    <li><b><a name="qemudrive"></a>Create a "drive" for QEMU out of a partition image:<br></b>
+<pre>
+<b>bash$</b> dd if=/dev/zero of=/tmp/zero count=63
+<b>bash$</b> losetup -fv /tmp/zero
+<b>bash$</b> losetup -fv sda1
+<b>bash$</b> echo -e \
+    "unit: sectors\n\n/dev/sda1 : start= 63, size= $( blockdev --getsz sda1 ), Id=7" | \
+    sfdisk --force /dev/loop0
+<b>bash$</b> echo -e \
+    "0 63 linear /dev/loop0 0\n63 $( blockdev --getsz sda1 ) linear /dev/loop1 0" | \
+    dmsetup -v create virtdisk
+<b>bash$</b> fdisk -lu /dev/mapper/virtdisk
+
+There; A new "drive" to pass to QEMU.
+</pre>
+    <li><b><a name="htaccess"></a>Password protect an Apache folder:<br></b>
+<pre>
+<b>bash</b>$ htpasswd -c -m /etc/mypass myaccount
+(create password for user 'myaccount')
+<b>bash</b>$ cd /var/www/wherever/you/want
+<b>bash</b>$ cat > .htaccess
+AuthUserFile /etc/mypass
+AuthName "Please Log In"
+AuthType Basic
+require valid-user
+
+And remember to use https, not just http (to avoid sniffers)
+</pre>
+    <li><b><a name="cronscreen"></a>At bootup, spawn a screen session via cron:<br></b>
+Inside your crontab, use..
+<pre class="o">
+$ crontab -e
+...
+(Add this line)
+@reboot /usr/bin/screen -d -m -S autoLoginScreen /home/ttsiod/bin.local/autoLogin.sh
+...
+
+(And this is what exists in the spawned script - automatically logging-in
+ into an obscure crappy thingie that loses its wits all the time):
+
+$ cat /home/ttsiod/bin.local/autoLogin.sh
+#!/bin/bash
+while true ; do
+    date
+    /home/ttsiod/bin.local/autoLogin.py
+    sleep 60
+done
+</pre>
+
+This is better than spawning autoLogin.py from within cron, for various reasons:
+You can attach to the screen  (screen -r ...) and see what's happening - and also,
+some scripts (e.g. using Python pexpect) may not run properly under cron, even
+after setting the env to the same as the normal one (most likely, missing tty-stuff).
+
+    <li><b><a name="downgradeDebian"></a>Downgrade a hybrid Debian into "pure" stable or testing:<br></b>
+<pre class="o">
+( echo -n "sudo apt-get install -y --allow-downgrade " ;
+  apt-cache madison \
+    $(apt-show-versions  | 
+          grep -v jessie |
+          grep 'newer than version' |
+          nth 0 ) | grep ftp.de | awk '{printf("%s=%s\n", $1, $3);}' ) > doit.sh
+sudo ./doit.sh
+</pre>
+    <li><b><a name="vim"></a>CLang,NERDTree,EasyMotion for VIM:<br></b>
+Install NERDtree and EasyMotion, by downloading from http://vim.org and unzip-ing
+inside your .vim/ folder. For CLang autocompletion it's the same process,
+with the added caveat that under Arch, I had to use the "libclang" based
+mode of operation (spawning didn't work for some reason).<p>
+After that, in my .vimrc:
+<pre>
+let g:clang_library_path=&#39;/usr/lib/llvm&#39;
+(necessary for using libclang)
+autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
+autocmd InsertLeave * if pumvisible() == 0|pclose|endif
+(auto-closes preview window after you select what to auto-complete with)
+nmap &lt;silent&gt; &lt;c-n&gt; :NERDTreeToggle&lt;CR&gt;
+(maps NERDTree to Ctrl-N)
+let g:NERDTreeDirArrows=0
+(tells NERDTree to use standard characters)
+</pre>
+    <li><b><a name="pip"></a>Python administration with pip and virtualenv:<br></b>
+After installing easy_install from distro...
+<pre class="o">
+    easy_install pip
+    pip install virtualenv
+    pip install virtualenvwrapper
+    mkdir $HOME/.virtualenvs
+</pre>
+Edit .bashrc, and change python2 below to your Python...
+<pre class="o">
+   export WORKON_HOME=$HOME/.virtualenvs
+   export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python2
+   source /usr/bin/virtualenvwrapper.sh
+</pre>
+Re-login. You can now...
+<pre class="o">
+    mkvirtualenv whatever
+    workon 
+	(shows list)
+    workon whatever
+	(prompt changes, you are in whatever now...)
+    pip freeze 
+	(shows list of packages, both system-wide and local)
+    pip freeze -l
+	(shows list of local packages)
+    pip search packagename
+    pip install packagename
+    pip uninstall packagename
+    deactivate
+	(back to normal)
+</pre>
+If you want a "fresh" environment, that doesn't use the globally
+installed versions of packages, then instead of...
+<pre class="o">
+    mkvirtualenv whatever
+</pre>
+...do this:
+<pre class="o">
+    mkvirtualenv --no-site-packages whatever
+</pre>
+    <li><b><a name="cvs"></a>Import sources in a local CVS repository:<br></b>
+<pre class="o">
+mkdir /opt/cvsroot
+export CVSROOT=/opt/cvsroot
+cd /var/tmp
+dtar mysources.tgz
+cd NewProggy
+cvs import ttsiodras/NewProggy NewProggy start
+cd ..
+rm -rf NewProggy
+cvs checkout ttsiodras/NewProggy
+cd ttsiodras/NewProggy 
+vi ...
+cvs commit ...
+</pre>
+    </li>
+    <li><b><a name="git"></a>Git-svn generated .cvsignore files into .git/info/exclude :<br></b>
+<pre class="o">
+From directory containing .git, execute...
+
+find . -type f -name .cvsignore | \
+while read LO ; do \
+        PREF="`dirname $LO | cut -c3-`" ; \
+        cat "$LO" | \
+        while read WOW ; \
+                do echo "$PREF/$WOW" ; \
+        done ; \
+done >> .git/info/exclude 
+</pre>
+    <li><b><a name="gitquote"></a>Git status unescaped UTF8 output:<br></b>
+Place <tt>quotepath = false</tt> in .git/config in the <tt>[core]</tt> section, or just:
+<pre class="o">
+$ git config core.quotepath false
+</pre>
+    <li><b><a name="pdfpng"></a>Create PNGs from a pdf presentation:<br></b>
+<pre class="o">
+gs -dSAFER -dBATCH -dNOPAUSE -dTextAlphaBits=4 \
+    -dGraphicsAlphaBits=4 \
+    -r85 -q -sDEVICE=png16m -sOutputFile=icfp-pg%02d.png \
+    PhDPresentation.pdf
+</pre>
+    </li>
+    <li><b><a name="indent"></a>Indent C or C++ code:<br></b>
+<pre class="o">
+Use 
+        indent -kr *c
+
+for C, and
+
+        astyle --style=ansi -l *h *cc
+
+for C++.
+</pre>
+    </li>
+    <li><b><a name="defmacro"></a>Show default defines of GCC:<br></b>
+<pre class="o">
+echo | gcc -dM -E -
+</pre>
+    </li>
+    <li><b><a name="mysqlwww"></a>Execute queries on MySQL and have html output viewed via w3m:<br></b>
+<pre class="o">
+#!/bin/bash
+echo What is the wikidb wikiuser passwd?
+read PASSWD
+while true 
+do 
+        echo SQL cmd to execute:  \(\"quit\" to abort\)
+        read ANS 
+        if [ "$ANS" == "quit" ] 
+        then 
+                break 
+        fi 
+        ( echo $ANS | mysql -u wikiuser wikidb -p$PASSWD \
+	    -H -q | w3m -o confirm_qq=0 -T text/html ) 
+done
+</pre>
+    </li>
+    <li><b><a name="mysqlutf8"></a>Change MySQL tables to UTF8:<br></b>
+<pre class="o">
+<b>bash$</b> mysql -p
+...
+mysql> alter table some_table convert to character set utf8 collate utf8_unicode_ci; 
+</pre>
+    </li>
+    <li><b><a name="octave"></a>Use octave to solve polynomials:<br></b>
+<pre class="o">
+To use octave for solving
+
+     4       3        2
+    x  +  60x  - 9261x  - 54000x - 810000 = 0
+
+I typed:
+
+    a = [ 1 60 -9261 -54000 -810000]
+    roots(a)
+
+and I got:
+
+ans =
+
+    -128.9492 +   0.0000i
+    75.0000 +   0.0000i
+    -3.0254 +   8.6372i
+    -3.0254 -   8.6372i
+</pre>
+    </li>
+    <li><b><a name="oprof"></a>Use oprofile for detailed stats on runtime:<br></b>
+<pre class="o">
+opcontrol --no-vmlinux
+opcontrol --start
+run_your_program
+opcontrol --shutdown
+opreport -l your_program_binary
+</pre>
+    </li>
+    <li><b><a name="pap"></a>Use a PAP-based modem account:<br></b>
+<pre class="o">
+Edit /etc/ppp/pap-secrets and /etc/ppp/options
+to fill-in the loginname/password info.
+
+In /etc/ppp/pap-secrets add a line:
+
+* * password
+
+and in /etc/ppp/options, add a line:
+
+lock
+name loginname
+usepeerdns
+</pre>
+    </li>
+    <li><b><a name="qemu"></a>Access Internet from within QEMU:<br></b>
+<pre class="o">
+Once you get connected with wvdial or whatever you use...
+    echo 1 > /proc/sys/net/ipv4/ip_forward
+    iptables -t nat -A POSTROUTING -o ppp0 -j MASQUERADE
+and execute qemu...
+</pre>
+    </li>
+    <li><b><a name="raid1"></a>The simplest of software RAID1, two partitions:<br></b>
+<pre class="o">
+mdadm --create /dev/md0 --level=1 --raid-disks=2 \
+	/dev/sda1 /dev/sda2
+mdadm -A /dev/md0 /dev/sdb1 /dev/sdb2
+</pre>
+    </li>
+    <li><b><a name="baddvd"></a>Read a damaged CD/DVD valid parts and get the rest with rsync:<br></b>
+<pre class="o">
+As is often the case, when I bring some burned CD/DVD 
+from work, I find out that its bad at some offset.
+I came up with this Perl script:
+
+---------------------------------------
+#!/usr/bin/perl -w
+use strict;
+
+my $i=0;
+
+select((select(STDOUT), $| = 1)[0]);
+unlink("data");
+
+system("dd if=/dev/zero of=zero bs=2K count=1");
+
+my $step = 1;
+
+print "Sector:             ";
+while(1) {
+ system("dd if=/cdrom/BadSector of=sector bs=2K skip=$i".
+    "count=1 >/dev/null 2>&amp;1");
+ if ($? == 0) {
+     print sprintf("\b\b\b\b\b\b\b\b%08d", $i);
+     system("cat sector >> data");
+     $step = 1;
+     $i += $step;
+ } else {
+     system("cat zero >> data");
+     $step += $step;
+     $i += $step;
+     print "\nJumped over $step\nSector:             ";
+ }
+}
+-----------------------------
+
+With the CD/DVD mounted on /cdrom/, it will slowly but 
+effectively copy sector by sector of the file mentioned 
+in the 'dd' line into the file called 'data'. Reading 
+sector-sector proves to be enough to correct a multitude 
+of read-errors on my DVD reader, but even if that isn't 
+enough, it will quickly jump over the problem areas
+in the DVD, writing blank 'sectors' to mark the jumps.
+
+After that, rsync can save the day:
+
+rsync -vvv -B 131072 -e ssh \
+	login@xxx.yyy.zzz.kkk:/path/todata data
+</pre>
+    </li>
+    <li><b><a name="bsd"></a>Connect to the BSD console over a null cable:<br></b>
+<pre class="o">
+slattach -p slip -s 19200 /dev/ttyS0 &amp;
+ifconfig  sl0 192.168......
+</pre>
+    </li>
+    <li><b><a name="ssh"></a>Password-less logins through SSH:<br></b>
+To allow no-password logins to a target account, (say, root :&#x2011;), you must add 
+the public key of the account you will login from, into the target
+account's .ssh/authorized_keys file. To create the public/secret key pair
+on the source account, use
+<pre class="o">
+    ssh-keygen -t dsa -b 1024
+</pre>
+To avoid break-ins if someone steals your private key, use a passphrase
+when creating the key pair, and use ssh-agent to only type the passphrase
+once per boot.
+    </li>
+    <li><A name="static"></a>Convert a static lib (.a) into a dynamic one (.so):<br>
+<pre class="o">
+gcc -shared -o libXxf86vm.so.1.0 \
+	-Wl,-soname,libXxf86vm.so.1 \
+	-Wl,--whole-archive,libXxf86vm.a,--no-whole-archive
+</pre>
+    </li>
+    <li><A name="smartdynamic"></a>Link with a shared library and store the path (avoid LD_LIBRARY_PATH):<br>
+<pre class="o">
+gcc -o exename -L/path/to/dynamiclib/ -lnameofLib \
+    -Wl,-R/path/to/dynamiclib/ sourceCode1.c ...
+
+(This assumes that /path/to/dynamiclib/ contains libnameofLib.so)
+</pre>
+    </li>
+    <li><b><a name="reiser"></a>Undelete from a ReiserFS partition:<br></b>
+<pre class="o">
+First, take a backup of all files in that partition, as the
+undeletion process WILL mess up all existing files!
+
+Then,
+
+reiserfsck --rebuild-tree -S \
+	-l /var/tmp/recovery.log /dev/hda2
+
+where /dev/hda2 is of course your own partition...
+</pre>
+    </li>
+    <li><b><a name="x11swf"></a>Create live presentations from your X11:<br></b>
+<pre class="o">
+=======================
+To generate an XVID AVI
+=======================
+
+First, run the server:
+
+    vncserver -geometry 640x480
+
+Then connect to it, and produce the recording file:
+
+    vncrec -record samples.vncrec
+
+(e.g. when asked, connect to localhost:1)
+Hit F8 to bring up the menu to Stop.
+Then, check it with:
+
+    vncrec -play samples.vncrec
+
+and encode it (at 64kbps) with:
+
+    transcode -i samples.vncrec -x vnc -z -y xvid \
+    	-g 1024x768 -o mitsos.avi -w 64
+
+View it with:
+
+    mplayer -vo x11 -fs mitsos.avi 
+
+=======================================
+To create an SWF that works for the Web
+=======================================
+
+    vncserver -geometry 640x480
+    vnc2swf video.swf localhost:1
+
+F9 to start recording
+F8 to bring up menu and quit
+
+    cp ../track.mp3 .
+    edit_vnc2swf.py -o final.swf -a track.mp3 video.swf
+</pre>
+    </li>
+    <li><b><a name="wget"></a>wget fails, needs referrer:<br></b>
+<pre class="o">
+wget -nc -r -l inf -k -p -T 10 -o log \
+    --referer=http://doom9.org/software2.htm \
+    http://doom9.org/doc-overview.htm
+</pre>
+    </li>
+    <li><b><a name="iconv"></a>Convert text between different encodings:<br></b>
+<pre class="o">
+iconv -f WINDOWS-1253 -t ISO-8859-7 Subtitle.GR.srt
+</pre>
+    </li>
+    <li><b><a name="gdb"></a>Programmable debugging with GDB:<br></b>
+While trying to figure out what was going wrong with decoding my 
+<a href="mp3pro.html">mp3PRO</a> files, I used GDB's command
+lists:
+<pre class="o">
+break init_plugins_from_dir
+run -ao pcm:file=o.wav -demuxer xmms a.mp3
+display/i $pc
+set disassembly-flavor intel
+cont
+tbreak *(decode_file+0x360)
+break *(decode_file+0x432)
+commands 3
+    silent
+    echo Reached point where sample rate is final\n
+    x /1x $my
+    q
+end
+c
+ni
+set $my = (*($eax+4)+32)
+set $my2 = (*($eax+4)+0x10f78)
+echo Initial value of sample rate\n
+x /1x $my
+x /1x $my2
+break *(decode_file+0x39f)
+commands 4
+    silent
+    echo Before call at decode_file+0x39f\n
+    x /1x $my
+    x /1x $my2
+    cont
+end
+break *(decode_file+0x3a4)
+commands 5
+    silent
+    echo After call at decode_file+0x39f\n
+    x /1x $my
+    x /1x $my2
+    echo \n
+    cont
+end
+set $cnt = 0
+break *mp3decDecode
+commands 6
+    silent
+    set $cnt = $cnt + 1
+    if $cnt == 3 
+	echo Entered mp3decDecode\n
+	set $breakDecodeFrame = 1
+    end
+    cont
+end
+set $breakDecodeFrame = 0
+break *(DecodeFrame__14CMp3PRODecoderPviPibPUcT3+0x1a3)
+commands 7
+    if  $breakDecodeFrame == 1
+	echo This is where the sample rate is changed from\n
+	x /1x $my2
+	set $my3 = *($my2)+0x98
+	x /1x $my3
+    else
+	cont
+    end
+end
+c
+</pre>
+    </li>
+    <li><b><a name="colorcode"></a>Create syntax-highlighted HTML from code:<br></b>
+    <pre class="o">
+webcpp file.c file.html</pre>
+    </li>
+    <li><b><a name="timewarp"></a>Turn the clock back for an application:<br></b>
+    Use <a href="time-warp.html">this</a> code to create a shared library called <tt>time-warp.so</tt>:
+<pre class="o">
+gcc -D_GNU_SOURCE -shared -o time-warp.so time-warp.c -ldl
+</pre>
+...and then, simply execute the desired binary with...
+<pre class="o">
+LD_PRELOAD=/path/to/time-warp.so /path/to/binary [args]
+</pre>
+You can change how much back the clock will be set by changing OFFSET_IN_SECONDS in the code.
+    </li>
+    <li><b><a name="hexdump"></a>Dump hex and ASCII data:<br></b>
+<pre class="o">
+<b>bash$</b> echo Check the MBR data
+<b>bash$</b> dd if=/dev/sdc bs=512 count=1 | hexdump -C
+00000000  eb 48 90 d0 bc 00 7c fb  50 07 50 1f fc be 1b 7c  |.H....|.P.P....||
+00000010  bf 1b 06 50 57 b9 e5 01  f3 a4 cb bd be 07 b1 04  |...PW...........|
+00000020  38 6e 00 7c 09 75 13 83  c5 10 e2 f4 cd 18 8b f5  |8n.|.u..........|
+00000030  83 c6 10 49 74 19 38 2c  74 f6 a0 b5 07 b4 03 02  |...It.8,t.......|
+00000040  ff 00 00 20 01 00 00 00  00 02 fa 90 90 f6 c2 80  |... ............|
+...
+</pre>
+    </li>
+    <li><b><a name="unbuffered"></a>Unbuffered pipes (driven to grep, etc):<br></b>
+Install the "expect" package, and use <tt>unbuffer</tt>:
+<pre class="o">
+<b>bash$</b> unbuffer tail -f /var/log/apache/access.log | grep --line-buffered bozzo | ...
+</pre>
+    </li>
+    <li><b><a name="ipdb"></a>Python debugging:<br></b>
+If you find pdb a bit lacking, install ipdb and put something like this in your code:
+<pre>
+    if specialConditionAtRuntime() or specialCmdLineArgPassed:
+        import ipdb
+        ipdb.set_trace()
+</pre>
+You can then have the nice tab-completion and colored syntax output of IPython during your debugging.
+    </li>
+    <li><b><a name="cassert"></a>Compile-time C assert:<br></b>
+<pre>
+#define assert_static(e) \
+    do { \
+        enum { assert_static__ = 1/(e) }; \
+    } while (0)
+
+...
+
+    // This will fail at compile time in 64bit compilers
+    long x;
+    assert_static(sizeof(x) == 4); 
+</pre>
+    </li>
+    <li><b><a name="cyield"></a>Yield (coroutines) in C:<br></b>
+<a href="http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html">Excellent article by Simon Tatham</a>.
+    </li>
+    <li><b><a name="mingwdll"></a>Creating a MinGW import library from a .dll:<br></b>
+Method 1:
+<pre class="o">
+pexports RASDLG.DLL | sed 's/^_//' > rasdlg.def
+dlltool --input-def rasdlg.def  --dllname RASDLG.DLL --output-lib librasdlg.a -k
+cp librasdlg.a /Mingw/lib
+ranlib /Mingw/lib/librasdlg.a  
+</pre>
+Method 2:
+<pre class="o">
+pexports /c/WINDOWS/system32/python25.dll >py25.def
+dlltool -D python25.dll -d python25.def -l libpython25.a
+</pre>
+    </li>
+    <li><b><a name="readline"></a>Simple readline example:<br></b>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdio.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdlib.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;readline/readline.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;readline/history.h&gt;</span>
+
+<span class="type">int</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">msg </span><span class="symbol">=</span><span class="normal"> </span><span class="function">readline</span><span class="symbol">(</span><span class="string">"hello&gt; "</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">msg</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="function">printf</span><span class="symbol">(</span><span class="string">"echo: '%s'</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> msg</span><span class="symbol">);</span>
+<span class="normal">	    </span><span class="function">add_history</span><span class="symbol">(</span><span class="normal">msg</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="function">free</span><span class="symbol">(</span><span class="normal">msg</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span>
+<span class="normal">            </span><span class="function">exit</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+</tt></pre>
+
+</div>
+    </li>
+    <li><b><a name="fft"></a>Simple FFT example:<br></b>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+<span class="preproc">import</span><span class="normal"> math</span>
+<span class="preproc">import</span><span class="normal"> scipy</span>
+<span class="preproc">import</span><span class="normal"> sys</span>
+
+<span class="comment"># Frequency of sampling, in Hz (sampleRate)</span>
+<span class="keyword">if</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">)&gt;</span><span class="number">1</span><span class="symbol">:</span>
+<span class="normal">    N </span><span class="symbol">=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">])</span>
+<span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">    N </span><span class="symbol">=</span><span class="normal"> </span><span class="number">16</span>
+<span class="comment"># Index of last frequency (N/2 =&gt; 0.5*sampleRate)</span>
+<span class="normal">Nlast </span><span class="symbol">=</span><span class="normal"> N</span><span class="symbol">/</span><span class="number">2</span>
+<span class="comment"># Split 360 degress in N parts (don't end with 360, i.e. non-inclusive)</span>
+<span class="normal">angle </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">x</span><span class="symbol">*</span><span class="number">360</span><span class="symbol">./</span><span class="normal">N </span><span class="keyword">for</span><span class="normal"> x </span><span class="keyword">in</span><span class="normal"> </span><span class="function">range</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> N</span><span class="symbol">)]</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">"Angles:"</span><span class="symbol">,</span><span class="normal"> angle</span>
+<span class="normal">angleInRadians </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">x</span><span class="symbol">*</span><span class="number">2</span><span class="symbol">.*</span><span class="normal">math</span><span class="symbol">.</span><span class="normal">pi</span><span class="symbol">/</span><span class="number">360</span><span class="symbol">.</span><span class="normal"> </span><span class="keyword">for</span><span class="normal"> x </span><span class="keyword">in</span><span class="normal"> angle</span><span class="symbol">]</span>
+<span class="comment"># We are sampling at 16Hz, so we can cope with up to 8Hz</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">"Broadcast frequencies of 1, 2, 3 and 8Hz"</span>
+<span class="normal">data </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span>
+<span class="normal">    </span><span class="number">3.5</span><span class="symbol">*</span><span class="normal">math</span><span class="symbol">.</span><span class="function">cos</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">.*</span><span class="normal">x</span><span class="symbol">)+</span>
+<span class="normal">    </span><span class="number">1.0</span><span class="symbol">*</span><span class="normal">math</span><span class="symbol">.</span><span class="function">cos</span><span class="symbol">(</span><span class="number">2</span><span class="symbol">.*</span><span class="normal">x</span><span class="symbol">)+</span>
+<span class="normal">    </span><span class="number">2.5</span><span class="symbol">*</span><span class="normal">math</span><span class="symbol">.</span><span class="function">cos</span><span class="symbol">(</span><span class="number">3</span><span class="symbol">.*</span><span class="normal">x</span><span class="symbol">)+</span>
+<span class="normal">    </span><span class="number">0.5</span><span class="symbol">*</span><span class="normal">math</span><span class="symbol">.</span><span class="function">cos</span><span class="symbol">(</span><span class="number">8</span><span class="symbol">.*</span><span class="normal">x</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> x </span><span class="keyword">in</span><span class="normal"> angleInRadians</span><span class="symbol">]</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">"Performing FFT..."</span>
+<span class="comment"># take samples 0 .. N/2 (inclusive) of the DFT</span>
+<span class="normal">freq </span><span class="symbol">=</span><span class="normal"> scipy</span><span class="symbol">.</span><span class="function">fft</span><span class="symbol">(</span><span class="normal">data</span><span class="symbol">)[</span><span class="number">0</span><span class="symbol">:</span><span class="normal">Nlast</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]</span>
+<span class="comment"># - DFTs go from N samples to (N/2+1) samples, with</span>
+<span class="comment">#   notable zeroes in the imag[0] and the imag[N/2]</span>
+<span class="comment"># - All coeffs must be divided by N/2, except</span>
+<span class="comment">#   [0] and [N/2], which must be divided by N</span>
+<span class="comment"># - DC component is stored at freq[0]</span>
+<span class="comment"># - Maximum frequency (0.5 x sampleRate) is stored at freq[N/2]</span>
+<span class="normal">freq </span><span class="symbol">/=</span><span class="normal"> N</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">.</span>
+<span class="normal">freq</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">/=</span><span class="normal"> </span><span class="number">2</span><span class="symbol">.</span>
+<span class="normal">freq</span><span class="symbol">[-</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">/=</span><span class="normal"> </span><span class="number">2</span><span class="symbol">.</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">"Magnitudes:"</span><span class="symbol">,</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">","</span><span class="symbol">.</span><span class="function">join</span><span class="symbol">(</span><span class="string">"%4.2f"</span><span class="symbol">%</span><span class="normal">x </span><span class="keyword">for</span><span class="normal"> x </span><span class="keyword">in</span><span class="normal"> </span><span class="function">abs</span><span class="symbol">(</span><span class="normal">freq</span><span class="symbol">))</span>
+
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">near</span><span class="symbol">(</span><span class="normal">f</span><span class="symbol">,</span><span class="normal"> g</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> </span><span class="function">abs</span><span class="symbol">(</span><span class="normal">f</span><span class="symbol">-</span><span class="normal">g</span><span class="symbol">)&lt;</span><span class="number">1e-6</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">"Verifying coefficients..."</span>
+<span class="keyword">assert</span><span class="symbol">(</span><span class="function">near</span><span class="symbol">(</span><span class="normal">freq</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">],</span><span class="normal"> </span><span class="number">3.5</span><span class="symbol">))</span>
+<span class="keyword">assert</span><span class="symbol">(</span><span class="function">near</span><span class="symbol">(</span><span class="normal">freq</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">],</span><span class="normal"> </span><span class="number">1.0</span><span class="symbol">))</span>
+<span class="keyword">assert</span><span class="symbol">(</span><span class="function">near</span><span class="symbol">(</span><span class="normal">freq</span><span class="symbol">[</span><span class="number">3</span><span class="symbol">],</span><span class="normal"> </span><span class="number">2.5</span><span class="symbol">))</span>
+<span class="keyword">assert</span><span class="symbol">(</span><span class="function">near</span><span class="symbol">(</span><span class="normal">freq</span><span class="symbol">[</span><span class="number">8</span><span class="symbol">],</span><span class="normal"> </span><span class="number">0.5</span><span class="symbol">))</span>
+<span class="keyword">print</span><span class="normal"> </span><span class="string">"Coefficients OK."</span>
+</tt></pre>
+
+</div>
+    </li>
+    <li><b><a name="clang"></a>Catch undefined behaviour with clang:<br></b>
+<pre>
+Just compile with:
+
+-fcatch-undefined-behavior
+</pre>
+    <li><b><a name="ctags"></a>Use ctags for /usr/include/ (skip boost):<br></b>
+<pre>
+$ su -
+# cd /usr/include
+# ctags -R --exclude=boost/\* .
+# exit
+$ cat >> .vimrc
+set tags+=/usr/include/tags
+(Ctrl-D)
+</pre>
+    </li>
+  </ul>
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Mon Jun 6 19:40:59 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/tricks.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

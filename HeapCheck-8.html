@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="SGML-Tools 1.0.9" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+ <link type="text/css" rel="stylesheet" href="heapcheck.css" />
+ <link rel="canonical" href="https://www.thanassis.space/HeapCheck-8.html" />
+ <TITLE>HeapCheck 1.34: Stack space checks </TITLE>
+</HEAD>
+<body background="book.jpg" bgcolor="white" text="black">
+<TABLE WIDTH="100%" summary="DTP table">
+<TR>
+<TD class="desktop-only" WIDTH="20%" VALIGN="top">
+<TABLE ALIGN="left" summary="index" bgcolor="#DDDDDD">
+<TR><TD><B><A NAME="toc0"></A> <A HREF="HeapCheck.html"><EM>HeapCheck:</EM></A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc1">1.</A> <A HREF="HeapCheck-1.html">Disclaimer/Authors</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc2">2.</A> <A HREF="HeapCheck-2.html">Features</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc3">3.</A> <A HREF="HeapCheck-3.html">Introduction</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc4">4.</A> <A HREF="HeapCheck-4.html">Usage</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc5">5.</A> <A HREF="HeapCheck-5.html">Configuration</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc6">6.</A> <A HREF="HeapCheck-6.html">Debugging tools</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc7">7.</A> <A HREF="HeapCheck-7.html">UNIX gurus</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc8">8.</A> <A HREF="HeapCheck-8.html">Stack techniques </A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc9">9.</A> <A HREF="HeapCheck-9.html">Known bugs</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc10">10.</A> <A HREF="HeapCheck-10.html">Contact me</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc11">11.</A> <A HREF="HeapCheck134.7z">Get 1.34</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc115">12.</A> <A HREF="HeapCheck12.7z">Get 1.2 (stable)</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc12">13.</A> <A HREF="HeapCheck12doc.7z">PDF manual</A></B><br/></TD></TR>
+<TR><TD><B><A NAME="toc13">14.</A> <A HREF="hcdiff.html">WinCE patch for 1.2</A></B><br/></TD></TR>
+<TR><TD>&nbsp;</TD></TR>
+<TR><TD>
+<A HREF="index.html" TARGET="_top">Back to HomePage</A> 
+</TD>
+</TR>
+</TABLE>
+</TD>
+<TD>
+&nbsp;
+</TD>
+<TD VALIGN="top">
+<A HREF="HeapCheck-9.html">Next</A>
+<A HREF="HeapCheck-7.html">Previous</A>
+<hr/>
+<H2><A NAME="stack"></A> <A NAME="s8">8. Stack techniques </A></H2>
+
+<P>If you are like me, you probably use code like this sometimes:
+<PRE>
+void f()
+{
+    // you should have used std::string 
+    // or std::vector!
+    char a[100];
+    ...		  
+}
+</PRE>
+<P>Unfortunately, you don't have the automatic HeapCheck's checks for buffers 
+allocated this way. There is a way around this, if you code in C++. 
+Place this template/macro in a commonly accessed header file:
+<PRE>
+template &lt;class T>
+class Array {
+public:
+    Array(T *p):_p(p) 
+    ~Array() { delete [] _p; }
+
+    operator T*() { return _p; }
+    T&amp; operator [](int offset) {
+         return _p[offset];
+    }
+    T *GetPtr() { return _p; }
+
+private:
+    T *_p;
+};
+
+#define ARRAY(x,y,z) Array&lt;x> y(new x[z])
+</PRE>
+<P>and then, when you need a temporary array, use it like this:
+<PRE>
+void f()
+{
+    ARRAY(char,a,100);
+</PRE>
+<P>or, directly:
+<PRE>
+void f()
+{
+    Array&lt;char> a(new char[100]);
+</PRE>
+<P>As you see, this way heap space is used for your arrays, and
+it is automatically freed when the variable goes out of scope,
+just like a stack-based array. So, you get the best of both
+worlds: automatic freeing (through the template) and bounds 
+checking (through HeapCheck). This technique also lowers your
+stack usage, which could mean something if you use recursive
+algorithms.
+<hr/>
+<A HREF="HeapCheck-9.html">Next</A>
+<A HREF="HeapCheck-7.html">Previous</A>
+</TD>
+</TABLE>
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-746316-1";
+urchinTracker();
+</script>
+</BODY>
+</HTML>

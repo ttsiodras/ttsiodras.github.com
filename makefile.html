@@ -1,0 +1,341 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/makefile.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Writing Makefiles</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Writing Makefiles</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <em>(August 2006)</em><p>
+  <em>Autoconf</em> and <em>automake</em> are not always the answer.<p>
+  For many projects, what you need is a simple Makefile that
+  takes care of source code dependencies over a directory tree.
+  My usual programming needs are more than adequately covered with 
+  <a href="Makefile">this</a>:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment"># The directories containing the source files, separated by ':'</span>
+<span class="type">VPATH=</span><span class="normal">src</span><span class="symbol">:..</span><span class="normal">/Library</span>
+
+<span class="comment"># To make "debug" the default configuration if invoked with just "make":</span>
+<span class="comment">#</span>
+<span class="comment"># ifeq ($(CFG),)</span>
+<span class="comment"># CFG=debug</span>
+<span class="comment"># endif</span>
+
+<span class="comment"># The source files: regardless of where they reside in the source tree,</span>
+<span class="comment"># VPATH will locate them...</span>
+<span class="type">Group0_SRC =</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">    Source1.cpp </span><span class="symbol">\</span>
+<span class="normal">    Source2.cpp </span><span class="symbol">\</span>
+<span class="normal">    LibrarySource1.cpp </span><span class="symbol">\</span>
+<span class="normal">    LibrarySource2.cpp</span>
+
+<span class="comment"># Build a Dependency list and an Object list, by replacing the .cpp</span>
+<span class="comment"># extension to .d for dependency files, and .o for object files.</span>
+<span class="type">Group0_DEP =</span><span class="normal"> </span><span class="variable">$(</span><span class="normal">patsubst </span><span class="symbol">%</span><span class="normal">.cpp</span><span class="symbol">,</span><span class="normal"> deps</span><span class="symbol">.</span><span class="variable">$(CFG)</span><span class="normal">/Group0_</span><span class="symbol">%</span><span class="normal">.d</span><span class="symbol">,</span><span class="normal"> </span><span class="variable">${Group0_SRC}</span><span class="symbol">)</span>
+<span class="type">Group0_OBJ =</span><span class="normal"> </span><span class="variable">$(</span><span class="normal">patsubst </span><span class="symbol">%</span><span class="normal">.cpp</span><span class="symbol">,</span><span class="normal"> objs</span><span class="symbol">.</span><span class="variable">$(CFG)</span><span class="normal">/Group0_</span><span class="symbol">%</span><span class="normal">.o</span><span class="symbol">,</span><span class="normal"> </span><span class="variable">${Group0_SRC}</span><span class="symbol">)</span>
+
+<span class="comment"># Your final binary</span>
+<span class="type">TARGET=</span><span class="normal">applicationName</span>
+
+<span class="comment"># What compiler to use for generating dependencies: </span>
+<span class="comment"># it will be invoked with -MM -MP</span>
+<span class="type">CXXDEP =</span><span class="normal"> g</span><span class="symbol">++</span>
+
+<span class="comment"># What include flags to pass to the compiler</span>
+<span class="type">INCLUDEFLAGS=</span><span class="normal"> -I </span><span class="symbol">..</span><span class="normal">/Library -I src</span>
+
+<span class="comment"># Separate compile options per configuration</span>
+<span class="normal">ifeq </span><span class="symbol">(</span><span class="variable">$(CFG),debug)</span>
+<span class="normal">CXXFLAGS </span><span class="symbol">+=</span><span class="normal"> -g -Wall -D_DEBUG </span><span class="variable">${INCLUDEFLAGS}</span>
+<span class="keyword">else</span>
+<span class="normal">CXXFLAGS </span><span class="symbol">+=</span><span class="normal"> -O</span><span class="number">2</span><span class="normal"> -Wall </span><span class="variable">${INCLUDEFLAGS}</span>
+<span class="normal">endif</span>
+
+<span class="comment"># A common link flag for all configurations</span>
+<span class="normal">LDFLAGS </span><span class="symbol">+=</span><span class="normal"> -lSDL</span>
+
+<span class="symbol">all:</span><span class="normal">	inform bin</span><span class="symbol">.</span><span class="variable">$(CFG)</span><span class="symbol">/</span><span class="variable">${TARGET}</span>
+
+<span class="symbol">inform:</span>
+<span class="normal">ifneq </span><span class="symbol">(</span><span class="variable">$(CFG),release)</span>
+<span class="normal">ifneq </span><span class="symbol">(</span><span class="variable">$(CFG),debug)</span>
+<span class="normal">	@echo </span><span class="string">"Invalid configuration "</span><span class="variable">$(CFG)</span><span class="string">" specified."</span>
+<span class="normal">	@echo </span><span class="string">"You must specify a configuration when running make, e.g."</span>
+<span class="normal">	@echo  </span><span class="string">"make CFG=debug"</span>
+<span class="normal">	@echo  </span>
+<span class="normal">	@echo  </span><span class="string">"Possible choices for configuration are 'release' and 'debug'"</span>
+<span class="normal">	@</span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">endif</span>
+<span class="normal">endif</span>
+<span class="normal">	@echo </span><span class="string">"Configuration "</span><span class="variable">$(CFG)</span>
+<span class="normal">	@echo </span><span class="string">"------------------------"</span>
+
+<span class="normal">bin</span><span class="symbol">.</span><span class="variable">$(CFG)</span><span class="symbol">/</span><span class="variable">${TARGET}</span><span class="symbol">:</span><span class="normal"> </span><span class="variable">${Group0_OBJ}</span><span class="normal"> </span><span class="symbol">|</span><span class="normal"> inform</span>
+<span class="normal">	</span><span class="preproc">@mkdir -p $(dir $@</span><span class="symbol">)</span>
+<span class="normal">	</span><span class="variable">$(CXX)</span><span class="normal"> -g -o </span><span class="variable">$@</span><span class="normal"> </span><span class="variable">$^</span><span class="normal"> </span><span class="variable">${LDFLAGS}</span>
+
+<span class="normal">objs</span><span class="symbol">.</span><span class="variable">$(CFG)</span><span class="normal">/Group0_</span><span class="symbol">%</span><span class="normal">.o</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">%</span><span class="normal">.cpp</span>
+<span class="normal">	</span><span class="preproc">@mkdir -p $(dir $@</span><span class="symbol">)</span>
+<span class="normal">	</span><span class="variable">$(CXX)</span><span class="normal"> -c </span><span class="variable">$(CXXFLAGS)</span><span class="normal"> -o </span><span class="variable">$@</span><span class="normal"> </span><span class="variable">$&lt;</span>
+
+<span class="normal">deps</span><span class="symbol">.</span><span class="variable">$(CFG)</span><span class="normal">/Group0_</span><span class="symbol">%</span><span class="normal">.d</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">%</span><span class="normal">.cpp</span>
+<span class="normal">	</span><span class="preproc">@mkdir -p $(dir $@</span><span class="symbol">)</span>
+<span class="normal">	@echo Generating dependencies </span><span class="keyword">for</span><span class="normal"> </span><span class="variable">$&lt;</span>
+<span class="normal">	</span><span class="preproc">@set -e ; $(CXXDEP) -MM -MP $(INCLUDEFLAGS) $&lt; &gt; $@</span><span class="symbol">.</span><span class="variable">$$$$</span><span class="symbol">;</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">	sed </span><span class="string">'s,</span><span class="specialchar">\(</span><span class="string">$*</span><span class="specialchar">\)\.</span><span class="string">o[ :]*,objs.$(CFG)</span><span class="specialchar">\/</span><span class="string">Group0_</span><span class="specialchar">\1</span><span class="string">.o $@ : ,g'</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="variable">$@</span><span class="symbol">.</span><span class="variable">$$$$</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="variable">$@</span><span class="symbol">;</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">	rm -f </span><span class="variable">$@</span><span class="symbol">.</span><span class="variable">$$$$</span>
+
+<span class="symbol">clean:</span>
+<span class="normal">	@rm -rf </span><span class="symbol">\</span>
+<span class="normal">	deps.debug objs.debug bin.debug </span><span class="symbol">\</span>
+<span class="normal">	deps.release objs.release bin.release</span>
+
+<span class="comment"># Unless "make clean" is called, include the dependency files</span>
+<span class="comment"># which are auto-generated. Don't fail if they are missing</span>
+<span class="comment"># (-include), since they will be missing in the first invocation!</span>
+<span class="normal">ifneq </span><span class="symbol">(</span><span class="variable">$(MAKECMDGOALS),clean)</span>
+<span class="normal">-include </span><span class="variable">${Group0_DEP}</span>
+<span class="normal">endif</span>
+</tt></pre>
+
+</div>
+Some comments:
+<ul>
+<li><b>VPATH</b><br>
+With VPATH, you can instruct <em>make</em> to search for your source files in alternate directories.
+This way, you can automatically handle a complicated tree of sources - let <em>make</em> worry about
+finding your source. You only specify source filenames, not their paths (in Group0_SRC).
+Which means that you must NOT use the same filename in two different VPATH directories - only the first
+one will be used, if you do.</li>
+<li><b>Debug and Release configurations</b><br>
+Just as in other developing platforms, you can define different compilation options for debug / release
+builds (e.g. the CXXFLAGS in the template above) and build with...
+<pre class="o">make CFG=debug</pre>
+or
+<pre class="o">make CFG=release</pre>
+Your output object files will be placed in objs.debug or objs.release, and your application under
+bin.debug or bin.release, respectively.
+</li>
+<li><b>Dependencies</b><br>
+These will be created automatically from your C++ source code, and updated automatically if you change
+your code. The way this works is by instructing <em>make</em> to read an external makefile, via the line
+<pre>
+-include ${Group0_DEP}
+</pre>
+Group0_DEP has been calculated (see the top of the template) to mirror your set of source files.
+If you are compiling in <tt>CFG=debug</tt> mode, for example...
+
+<div class="codegenWrapper">
+<table border="1" align="center" summary="Naming dependencies files">
+<tr align="center"><td><b>Group0_SRC entries</b></td><td><b>Group0_DEP entries</b></td></tr>
+<tr align="center"><td>Source1.cpp</td><td>deps.debug/Group0_Source1.d</td></tr>
+<tr align="center"><td>Source2.cpp</td><td>deps.debug/Group0_Source2.d</td></tr>
+<tr align="center"><td>LibrarySource1.cpp</td><td>deps.debug/Group0_LibrarySource1.d</td></tr>
+<tr align="center"><td>LibrarySource2.cpp</td><td>deps.debug/Group0_LibrarySource2.d</td></tr>
+</table>
+<em>Names of external dependency files</em>
+</div>
+
+So <em>make</em> is instructed to include these external makefiles (these .d files). When first invoked,
+it notices that these files do not exist, but also realizes that it has a pattern rule 
+(the <tt>deps.$(CFG)/Group0_%.d: %.cpp</tt> line above) that instructs on how to create them.
+It therefore executes these rules, which invoke gcc with -MM and -MP and automatically
+create the dependency rules in the .d files. When these rules are finished, <em>make</em>
+realizes that external makefiles have changed, and re-includes them - thus learning
+of all source files dependencies.
+<li><b>Clean rule</b><br>
+This rule will clean dependencies, object files and binaries if you invoke <tt>make clean</tt>.</li>
+<li><b>Multiple CPUs/cores</b><br>
+If the "<tt> | inform</tt>" was missing from the <tt>bin.$(CFG)/${TARGET}: ...</tt> rule, and you 
+tried to invoke <em>make</em> for multiple CPUs/cores with something like... 
+<pre class="o">make -j2</pre> ...you'd find that 
+the first CPU would try the inform rule (displaying the message about CFG missing) while the other 
+would try to implement <tt>bin.$(CFG)/${TARGET}</tt>, which, with CFG missing, would fail! 
+The "<tt> | inform</tt>" tells <em>make</em> that this rule has an order dependency on rule <tt>inform</tt>.</li>
+</ul>
+Even though what you see here is for C++ code, the principles demonstrated can be very easily adapted to 
+other languages (dependency output, accessing source files via VPATH, etc).
+<h3>What to do if you have auto-generated code</h3>
+The previous template will cover the needs of the vast majority of coders. There are however those few,
+those happy few, that after having written hundreds of thousands of lines, realize that it would
+be much better if machines wrote some of them. And they learn about flex and bison and about ANLTR;
+and they start writing Perl and Python scripts that actually write code for them...<p>
+If the above sounds like gibberish, you'd better stop here and go read the 
+<a href="http://www.pragprog.com/">Pragmatic Programmer</a>.<p>
+If they don't, however, you may not know why code generators pose a problem when using Makefiles.
+If we use... 
+<ul>
+<li>a magic Perl script named 'roboCoder.pl' that reads...
+<li>a file named 'documentation.tex'...
+<li>and creates two source files, 'robotMade.h' and 'robotMade.c'
+</ul>
+...then, unfortunately, this Makefile section does not do what you would expect it to do:
+<pre>
+all:	codeGen applicationName
+
+codeGen:	robotMade.c robotMade.h
+
+robotMade.c robotMade.h:	documentation.tex
+	./roboCoder.pl documentation.tex
+
+applicationName: $(OBJS) | codeGen
+...
+</pre>
+You see, <em>make</em> interprets this last rule as two rules:
+<pre>
+robotMade.c:	documentation.tex
+	./roboCoder.pl documentation.tex
+
+robotMade.h:	documentation.tex
+	./roboCoder.pl documentation.tex
+</pre>
+...which is probably not what you want. 'roboCoder.pl' will run twice, whenever you change documentation.tex.
+This might sound like a minor inconvenience, but if you use the "-j" options, you might jolly well have two 
+<em>make</em> instances running one roboCoder each... 
+All hell might break loose (racing conditions when roboCoder opens its output files, etc).<p>
+There's no point in repeating - please go and read the perfect description of the problem in <em>automake</em>'s
+documentation (in the <em>automake</em>'s FAQ section, read the "Multiple Outputs" entry).<p>
+If you adopt the solutions described there and try to put them
+to use in the template I offered above, you'll face a problem: calculation of the external dependencies
+(the .d files described in the previous section) needs access to the .h/.c/.cpp
+files generated, so the code generation must somehow run <em>before</em> the dependencies generation.
+The dependencies generation, however, is based on the inclusion of external makefiles;
+if you just add the 'codeGen' rule as a prerequisite of your 'applicationName', it won't do;
+included makefiles are handled by <em>make</em> before any other rules. The only workaround
+I can offer is to add your 'codeGen' rule, as an order dependency, on the .d files themselves:
+<pre>
+deps.$(CFG)/Group0_%.d: %.cpp | codeGen
+	@mkdir -p $(dir $@)
+	@echo Generating dependencies for $<
+	...
+</pre>
+This will instruct make to invoke your code generation rule first, and then proceed to calculate the external 
+dependencies (that is, after the .h/.c/.cpp files have been created).
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Fri Aug 9 22:48:30 2013</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/makefile.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1252 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/ladders.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>The crossing ladders puzzle</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">The crossing ladders puzzle</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            (<em>July 2007</em>)
+<p>
+Even since I was a kid, I loved puzzles. One of the reasons I got involved
+with maths and computers was probably this strange attraction to the 
+"puzzled" state of mind - stress, frustration, and then... the incredible
+elation of figuring it out...
+
+<P>
+One of the geometry puzzles I've found that was particularly enjoyable was the 
+crossing ladders puzzle:
+
+<A NAME="dia"></A>
+<div class="scrollableContainer">
+<IMG
+  WIDTH="617" HEIGHT="405" ALIGN="bottom" BORDER="0"
+ SRC="diagram.png"
+ ALT="Image diagram"><br>
+<STRONG>Figure 1:</STRONG> The crossing ladders puzzle
+</DIV>
+<p>
+As shown in figure <A HREF="#dia">1</A>, two ladders are standing on opposite walls.
+They meet each other somewhere in the middle, 30 meters above the
+ground. The first one is 119 meters long, while the second one is 70
+meters long.
+
+<P>
+What is the distance of the walls?
+
+<H2><A NAME="SECTION00020000000000000000">
+Equations...</A>
+</H2>
+This puzzle appears deceptively simple. When I first tried to solve it,
+I soon realized that there are many - too many! - equations one could write.
+Similar triangles, Pythagorean theorems, ...
+<p>&nbsp;</p>
+<DIV ALIGN="center"><A NAME="one"></A><A NAME="two"></A><A NAME="start"></A>
+<!-- MATH
+ \begin{eqnarray}
+(e+f)^2 + d^2 & = & 119^2\\
+(e+f)^2 + c^2 & = & 70^2\\
+e^2 + 30^2 & = & a^2\nonumber\\
+f^2 + 30^2 & = & b^2\nonumber\\
+\frac{a}{30} & = & \frac{119}{d}\nonumber\\
+\frac{b}{30} & = & \frac{70}{c}\nonumber\\
+\frac{f}{e} & = & \frac{119-a}{a}\nonumber\\
+\frac{f}{e} & = & \frac{b}{70-b}\nonumber\\
+\frac{d}{c} & = & \frac{f}{e}
+\end{eqnarray}
+ -->
+<TABLE summary="equations" ALIGN="center" CELLPADDING="0">
+<TR VALIGN="middle"><TD NOWRAP ALIGN="right"><IMG
+ WIDTH="95" HEIGHT="28" ALIGN="middle" BORDER="0"
+ SRC="img1.png"
+ ALT="$\displaystyle (e+f)^2 + d^2$"></TD>
+<TD ALIGN="center" NOWRAP><IMG
+ WIDTH="17" HEIGHT="21" ALIGN="middle" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="left" NOWRAP><IMG
+ WIDTH="35" HEIGHT="28" ALIGN="middle" BORDER="0"
+ SRC="img3.png"
+ ALT="$\displaystyle 119^2$"></TD>
+<TD WIDTH=10 ALIGN="right">
+(1)</TD></TR>
+<TR VALIGN="middle"><TD NOWRAP ALIGN="right"><IMG
+ WIDTH="94" HEIGHT="28" ALIGN="middle" BORDER="0"
+ SRC="img4.png"
+ ALT="$\displaystyle (e+f)^2 + c^2$"></TD>
+<TD ALIGN="center" NOWRAP><IMG
+ WIDTH="17" HEIGHT="21" ALIGN="middle" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="left" NOWRAP><IMG
+ WIDTH="27" HEIGHT="28" ALIGN="middle" BORDER="0"
+ SRC="img5.png"
+ ALT="$\displaystyle 70^2$"></TD>
+<TD WIDTH=10 ALIGN="right">
+(2)</TD></TR>
+<TR VALIGN="middle"><TD NOWRAP ALIGN="right"><IMG
+ WIDTH="61" HEIGHT="28" ALIGN="middle" BORDER="0"
+ SRC="img6.png"
+ ALT="$\displaystyle e^2 + 30^2$"></TD>
+<TD ALIGN="center" NOWRAP><IMG
+ WIDTH="17" HEIGHT="21" ALIGN="middle" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="left" NOWRAP><IMG
+ WIDTH="20" HEIGHT="28" ALIGN="middle" BORDER="0"
+ SRC="img7.png"
+ ALT="$\displaystyle a^2$"></TD>
+<TD WIDTH=10 ALIGN="right">
+&nbsp;</TD></TR>
+<TR VALIGN="middle"><TD NOWRAP ALIGN="right"><IMG
+ WIDTH="63" HEIGHT="28" ALIGN="middle" BORDER="0"
+ SRC="img8.png"
+ ALT="$\displaystyle f^2 + 30^2$"></TD>
+<TD ALIGN="center" NOWRAP><IMG
+ WIDTH="17" HEIGHT="21" ALIGN="middle" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="left" NOWRAP><IMG
+ WIDTH="18" HEIGHT="28" ALIGN="middle" BORDER="0"
+ SRC="img9.png"
+ ALT="$\displaystyle b^2$"></TD>
+<TD WIDTH=10 ALIGN="right">
+&nbsp;</TD></TR>
+<TR VALIGN="middle"><TD NOWRAP ALIGN="right"><IMG
+ WIDTH="24" HEIGHT="36" ALIGN="middle" BORDER="0"
+ SRC="img10.png"
+ ALT="$\displaystyle \frac{a}{30}$"></TD>
+<TD ALIGN="center" NOWRAP><IMG
+ WIDTH="17" HEIGHT="21" ALIGN="middle" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="left" NOWRAP><IMG
+ WIDTH="32" HEIGHT="41" ALIGN="middle" BORDER="0"
+ SRC="img11.png"
+ ALT="$\displaystyle \frac{119}{d}$"></TD>
+<TD WIDTH=10 ALIGN="right">
+&nbsp;</TD></TR>
+<TR VALIGN="middle"><TD NOWRAP ALIGN="right"><IMG
+ WIDTH="24" HEIGHT="43" ALIGN="middle" BORDER="0"
+ SRC="img12.png"
+ ALT="$\displaystyle \frac{b}{30}$"></TD>
+<TD ALIGN="center" NOWRAP><IMG
+ WIDTH="17" HEIGHT="21" ALIGN="middle" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="left" NOWRAP><IMG
+ WIDTH="24" HEIGHT="41" ALIGN="middle" BORDER="0"
+ SRC="img13.png"
+ ALT="$\displaystyle \frac{70}{c}$"></TD>
+<TD WIDTH=10 ALIGN="right">
+&nbsp;</TD></TR>
+<TR VALIGN="middle"><TD NOWRAP ALIGN="right"><IMG
+ WIDTH="17" HEIGHT="43" ALIGN="middle" BORDER="0"
+ SRC="img14.png"
+ ALT="$\displaystyle \frac{f}{e}$"></TD>
+<TD ALIGN="center" NOWRAP><IMG
+ WIDTH="17" HEIGHT="21" ALIGN="middle" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="left" NOWRAP><IMG
+ WIDTH="60" HEIGHT="41" ALIGN="middle" BORDER="0"
+ SRC="img15.png"
+ ALT="$\displaystyle \frac{119-a}{a}$"></TD>
+<TD WIDTH=10 ALIGN="right">
+&nbsp;</TD></TR>
+<TR VALIGN="middle"><TD NOWRAP ALIGN="right"><IMG
+ WIDTH="17" HEIGHT="43" ALIGN="middle" BORDER="0"
+ SRC="img14.png"
+ ALT="$\displaystyle \frac{f}{e}$"></TD>
+<TD ALIGN="center" NOWRAP><IMG
+ WIDTH="17" HEIGHT="21" ALIGN="middle" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="left" NOWRAP><IMG
+ WIDTH="50" HEIGHT="43" ALIGN="middle" BORDER="0"
+ SRC="img16.png"
+ ALT="$\displaystyle \frac{b}{70-b}$"></TD>
+<TD WIDTH=10 ALIGN="right">
+&nbsp;</TD></TR>
+<TR VALIGN="middle"><TD NOWRAP ALIGN="right"><IMG
+ WIDTH="16" HEIGHT="43" ALIGN="middle" BORDER="0"
+ SRC="img17.png"
+ ALT="$\displaystyle \frac{d}{c}$"></TD>
+<TD ALIGN="center" NOWRAP><IMG
+ WIDTH="17" HEIGHT="21" ALIGN="middle" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="left" NOWRAP><IMG
+ WIDTH="17" HEIGHT="43" ALIGN="middle" BORDER="0"
+ SRC="img14.png"
+ ALT="$\displaystyle \frac{f}{e}$"></TD>
+<TD WIDTH=10 ALIGN="right">
+(3)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="all"><P>
+...and I could keep writing a lot more.<p>What to do then?<p>
+How to solve such a non-linear system of equations? 
+<H1>First attack: in "symbol" space</H1>
+<P>
+The first thing I tried was to look for a way to create an equation with only
+one unknown - combining two or more of the equations above. After a fair amount of 
+head scratching, I eventually found a "path":
+
+<P>
+Starting from equation (<A HREF="#start">3</A>) ...
+<BR>
+<DIV ALIGN="center">
+<!-- MATH
+ \begin{displaymath}
+\frac{d}{c} = \frac{f}{e} \ \Rightarrow \ 
+\frac{d}{c} = \frac{119-a}{a} \ \Rightarrow \ 
+\frac{d}{c} = \frac{119}{a} - 1 \ \Rightarrow
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="318" HEIGHT="39" BORDER="0"
+ SRC="img18.png"
+ ALT="\begin{displaymath}
+\frac{d}{c} = \frac{f}{e} \ \Rightarrow \
+\frac{d}{c} = \fr...
+... \Rightarrow \
+\frac{d}{c} = \frac{119}{a} - 1 \ \Rightarrow
+\end{displaymath}">
+</DIV>
+<BR CLEAR="all">
+
+
+<P>
+<br>
+<DIV ALIGN="center">
+<!-- MATH
+ \begin{displaymath}
+\frac{d}{c} = \frac{d}{30} - 1 \ \Rightarrow \ 
+\frac{d}{c} = \frac{d-30}{30} \ \Rightarrow
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="220" HEIGHT="39" BORDER="0"
+ SRC="img19.png"
+ ALT="\begin{displaymath}
+\frac{d}{c} = \frac{d}{30} - 1 \ \Rightarrow \
+\frac{d}{c} = \frac{d-30}{30} \ \Rightarrow
+\end{displaymath}">
+</DIV>
+<BR CLEAR="all">
+
+
+<P>
+<BR>
+<DIV ALIGN="center">
+<!-- MATH
+ \begin{displaymath}
+c = \frac{30d}{d-30}
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="73" HEIGHT="41" BORDER="0"
+ SRC="img20.png"
+ ALT="\begin{displaymath}
+c = \frac{30d}{d-30}
+\end{displaymath}">
+</DIV>
+<BR CLEAR="all">
+
+Subtracting (<A HREF="#two">2</A>) from (<A HREF="#one">1</A>),
+<BR>
+<DIV ALIGN="center">
+<!-- MATH
+ \begin{displaymath}
+d^2 - c^2 = 119^2 - 70^2
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="141" HEIGHT="25" BORDER="0"
+ SRC="img21.png"
+ ALT="\begin{displaymath}
+d^2 - c^2 = 119^2 - 70^2
+\end{displaymath}">
+</DIV>
+<BR CLEAR="all">
+
+...and using the previous equation for <IMG
+ WIDTH="11" HEIGHT="13" ALIGN="bottom" BORDER="0"
+ SRC="img22.png"
+ ALT="$c$">:
+<BR>
+<DIV ALIGN="center">
+<!-- MATH
+ \begin{displaymath}
+d^2 - \frac{900d^2}{(d-30)^2} = 119^2 - 70^2
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="195" HEIGHT="45" BORDER="0"
+ SRC="img23.png"
+ ALT="\begin{displaymath}
+d^2 - \frac{900d^2}{(d-30)^2} = 119^2 - 70^2
+\end{displaymath}">
+</DIV>
+<BR CLEAR="all">
+
+Assuming <IMG
+ WIDTH="50" HEIGHT="30" ALIGN="middle" BORDER="0"
+ SRC="img24.png"
+ ALT="$d \neq 30$">, this turns out to be...
+<BR>
+  <div class="scrollableContainer">
+<DIV ALIGN="center">
+<!-- MATH
+ \begin{displaymath}
+d^4-60d^3-(119^2-70^2)d^2+60(119^2-70^2)d-900(119^2-70^2)=0
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="473" HEIGHT="28" BORDER="0"
+ SRC="img25.png"
+ ALT="\begin{displaymath}
+d^4-60d^3-(119^2-70^2)d^2+60(119^2-70^2)d-900(119^2-70^2)=0
+\end{displaymath}">
+</DIV>
+<BR CLEAR="all">
+</div>
+
+Now <I>that</I> I can solve; using any of a number of ways...
+
+<H2><A NAME="SECTION00030000000000000000">
+Python</A>
+</H2>
+First, the one I like the most: Using <a href="http://www.python.org/">Python</a>.
+
+<P>
+Midpoint subdivision is easy: starting from two places where the above
+function has values with opposite signs, you just subdivide and recurse until you get
+to something close enough to 0:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">import</span><span class="normal"> sys</span>
+
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">f</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> x</span><span class="symbol">**</span><span class="number">4</span><span class="symbol">-</span><span class="number">60</span><span class="symbol">*(</span><span class="normal">x</span><span class="symbol">**</span><span class="number">3</span><span class="symbol">)-(</span><span class="number">119</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">-</span><span class="number">70</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">)*(</span><span class="normal">x</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">)+</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="number">60</span><span class="symbol">*(</span><span class="number">119</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">-</span><span class="number">70</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">)*</span><span class="normal">x</span><span class="symbol">-</span><span class="number">900</span><span class="symbol">*(</span><span class="number">119</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">-</span><span class="number">70</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">)</span>
+
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">midpoint</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">assert</span><span class="symbol">(</span><span class="function">f</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">)*</span><span class="function">f</span><span class="symbol">(</span><span class="normal">b</span><span class="symbol">)&lt;</span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">    m </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">+</span><span class="normal">b</span><span class="symbol">)/</span><span class="number">2</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="function">abs</span><span class="symbol">(</span><span class="function">f</span><span class="symbol">(</span><span class="normal">m</span><span class="symbol">))&lt;</span><span class="number">10e-10</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Solution:"</span><span class="symbol">,</span><span class="normal"> m</span>
+<span class="normal">        sys</span><span class="symbol">.</span><span class="function">exit</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="function">f</span><span class="symbol">(</span><span class="normal">m</span><span class="symbol">)*</span><span class="function">f</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">)&lt;</span><span class="number">0</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="function">midpoint</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">,</span><span class="normal"> m</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="function">midpoint</span><span class="symbol">(</span><span class="normal">m</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">)</span>
+
+<span class="comment"># initial borders found from within python shell, through search:</span>
+<span class="comment"># &gt;&gt;&gt; f(10)</span>
+<span class="comment"># -2779688</span>
+<span class="comment"># &gt;&gt;&gt; f(17)</span>
+<span class="comment"># -1776368</span>
+<span class="comment"># &gt;&gt;&gt; f(254)</span>
+<span class="comment"># 2714410480L</span>
+
+<span class="function">midpoint</span><span class="symbol">(</span><span class="number">17</span><span class="symbol">,</span><span class="normal"> </span><span class="number">254</span><span class="symbol">)</span>
+</tt></pre>
+
+</div>
+Python reported: <IMG
+ WIDTH="58" HEIGHT="14" ALIGN="bottom" BORDER="0"
+ SRC="img26.png"
+ ALT="$d=105$">. Which means that <IMG
+ WIDTH="48" HEIGHT="13" ALIGN="bottom" BORDER="0"
+ SRC="img27.png"
+ ALT="$c=42$">, and finally, wall distance is 
+<BR>
+<DIV ALIGN="center">
+<!-- MATH
+ \begin{displaymath}
+\sqrt{119^2-d^2} = 56
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="117" HEIGHT="27" BORDER="0"
+ SRC="img28.png"
+ ALT="\begin{displaymath}
+\sqrt{119^2-d^2} = 56
+\end{displaymath}">
+</DIV>
+<BR CLEAR="all">
+
+<H2><A NAME="SECTION00040000000000000000">
+GNU Scientific Library</A>
+</H2>
+The GNU Scientific Library (GSL) offers ready-made routines for solving polynomials:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdio.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdlib.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;math.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;string.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;gsl/gsl_errno.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;gsl/gsl_roots.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;gsl/gsl_poly.h&gt;</span>
+
+<span class="type">int</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="type">void</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="function">printf</span><span class="symbol">(</span><span class="string">"</span><span class="specialchar">\n</span><span class="string">Solving using polynomial functions...:-)</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="normal">    </span>
+<span class="normal">    </span><span class="type">double</span><span class="normal"> coeffs</span><span class="symbol">[</span><span class="number">5</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="symbol">-</span><span class="number">900.0</span><span class="symbol">*</span><span class="number">189.0</span><span class="symbol">*</span><span class="number">49.0</span><span class="symbol">,</span>
+<span class="normal">        </span><span class="number">60.0</span><span class="symbol">*</span><span class="number">189.0</span><span class="symbol">*</span><span class="number">49.0</span><span class="symbol">,</span>
+<span class="normal">        </span><span class="symbol">-</span><span class="number">189.0</span><span class="symbol">*</span><span class="number">49.0</span><span class="symbol">,</span>
+<span class="normal">        </span><span class="symbol">-</span><span class="number">60.0</span><span class="symbol">,</span>
+<span class="normal">        </span><span class="number">1.0</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">double</span><span class="normal"> roots</span><span class="symbol">[</span><span class="number">4</span><span class="symbol">*</span><span class="number">2</span><span class="symbol">];</span>
+<span class="normal">    gsl_poly_complex_workspace </span><span class="symbol">*</span><span class="normal"> w</span>
+<span class="normal">               </span><span class="symbol">=</span><span class="normal"> </span><span class="function">gsl_poly_complex_workspace_alloc</span><span class="symbol">(</span><span class="number">5</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">GSL_SUCCESS </span><span class="symbol">!=</span><span class="normal"> </span>
+<span class="normal">            </span><span class="function">gsl_poly_complex_solve</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">coeffs</span><span class="symbol">,</span><span class="normal"> </span><span class="number">5</span><span class="symbol">,</span><span class="normal"> w</span><span class="symbol">,</span><span class="normal"> roots</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">printf</span><span class="symbol">(</span><span class="string">"Poly solving function failed...:(</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> i</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="function">gsl_poly_complex_workspace_free</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">w</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">4</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span>
+<span class="normal">        </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="function">printf</span><span class="symbol">(</span><span class="string">"z%d = %+.18f %+.18f i</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span>
+<span class="normal">                i</span><span class="symbol">,</span><span class="normal"> roots</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">i</span><span class="symbol">],</span><span class="normal"> roots</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">*</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">]);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+
+</div>
+Which gives:
+<PRE class="o">
+Solving using polynomial functions...:&#x2011;)
+z0 = +26.974598914402541538 +8.637179057706713792 i
+z1 = +26.974598914402541538 -8.637179057706713792 i
+z2 = +105.000000000000056843 +0.000000000000000000 i
+z3 = -98.949197828805026234 +0.000000000000000000 i
+</PRE>
+So: two complex numbers, a negative one, and just as Python said... 105.
+
+<H2><A NAME="SECTION00050000000000000000">
+Octave</A>
+</H2>
+The easiest way - no coding at all - use <a href="http://www.gnu.org/software/octave/">Octave</a>, 
+an open source alternative to Matlab:
+<PRE class="o">
+a = [ 1, -60, -9261, 555660, -8334900 ]
+roots(a)
+</PRE>
+The same roots as in GSL's results: two complex numbers, one negative, and 105.<br>
+<H1>Second attack: In "number" space</H1>
+OK, once I got to an equation with only one unknown, the problem was solved.
+But to do that, I had to use "human brain" power. Aren't we... past that point?
+Surely there must be a better way to solve this kind of problems, one that uses
+our powerful computational machines...<p>
+Symbolic solutions aside, how about numerical methods?<p>
+Perhaps an iterative approach, like the Newton method for solving polynomials - but since this is a system of equations, 
+let's try something different:
+<pre>
+1.  Change each equation into a form "left side = 0"
+2.  Create one function from each of the equations, 
+    by creating the form: f(x,y,z,...)=0
+3.  Set the unknowns to any set of initial values, close to our 
+    problem space (ladders are 70 and 119 units long, so use 
+    something close to that range).
+4.  Calculate the functions - they won't produce zero (not so lucky, 
+    are we? If they did, we have the solution!)
+5.  Accumulate the absolute values of the "error" of each function.
+6.  Now let's see if we can improve this error, by making it smaller 
+7.  For each unknown, try moving its value by a small value (delta)
+8.  Does the total error - accumulated over all functions - get any
+    smaller? because of the change?
+9.  If yes, keep moving the variable in the same direction, until 
+    the error starts increasing again
+10. Then switch to the next unknown.
+</pre>
+How much can we lower the "error" with this approach?<br>
+Let's see...
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+
+<span class="normal">var_a </span><span class="symbol">=</span><span class="normal"> var_b </span><span class="symbol">=</span><span class="normal"> var_c </span><span class="symbol">=</span><span class="normal"> var_d </span><span class="symbol">=</span><span class="normal"> var_e </span><span class="symbol">=</span><span class="normal"> var_f </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1.0</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun1</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">var_e</span><span class="symbol">+</span><span class="normal">var_f</span><span class="symbol">)**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> var_d</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> </span><span class="number">119</span><span class="symbol">**</span><span class="number">2</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun2</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">var_e</span><span class="symbol">+</span><span class="normal">var_f</span><span class="symbol">)**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> var_c</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> </span><span class="number">70</span><span class="symbol">**</span><span class="number">2</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun3</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_e</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">30</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> var_a</span><span class="symbol">**</span><span class="number">2</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun4</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_f</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">30</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> var_b</span><span class="symbol">**</span><span class="number">2</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun5</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_a</span><span class="symbol">/</span><span class="number">30.0</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> </span><span class="number">119.0</span><span class="symbol">/</span><span class="normal">var_d</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun6</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_b</span><span class="symbol">/</span><span class="number">30.0</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> </span><span class="number">70.0</span><span class="symbol">/</span><span class="normal">var_c</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun7</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_f</span><span class="symbol">/</span><span class="normal">var_e </span><span class="symbol">-</span><span class="normal"> </span><span class="symbol">(</span><span class="number">119</span><span class="symbol">-</span><span class="normal">var_a</span><span class="symbol">)/</span><span class="normal">var_a</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun8</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_f</span><span class="symbol">/</span><span class="normal">var_e </span><span class="symbol">-</span><span class="normal"> var_b</span><span class="symbol">/(</span><span class="number">70</span><span class="symbol">-</span><span class="normal">var_b</span><span class="symbol">)</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun9</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_d</span><span class="symbol">/</span><span class="normal">var_c </span><span class="symbol">-</span><span class="normal"> var_f</span><span class="symbol">/</span><span class="normal">var_e</span>
+
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">error</span><span class="symbol">():</span>
+<span class="normal">    </span><span class="keyword">try</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="comment"># Python power: in just three lines of code I can do the following:</span>
+<span class="normal">        </span><span class="comment">#</span>
+<span class="normal">        </span><span class="comment"># Find all the functions (using globals() and filtering for 'fun'),</span>
+<span class="normal">        </span><span class="comment"># execute them,</span>
+<span class="normal">        </span><span class="comment"># take the absolute value of each result ("error")</span>
+<span class="normal">        </span><span class="comment"># and accumulate it to an accumulator through "sum"</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">sum</span><span class="symbol">(</span><span class="function">abs</span><span class="symbol">(</span><span class="function">f</span><span class="symbol">())</span>
+<span class="normal">                   </span><span class="keyword">for</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> f </span><span class="keyword">in</span><span class="normal"> </span><span class="function">globals</span><span class="symbol">().</span><span class="function">items</span><span class="symbol">()</span>
+<span class="normal">                   </span><span class="keyword">if</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">startswith</span><span class="symbol">(</span><span class="string">'fun'</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="keyword">except</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="comment"># If one of the calculations divides by zero or generally,</span>
+<span class="normal">        </span><span class="comment"># throws any exception, consider the "contributed" error a huge one!</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="number">1e10</span>
+
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">main</span><span class="symbol">():</span>
+<span class="normal">    delta </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    e </span><span class="symbol">=</span><span class="normal"> </span><span class="function">error</span><span class="symbol">()</span><span class="normal">      </span><span class="comment"># Initial error</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> e</span><span class="symbol">&gt;</span><span class="number">1e-3</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="comment"># Try moving each var_iable in turn by delta</span>
+<span class="normal">        </span><span class="comment"># to see if error diminishes...</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> name </span><span class="keyword">in</span><span class="normal"> </span><span class="function">globals</span><span class="symbol">().</span><span class="function">keys</span><span class="symbol">():</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="keyword">not</span><span class="normal"> name</span><span class="symbol">.</span><span class="function">startswith</span><span class="symbol">(</span><span class="string">'var_'</span><span class="symbol">):</span>
+<span class="normal">                </span><span class="keyword">continue</span>
+<span class="normal">            oldValue </span><span class="symbol">=</span><span class="normal"> </span><span class="function">globals</span><span class="symbol">()[</span><span class="normal">name</span><span class="symbol">]</span>
+<span class="normal">            </span><span class="function">globals</span><span class="symbol">()[</span><span class="normal">name</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> delta  </span><span class="comment"># Moving up...</span>
+<span class="normal">            ne </span><span class="symbol">=</span><span class="normal"> </span><span class="function">error</span><span class="symbol">()</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> ne </span><span class="symbol">&lt;</span><span class="normal"> e</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">break</span>
+<span class="normal">            </span><span class="function">globals</span><span class="symbol">()[</span><span class="normal">name</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-=</span><span class="normal"> </span><span class="number">2</span><span class="symbol">*</span><span class="normal">delta  </span><span class="comment"># Moving down</span>
+<span class="normal">            ne </span><span class="symbol">=</span><span class="normal"> </span><span class="function">error</span><span class="symbol">()</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> ne </span><span class="symbol">&lt;</span><span class="normal"> e</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">break</span>
+<span class="normal">            </span><span class="comment"># Restoring, going to next variable</span>
+<span class="normal">            </span><span class="function">globals</span><span class="symbol">()[</span><span class="normal">name</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> oldValue</span>
+
+<span class="normal">        </span><span class="comment"># If no variable helped, make delta 10 times smaller and retry</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> ne </span><span class="symbol">&gt;=</span><span class="normal"> e</span><span class="symbol">:</span>
+<span class="normal">            delta </span><span class="symbol">/=</span><span class="normal"> </span><span class="number">10.0</span>
+<span class="normal">            </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Switching to lower step"</span><span class="symbol">,</span><span class="normal"> delta</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> delta </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">1e-4</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="comment"># unless delta is very small, in which case stop</span>
+<span class="normal">                </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Best result attained."</span>
+<span class="normal">                </span><span class="keyword">return</span><span class="normal"> e</span>
+<span class="normal">            </span><span class="keyword">continue</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">x</span><span class="symbol">+</span><span class="string">"="</span><span class="symbol">+</span><span class="function">str</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">for</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> y </span><span class="keyword">in</span><span class="normal"> </span><span class="function">globals</span><span class="symbol">().</span><span class="function">items</span><span class="symbol">()</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">startswith</span><span class="symbol">(</span><span class="string">'var_'</span><span class="symbol">)]</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Error:"</span><span class="symbol">,</span><span class="normal"> ne</span>
+<span class="normal">        e </span><span class="symbol">=</span><span class="normal"> ne</span>
+
+
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="function">main</span><span class="symbol">()</span>
+</tt></pre>
+
+</div>
+Running this, we get...
+<pre class="o">
+['var_e=2.0', 'var_f=1.0', 'var_d=1.0', 'var_c=1.0', 'var_b=1.0', 'var_a=1.0']
+Error: 21151.4188406
+['var_e=3.0', 'var_f=1.0', 'var_d=1.0', 'var_c=1.0', 'var_b=1.0', 'var_a=1.0']
+Error: 21142.5855072
+...
+...
+['var_e=68.8477', 'var_f=1.012', 'var_d=96.336', 'var_c=4.4298', 'var_b=30.0171', 
+    'var_a=75.1']
+Error: 39.1177788151
+Switching to lower step 1e-05
+Best result attained.
+</pre>
+Well... the error ended up being significantly lower than what it was at the beginning
+(from 21151.42 down to 39.1), but not low enough, not 0...<p>
+Perhaps if we try changing the initial values of the unknowns?
+<pre>
+var_a = var_b = var_c = var_d = var_e = var_f = 35.0
+</pre>
+The error now goes lower...
+<pre class="o">
+...
+['var_e=26.397', 'var_f=34.8976', 'var_d=101.9999', 'var_c=33.8079', 'var_b=46.02', 
+    'var_a=39.96']
+Error: 3.66166319392
+Switching to lower step 1e-05
+Best result attained.
+</pre>
+The correct solution for d (see above) is 105 - we're almost there! But we seem to 
+have a problem: the initial values seem to have a tremendous impact on how close
+we come to finding the solution. Here's why:
+
+<div class="scrollableContainer">
+<IMG
+  WIDTH="410" HEIGHT="389" ALIGN="bottom" BORDER="0"
+ SRC="local-minimum-traps.gif"
+ ALT="Local diagram">
+<br>
+<STRONG>Figure 2:</STRONG> An example of the problematic local minimums
+</div>
+<p>
+<b>It appears that the "N-space" of our N variables (here, N=6) has many "local"
+minimums, that don't allow the algorithm to "escape" once it descends in one of them</b>. 
+That's why once we ended up to 3.66, we couldn't get any lower, no matter which variable 
+we tried to nudge: any movement causes the error to move up. It's like being blind and
+trying to find sea water (level = 0) when all you have is a device that reports height:
+you can end up getting "lured" to a mountain lake, and never be able to get any lower than the lake's 
+bottom...
+<p>
+Perhaps it would be best to start setting up all "initialValues" in a range from 1 to 200. 
+Why? Well, the two ladders are 70 and 119 units long, the "neighborhood"
+of 1-200 seems like a good place to start. Let's also make our steps smaller, to avoid 
+jumping from one local minimum "lake" to another; we'll drop delta from 1 to 0.1.
+While we're at it, to make things run faster, we'll use the Python psyco module:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="symbol">...</span>
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="keyword">try</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="preproc">import</span><span class="normal"> psyco</span>
+<span class="normal">        psyco</span><span class="symbol">.</span><span class="function">profile</span><span class="symbol">()</span>
+<span class="normal">    </span><span class="keyword">except</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> </span><span class="string">'Psyco not found, ignoring it'</span>
+
+<span class="normal">    bestError </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1e10</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> startValue </span><span class="keyword">in</span><span class="normal"> </span><span class="function">xrange</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="number">200</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="comment"># Reset the initial values of all variables to startValue</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> name </span><span class="keyword">in</span><span class="normal"> </span><span class="function">globals</span><span class="symbol">().</span><span class="function">keys</span><span class="symbol">():</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="keyword">not</span><span class="normal"> name</span><span class="symbol">.</span><span class="function">startswith</span><span class="symbol">(</span><span class="string">'var_'</span><span class="symbol">):</span><span class="normal"> </span><span class="keyword">continue</span>
+<span class="normal">            </span><span class="function">globals</span><span class="symbol">()[</span><span class="normal">name</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> startValue</span>
+<span class="normal">        </span><span class="comment"># Run the algorithm...</span>
+<span class="normal">        e </span><span class="symbol">=</span><span class="normal"> </span><span class="function">main</span><span class="symbol">()</span>
+<span class="normal">        </span><span class="comment"># Did it improve in comparison to the best previous run?</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> e </span><span class="symbol">&lt;</span><span class="normal"> bestError</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"("</span><span class="symbol">,</span><span class="normal"> startValue</span><span class="symbol">,</span><span class="normal"> </span><span class="string">") Error="</span><span class="symbol">,</span><span class="normal"> e</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="symbol">[</span><span class="normal">x</span><span class="symbol">+</span><span class="string">"="</span><span class="symbol">+</span><span class="function">str</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">for</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> y </span><span class="keyword">in</span><span class="normal"> </span><span class="function">globals</span><span class="symbol">().</span><span class="function">items</span><span class="symbol">()</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">startswith</span><span class="symbol">(</span><span class="string">'var_'</span><span class="symbol">)]</span>
+<span class="normal">            bestError </span><span class="symbol">=</span><span class="normal"> e</span>
+</tt></pre>
+
+</div>
+Did it help?
+<pre class="o">
+...
+( 41 ) Error= 3.22073538976
+['var_f=27.9442', 'var_e=28.8', 'var_d=104.5997', 'var_c=40.989', 'var_b=41', 
+    'var_a=41.5865']
+</pre>
+Well, the algorithm ended up even lower: 3.22. Before it stopped, it <em>seemed</em> to 
+converge to the correct solution: the target value of d (as we saw in the previous section)
+was 105, our solution gave 104.6 - c should have been 42, it is 41. The other unknowns however 
+are far from their correct values: f should be 40, it is 28; e should be 16; it is almost 29.<p>
+In other words, we just ended up in a different lake.<p>
+It appears that the 6-space of our variables (var_a to var_f) is FULL of 
+local minimums for our error function... It is very easy
+for the algorithm to descend into one of these and never get out.
+<p>
+Let's modify the algorithm: instead of "exhausting" one variable
+first and then moving to the next one, we will try nudging all of them, and we will 
+pick the one that causes the error to drop the most. In our analogy of local minimums,
+the blind person is "feeling" the ground, and choosing the direction that causes
+the "steepest descent" route:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">def</span><span class="normal"> </span><span class="function">main</span><span class="symbol">():</span>
+<span class="normal">    delta </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.01</span>
+<span class="normal">    e </span><span class="symbol">=</span><span class="normal"> </span><span class="function">error</span><span class="symbol">()</span><span class="normal">      </span><span class="comment"># Initial error</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> e</span><span class="symbol">&gt;</span><span class="number">1e-3</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="comment"># Try moving each var_iable in turn</span>
+<span class="normal">        </span><span class="comment"># by delta to see if error diminishes...</span>
+<span class="normal">        beste </span><span class="symbol">=</span><span class="normal"> e</span>
+<span class="normal">        move </span><span class="symbol">=</span><span class="normal"> None</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> name </span><span class="keyword">in</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">x </span><span class="keyword">for</span><span class="normal"> x </span><span class="keyword">in</span><span class="normal"> </span><span class="function">globals</span><span class="symbol">().</span><span class="function">keys</span><span class="symbol">()</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">startswith</span><span class="symbol">(</span><span class="string">'var_'</span><span class="symbol">)]:</span>
+<span class="normal">            oldValue </span><span class="symbol">=</span><span class="normal"> </span><span class="function">globals</span><span class="symbol">()[</span><span class="normal">name</span><span class="symbol">]</span>
+<span class="normal">            </span><span class="function">globals</span><span class="symbol">()[</span><span class="normal">name</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> delta  </span><span class="comment"># Moving up...</span>
+<span class="normal">            upe </span><span class="symbol">=</span><span class="normal"> </span><span class="function">error</span><span class="symbol">()</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> upe </span><span class="symbol">&lt;</span><span class="normal"> beste</span><span class="symbol">:</span>
+<span class="normal">                beste </span><span class="symbol">=</span><span class="normal"> upe</span>
+<span class="normal">                move </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">name</span><span class="symbol">,</span><span class="normal"> delta</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="function">globals</span><span class="symbol">()[</span><span class="normal">name</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> oldValue </span><span class="symbol">-</span><span class="normal"> delta  </span><span class="comment"># Moving down</span>
+<span class="normal">            downe </span><span class="symbol">=</span><span class="normal"> </span><span class="function">error</span><span class="symbol">()</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> downe </span><span class="symbol">&lt;</span><span class="normal"> beste</span><span class="symbol">:</span>
+<span class="normal">                beste </span><span class="symbol">=</span><span class="normal"> downe</span>
+<span class="normal">                move </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">name</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">delta</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="comment"># Restoring, going to next variable</span>
+<span class="normal">            </span><span class="function">globals</span><span class="symbol">()[</span><span class="normal">name</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> oldValue</span>
+
+<span class="normal">        </span><span class="comment"># If no variable helped, make delta 10 times smaller and retry</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> beste </span><span class="symbol">&gt;=</span><span class="normal"> e</span><span class="symbol">:</span>
+<span class="normal">            delta </span><span class="symbol">/=</span><span class="normal"> </span><span class="number">10.0</span>
+<span class="normal">            </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Switching to lower step"</span><span class="symbol">,</span><span class="normal"> delta</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> delta </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">1e-4</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="comment"># unless delta is very small, in which case stop</span>
+<span class="normal">                </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Best result attained."</span>
+<span class="normal">                </span><span class="keyword">return</span><span class="normal"> e</span>
+<span class="normal">            </span><span class="keyword">continue</span>
+
+<span class="normal">        </span><span class="function">globals</span><span class="symbol">()[</span><span class="normal">move</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> move</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span>
+<span class="normal">        e </span><span class="symbol">=</span><span class="normal"> </span><span class="function">error</span><span class="symbol">()</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">x</span><span class="symbol">+</span><span class="string">"="</span><span class="symbol">+</span><span class="function">str</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">for</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> y </span><span class="keyword">in</span><span class="normal"> </span><span class="function">globals</span><span class="symbol">().</span><span class="function">items</span><span class="symbol">()</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">startswith</span><span class="symbol">(</span><span class="string">'var_'</span><span class="symbol">)]</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Error:"</span><span class="symbol">,</span><span class="normal"> e</span>
+</tt></pre>
+
+</div>
+No luck... This approach, just as the previous one, got stuck in (different) local minimums.
+<p>
+Do we have an error in the functions, a bug when moving from pure mathematics to Python?<p>
+Let's replace variables with their correct values... (obtained from the symbolic-space 
+solution we did first):<p>
+First, var_d is replaced with 105.0. Result: we get stuck in a "lake" of depth 2.86:
+<pre class="o">
+( 33 ) Error= 2.85886323868 
+['var_f=30.88', 'var_e=25.12', 'var_c=42.0', 'var_b=43.0532', 'var_a=39.1282']
+</pre>
+Next is var_c - we set it to 42.0...
+<pre class="o">
+( 35 ) Error= 3.35048762477 
+['var_f=28.02', 'var_e=27.98', 'var_b=41.0502', 'var_a=41.0229']
+</pre>
+An even higher lake, at 3.35...  Removing var_b (50.0):
+<pre class="o">
+( 40 ) Error= None ['var_f=40', 'var_e=16.0', 'var_a=34.0']
+</pre>
+And there it is, finally... The solution for the three last variables is indeed found by our algorithm!<br>
+<p>
+So it wasn't that we made any mistake in transcribing the equations - no.
+It is just that the N-space is filled with "traps" - both the "steepest descent"
+and the original "exhaust each variable in turn" algorithms are easily
+trapped into these "pits" and can't find the correct solution.
+<p>
+Another thing we could do is to split the N-space in many "areas"
+and "hunt" down inside each of them. The scanning above was done by reseting ALL
+variables to a startValue, from 1 to 200. This is a sampling
+of a "line" in the 6-space; apparently we need much more than a line
+to locate the "lake" that leads all the way down to zero error.<p>
+Time to mimic nature...
+<h2>Particle Swarm Optimization</h2>
+After a suggestion from Ron Kneusel, I read about
+<a href="http://en.wikipedia.org/wiki/Particle_swarm_optimization">Particle Swarm Optimization</a> (PSO). 
+The link points to the Wikipedia article, where I saw that PSO solves the "getting trapped in a local
+minimum" problem in an unexpected way:<p>
+It mimics nature!<p>
+When swarms of insects (e.g. ants) search for food, they face a challenge that shares
+some similarities to our own: each ant hunts for food, and each one may (a) get trapped 
+in a hole and never be able to get out, (b) find nothing or (c) find a great source of food.
+In the case of (c), and depending on how plenty the food is, the lucky ant "calls out" 
+to the ants in its neighborhood, and they come to help - calling out to their neighbours
+in turn, and pretty soon, all the nest is visiting the land-of-plenty, carrying the
+treasures back to the nest.<p>
+We can do the same thing!<p>
+Instead of doing a "lonely" search, and get trapped inside a local-minimum in our
+search-space, we can create a "swarm" of "particles", that search different areas on their own:
+each time that a particle moves to improve its error (decrease its "height"), it chooses to move
+by a random amount...
+<ul>
+<li>(a) towards the best spot found so far by itself, and
+<li>(b) towards the global best found by all other particles.
+</ul>
+We initialize the hunt by "spraying" our search space with randomly positioned 
+particles, and we have each particle investigate its own local "neighborhood" 
+by moving in small steps. The move performed in each step is influenced by the 
+direction of the particle's previous step (weighted by a factor of 95%),
+and additionally influenced by the two "tendencies" above: to be exact, in each
+step we add the two random "tendencies", the one towards the particle's own best 
+place so far, and the one towards the overall-particles-best-place.<p>
+The Wikipedia article explains it much better than I do, and allowed me to
+write the following code in less than an hour:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+<span class="preproc">import</span><span class="normal"> sys</span>
+<span class="preproc">import</span><span class="normal"> random</span>
+
+<span class="normal">var_a </span><span class="symbol">=</span><span class="normal"> var_b </span><span class="symbol">=</span><span class="normal"> var_c </span><span class="symbol">=</span><span class="normal"> var_d </span><span class="symbol">=</span><span class="normal"> var_e </span><span class="symbol">=</span><span class="normal"> var_f </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1.0</span>
+
+<span class="comment"># First version of the functions: using divisions</span>
+<span class="comment"># was not a good idea, since divisions cause "extreme"</span>
+<span class="comment"># and "sudden" movements in the optimization effort</span>
+<span class="comment">#</span>
+<span class="comment"># So these were transformed...</span>
+
+<span class="comment">#def fun1(): return (var_e+var_f)**2 + var_d**2 - 119**2</span>
+<span class="comment">#def fun2(): return (var_e+var_f)**2 + var_c**2 - 70**2</span>
+<span class="comment">#def fun3(): return var_e**2 + 30**2 - var_a**2</span>
+<span class="comment">#def fun4(): return var_f**2 + 30**2 - var_b**2</span>
+<span class="comment">#def fun5(): return var_a/30.0 - 119.0/var_d</span>
+<span class="comment">#def fun6(): return var_b/30.0 - 70.0/var_c</span>
+<span class="comment">#def fun7(): return var_f/var_e - (119-var_a)/var_a</span>
+<span class="comment">#def fun8(): return var_f/var_e - var_b/(70-var_b)</span>
+<span class="comment">#def fun9(): return var_d/var_c - var_f/var_e</span>
+
+<span class="comment"># ... into the ones below, which are equivalent, and use</span>
+<span class="comment"># multiplication instead of division - and are therefore</span>
+<span class="comment"># much more stable, numerically speaking:</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun1</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">var_e</span><span class="symbol">+</span><span class="normal">var_f</span><span class="symbol">)**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> var_d</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> </span><span class="number">119</span><span class="symbol">**</span><span class="number">2</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun2</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">var_e</span><span class="symbol">+</span><span class="normal">var_f</span><span class="symbol">)**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> var_c</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> </span><span class="number">70</span><span class="symbol">**</span><span class="number">2</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun3</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_e</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">30</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> var_a</span><span class="symbol">**</span><span class="number">2</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun4</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_f</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">30</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> var_b</span><span class="symbol">**</span><span class="number">2</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun5</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_a</span><span class="symbol">*</span><span class="normal">var_d </span><span class="symbol">-</span><span class="normal"> </span><span class="number">30.0</span><span class="symbol">*</span><span class="number">119.0</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun6</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_b</span><span class="symbol">*</span><span class="normal">var_c </span><span class="symbol">-</span><span class="normal"> </span><span class="number">30.0</span><span class="symbol">*</span><span class="number">70.0</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun7</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_f</span><span class="symbol">*</span><span class="normal">var_a </span><span class="symbol">-</span><span class="normal"> </span><span class="symbol">(</span><span class="number">119</span><span class="symbol">-</span><span class="normal">var_a</span><span class="symbol">)*</span><span class="normal">var_e</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun8</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_f</span><span class="symbol">*(</span><span class="number">70</span><span class="symbol">-</span><span class="normal">var_b</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> var_b</span><span class="symbol">*</span><span class="normal">var_e</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun9</span><span class="symbol">():</span><span class="normal"> </span><span class="keyword">return</span><span class="normal"> var_d</span><span class="symbol">*</span><span class="normal">var_e </span><span class="symbol">-</span><span class="normal"> var_f</span><span class="symbol">*</span><span class="normal">var_c</span>
+
+
+<span class="comment"># This extra one was added, to make sure the solutions will</span>
+<span class="comment"># be positive and not negative values... it returns big</span>
+<span class="comment"># values (errors!) for negative numbers, and 0 for positive</span>
+<span class="comment"># ones...</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">fun10</span><span class="symbol">():</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> </span><span class="number">1e6</span><span class="symbol">*(</span>
+<span class="normal">        </span><span class="function">abs</span><span class="symbol">(</span><span class="normal">var_a</span><span class="symbol">)-</span><span class="normal">var_a </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="function">abs</span><span class="symbol">(</span><span class="normal">var_b</span><span class="symbol">)-</span><span class="normal">var_b </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="function">abs</span><span class="symbol">(</span><span class="normal">var_c</span><span class="symbol">)-</span><span class="normal">var_c </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="function">abs</span><span class="symbol">(</span><span class="normal">var_d</span><span class="symbol">)-</span><span class="normal">var_d </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="function">abs</span><span class="symbol">(</span><span class="normal">var_e</span><span class="symbol">)-</span><span class="normal">var_e </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="function">abs</span><span class="symbol">(</span><span class="normal">var_f</span><span class="symbol">)-</span><span class="normal">var_f</span><span class="symbol">)</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">error</span><span class="symbol">():</span>
+<span class="normal">    </span><span class="keyword">try</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="comment"># Python power: in just three lines of code I can do the following:</span>
+<span class="normal">        </span><span class="comment">#</span>
+<span class="normal">        </span><span class="comment"># Find all the functions (using globals() and filtering for 'fun'),</span>
+<span class="normal">        </span><span class="comment"># execute them,</span>
+<span class="normal">        </span><span class="comment"># take the absolute value of each result ("error")</span>
+<span class="normal">        </span><span class="comment"># and accumulate it to an accumulator through "sum"</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="function">sum</span><span class="symbol">(</span><span class="function">abs</span><span class="symbol">(</span><span class="function">f</span><span class="symbol">())</span>
+<span class="normal">                   </span><span class="keyword">for</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> f </span><span class="keyword">in</span><span class="normal"> </span><span class="function">globals</span><span class="symbol">().</span><span class="function">items</span><span class="symbol">()</span>
+<span class="normal">                   </span><span class="keyword">if</span><span class="normal"> x</span><span class="symbol">.</span><span class="function">startswith</span><span class="symbol">(</span><span class="string">'fun'</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="keyword">except</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="comment"># If one of the calculations divides by zero or generally,</span>
+<span class="normal">        </span><span class="comment"># throws any exception, consider the "contributed" error a huge one!</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="number">1e10</span>
+
+<span class="comment"># Particle swarm...</span>
+
+<span class="comment"># How many particles?</span>
+<span class="normal">g_particleNo </span><span class="symbol">=</span><span class="normal"> </span><span class="number">100</span>
+
+<span class="comment"># Best value so far...</span>
+<span class="normal">g_best </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1e100</span>
+
+<span class="comment"># obtained from these variable values:</span>
+<span class="normal">g_bestX </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">]</span>
+
+<span class="comment"># And this is the order of the mapping of variables to indexes:</span>
+<span class="normal">g_vars </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="string">'a'</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'b'</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'c'</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'d'</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'e'</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'f'</span><span class="symbol">)</span>
+
+<span class="comment"># Limit the particle speeds (the amount by which each dimension is</span>
+<span class="comment"># allowed to change in one step) to this value:</span>
+<span class="normal">g_vmax </span><span class="symbol">=</span><span class="normal"> </span><span class="number">4.0</span>
+
+
+<span class="keyword">class</span><span class="normal"> Particle</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">__init__</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">,</span><span class="normal"> idx</span><span class="symbol">):</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_x </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_v </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_idx </span><span class="symbol">=</span><span class="normal"> idx</span>
+<span class="normal">        </span><span class="comment"># Initialize the particle to a random place from 50 to 200</span>
+<span class="normal">        </span><span class="comment"># (the ladders are 70 and 110, so the solution is around there)</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> i </span><span class="keyword">in</span><span class="normal"> g_vars</span><span class="symbol">:</span><span class="normal">  </span><span class="comment"># foreach of my variables, add a random value</span>
+<span class="normal">            self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="normal">random</span><span class="symbol">.</span><span class="function">randint</span><span class="symbol">(</span><span class="number">50</span><span class="symbol">,</span><span class="normal"> </span><span class="number">200</span><span class="symbol">))</span>
+<span class="normal">            self</span><span class="symbol">.</span><span class="normal">_v</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">)</span><span class="normal">     </span><span class="comment"># Particle speed initialized to 0</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_best </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1e20</span><span class="normal">         </span><span class="comment"># The "best-so-far-for-this-particle"</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="normal">_bestX </span><span class="symbol">=</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">[:]</span><span class="normal">  </span><span class="comment"># and where it was found.</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">checkAndUpdateBest</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="keyword">global</span><span class="normal"> g_best</span><span class="symbol">,</span><span class="normal"> g_bestX</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> name</span><span class="symbol">,</span><span class="normal"> y </span><span class="keyword">in</span><span class="normal"> </span><span class="function">zip</span><span class="symbol">(</span><span class="normal">g_vars</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">):</span>
+<span class="normal">            </span><span class="function">globals</span><span class="symbol">()[</span><span class="string">'var_'</span><span class="symbol">+</span><span class="normal">name</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> y</span>
+<span class="normal">        e </span><span class="symbol">=</span><span class="normal"> </span><span class="function">error</span><span class="symbol">()</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> e</span><span class="symbol">&lt;</span><span class="number">1e-3</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="comment"># New place solves the problem!</span>
+<span class="normal">            </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Solution found:\n"</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"\nerror is"</span><span class="symbol">,</span><span class="normal"> e</span>
+<span class="normal">            sys</span><span class="symbol">.</span><span class="function">exit</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> e</span><span class="symbol">&lt;</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_best</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="comment"># New place improves this particle's best value!</span>
+<span class="normal">            self</span><span class="symbol">.</span><span class="normal">_best </span><span class="symbol">=</span><span class="normal"> e</span>
+<span class="normal">            self</span><span class="symbol">.</span><span class="normal">_bestX</span><span class="symbol">[:]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">[:]</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> e</span><span class="symbol">&lt;</span><span class="normal">g_best</span><span class="symbol">:</span>
+<span class="normal">            </span><span class="comment"># New place improves the global best value!</span>
+<span class="normal">            </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"(global error)"</span><span class="symbol">,</span><span class="normal"> e</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"\n"</span><span class="symbol">,</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_x</span>
+<span class="normal">            g_best </span><span class="symbol">=</span><span class="normal"> e</span>
+<span class="normal">            g_bestX</span><span class="symbol">[:]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">[:]</span>
+
+<span class="normal">    </span><span class="keyword">def</span><span class="normal"> </span><span class="function">live</span><span class="symbol">(</span><span class="normal">self</span><span class="symbol">):</span>
+<span class="normal">        </span><span class="comment"># For each variable (dimension)</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> i </span><span class="keyword">in</span><span class="normal"> </span><span class="function">xrange</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">6</span><span class="symbol">):</span>
+<span class="normal">            </span><span class="comment"># update the speed, using the Particle Swarm Optimization:</span>
+<span class="normal">            self</span><span class="symbol">.</span><span class="normal">_v</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="number">0.95</span><span class="symbol">*</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_v</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="number">0.7</span><span class="symbol">*</span><span class="normal">random</span><span class="symbol">.</span><span class="function">random</span><span class="symbol">()*(</span><span class="normal">self</span><span class="symbol">.</span><span class="normal">_bestX</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">])</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                </span><span class="number">0.7</span><span class="symbol">*</span><span class="normal">random</span><span class="symbol">.</span><span class="function">random</span><span class="symbol">()*(</span><span class="normal">g_bestX</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">])</span>
+<span class="normal">            </span><span class="comment"># clamp the speed to -g_vmax .. g_vmax</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_v</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> g_vmax</span><span class="symbol">:</span>
+<span class="normal">                self</span><span class="symbol">.</span><span class="normal">_v</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> g_vmax</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_v</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">g_vmax</span><span class="symbol">:</span>
+<span class="normal">                self</span><span class="symbol">.</span><span class="normal">_v</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="normal">g_vmax</span>
+<span class="normal">            </span><span class="comment"># Update the particle's current dimension</span>
+<span class="normal">            self</span><span class="symbol">.</span><span class="normal">_x</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> self</span><span class="symbol">.</span><span class="normal">_v</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span>
+<span class="normal">        </span><span class="comment"># Check to see if we found a solution or improved the "best so far"</span>
+<span class="normal">        self</span><span class="symbol">.</span><span class="function">checkAndUpdateBest</span><span class="symbol">()</span>
+
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">main</span><span class="symbol">():</span>
+<span class="normal">    swarm </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[]</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> i </span><span class="keyword">in</span><span class="normal"> </span><span class="function">xrange</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> g_particleNo</span><span class="symbol">):</span><span class="normal">  </span><span class="comment"># Use "g_particleNo" particles</span>
+<span class="normal">        swarm</span><span class="symbol">.</span><span class="function">append</span><span class="symbol">(</span><span class="function">Particle</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">+</span><span class="number">1</span><span class="symbol">))</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> True</span><span class="symbol">:</span><span class="normal">                     </span><span class="comment"># For all eternity, for each particle</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> p </span><span class="keyword">in</span><span class="normal"> swarm</span><span class="symbol">:</span><span class="normal">  </span><span class="comment"># move around the search space, look for the solution!</span>
+<span class="normal">            p</span><span class="symbol">.</span><span class="function">live</span><span class="symbol">()</span>
+
+
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="keyword">try</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="preproc">import</span><span class="normal"> psyco</span>
+<span class="normal">        psyco</span><span class="symbol">.</span><span class="function">profile</span><span class="symbol">()</span>
+<span class="normal">    </span><span class="keyword">except</span><span class="symbol">:</span>
+<span class="normal">        </span><span class="keyword">print</span><span class="normal"> </span><span class="string">'Psyco not found, ignoring it'</span>
+<span class="normal">    </span><span class="function">main</span><span class="symbol">()</span>
+</tt></pre>
+
+</div>
+If you run this, you'll see that it quickly locates the solution:
+<pre class="o">
+bash$ python ./ladders-swarm.py
+...
+(global error) 0.00108106412256 
+[33.999999108625637, 49.999998838801204, 42.000000232576404, 
+ 105.0000031754703, 15.99999769902716, 39.999997468849152]
+(global error) 0.0010070313707 
+[33.999999174902875, 49.999997599804843, 41.999999367745644, 
+ 105.00000241198516, 15.999998594051929, 39.999996695289852]
+
+Solution found:
+[33.999999697035015, 49.999997875663965, 42.000000045975234, 
+ 105.00000250106874, 15.9999988649258, 39.999997431681408] 
+error is 0.000843222146955
+</pre>
+The only additional thing I had to do - compared to the suggestions of the Wikipedia 
+article - was that I had to change the values of C1 and C2 (the "weight"
+factors that influence the moves) from the original suggestion 
+of 2.0 to a much smaller 0.7. It makes the "speed" of the particle movements slower, and 
+it was necessary to do so, for some reason - otherwise the process never found the solution
+(apparently, it kept jumping over it). Judging from other articles I read about PSO, C1 and C2 are
+in fact tunable parameters, that have to be tweaked on a per-problem basis.
+<p>
+Finally, success!
+<p>
+But... I am still not satisfied...
+<p>
+The numerical methods needed manual tweaking... They still require a human's help to find the solution!
+<p>
+The whole point of this was to see a computer doing it all on its own, without any assistance from my side...
+<H1>Third attack: Better tools...</H1>
+On December 12th, 2007, I sent a link to this page to the sci.math.num-analysis newsgroup, 
+and Valeri Astanoff kindly replied with these Mathematica commands:
+<pre>
+In[1]:= Reduce[(e+f)^2+d^2 == 119^2 &amp;&amp;
+(e+f)^2+c^2 == 70^2 &amp;&amp;
+e^2+30^2 == a^2 &amp;&amp;
+f^2+30^2 == b^2 &amp;&amp;
+a/30 == 119/d &amp;&amp;
+b/30 == 70/c &amp;&amp;
+f/e == (119-a)/a &amp;&amp;
+f/e == b/(70-b) &amp;&amp;
+d/c == f/e &amp;&amp; e>0 &amp;&amp; f>0,{e,f},Reals]
+
+Out[1]= d==105 &amp;&amp; c==42 &amp;&amp; b==50 &amp;&amp; a==34 &amp;&amp; e==16 &amp;&amp; f==40
+</pre>
+There - now that's what I wanted. No help from my side, no clue whatsoever - as close to magic as we'll ever get.
+<p>
+But... I'd really prefer doing this with an open-source tool.<p>
+I don't want to depend on a closed source product that might someday disappear...
+<h2>Maxima</h2>
+<a href="http://maxima.sourceforge.net">Maxima</a> is a computer algebra system, implemented in Lisp. Very impressive piece of software... Look:
+<pre>
+(%i1) eq1: (e+f)^2+d^2 = 119^2$
+(%i2) eq2: (e+f)^2+c^2 = 70^2$
+(%i3) eq3: e^2+30^2 = a^2$
+(%i4) eq4: f^2+30^2 = b^2$
+(%i5) eq5: a/30 = 119/d$
+(%i6) eq6: b/30 = 70/c$
+(%i7) eq7: f/e = (119-a)/a$
+(%i8) eq8: f/e = b/(70-b)$
+(%i9) eq9: d/c = f/e$
+(%i10) solve([eq1, eq2, eq3, eq4, eq5, eq6, eq7, eq8, eq9], [a,b,c,d,e,f]);
+</pre>
+...which gives...
+<pre class="o">
+(%o10) [[a = - 36.07912087912088, b = 91.22301136363636, c = 23.0205066344994, 
+d = - 98.94919786096257, e = - 20.04252733900364, f = 86.14893617021276], 
+[a = - 36.07912087912088, b = 91.22301136363636, c = 23.0205066344994, 
+d = - 98.94919786096257, e = 20.04252733900364, f = - 86.14893617021276], 
+...
+[a = 34, b = 50, c = 42, d = 105, e = 16, f = 40], 
+[a = 34, b = 50, c = 42, d = 105, e = - 16, f = - 40], 
+[a = 30, b = - 30, c = - 70, d = 119, e = 0, f = 0], 
+[a = - 30, b = - 30, c = - 70, d = - 119, e = 0, f = 0], 
+[a = - 30, b = 30, c = 70, d = - 119, e = 0, f = 0], 
+[a = 30, b = 30, c = 70, d = 119, e = 0, f = 0]]
+</pre>
+This was what I wanted, all along. An open-source tool that solves a non-linear set of equations without any hints from me.<p>
+And it's not the only one...
+<h2>Sage</h2>
+<a href="http://www.sagemath.org/">SAGE</a> is a big open-source project that 
+provides Python bridges to the functionality offered by most math-related 
+open source projects.<p>
+Since it's main application uses the Python interpreter, I started with 
+<tt>dir()</tt>, and noticed
+that a <tt>solve</tt> function was available in the inventory. 
+<tt>help(solve)</tt>, and 5 minutes later...
+<pre>
+<b>bash$</b> cd /work/sage-2.8.15-debian32-i686-Linux
+<b>bash$</b> ./sage
+sage: a,b,c,d,e,f = var('a,b,c,d,e,f')
+sage: solutions=solve([(e+f)^2+d^2 == 119^2,(e+f)^2+c^2 ==
+70^2,e^2+30^2 == a^2,f^2+30^2 == b^2,a/30 == 119/d,b/30 == 70/c,f/e
+==(119-a)/a,f/e == b/(70-b) ,d/c == f/e ], a,b,c,d,e,f)
+sage: print solutions
+</pre>
+...which gave...
+<pre class="o">
+[
+...
+[a == 34, b == 50, c == 42, d == 105, e == 16, f == 40],
+[a == 34, b == 50, c == 42, d == 105, e == -16, f == -40],
+[a == 30, b == -30, c == -70, d == 119, e == 0, f == 0],
+[a == -30, b == -30, c == -70, d == -119, e == 0, f == 0],
+[a == -30, b == 30, c == 70, d == -119, e == 0, f == 0],
+[a == 30, b == 30, c == 70, d == 119, e == 0, f == 0]
+] 
+</pre>
+<h2>Octave</h2>
+I mentioned Octave during the first phase of my attack,
+the one that ended up with one equation with one unknown.
+<p>
+Is it able to cope with non-linear systems? 
+<p>
+Yes, it is...
+<pre>
+<b>bash$</b> cat > /var/tmp/ladders.m
+function F=myfun(x)
+    a = x(1);
+    b = x(2);
+    c = x(3);
+    d = x(4);
+    e = x(5);
+    f = x(6);
+    F(1) = (e+f)^2+d^2 - 119^2;
+    F(2) = (e+f)^2+c^2 - 70^2;
+    F(3) = e^2+30^2 - a^2;
+    F(4) = f^2+30^2 - b^2;
+    F(5) = a*d - 30*119;
+    F(6) = b*c - 30*70;
+    F(7) = f*a - e*(119-a);
+    F(8) = f*(70-b) - b*e;
+    F(9) = d*e - f*c;
+endfunction;
+
+x = fsolve("myfun", [100 100 100 100 100 100])
+(Ctrl-D)
+<b>bash$</b> octave /var/tmp/ladders.m
+</pre>
+And the results:
+<pre class="o">
+GNU Octave, version 2.1.73 (i486-pc-linux-gnu).
+Copyright (C) 2006 John W. Eaton.
+This is free software; see the source code for copying conditions.
+There is ABSOLUTELY NO WARRANTY; not even for MERCHANTIBILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  For details, type `warranty'.
+
+Additional information about Octave is available at http://www.octave.org.
+
+Please contribute if you find this software useful.
+For more information, visit http://www.octave.org/help-wanted.html
+
+Report bugs to &lt;bug@octave.org&gt; (but first, please read
+http://www.octave.org/bugs.html to learn how to write a helpful report).
+
+x =
+
+   34.000
+   50.000
+   42.000
+  105.000
+   16.000
+   40.000
+</pre>
+Notice that for Octave's solver to work, I modified the equations
+to translate divisions into multiplications... more stable numerically,
+and easier to differentiate (Octave's numerical solvers are trying to
+approximate the function derivatives, so it is better to help
+by providing functions that are easier to differentiate).
+<h2>Microsoft's open-source z3</h2>
+After F#, PTVS and z3... I am starting to really appreciate Microsoft's R&amp;D department.
+Download the open-source <a href="http://z3.codeplex.com/">z3</a> library, compile and 
+install it - and your Python interpreter will be able to execute this code...
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">from</span><span class="normal"> z3 </span><span class="preproc">import</span><span class="normal"> </span><span class="symbol">*</span>
+<span class="normal">a</span><span class="symbol">,</span><span class="normal">b</span><span class="symbol">,</span><span class="normal">c</span><span class="symbol">,</span><span class="normal">d</span><span class="symbol">,</span><span class="normal">e</span><span class="symbol">,</span><span class="normal">f </span><span class="symbol">=</span><span class="normal"> </span><span class="function">Ints</span><span class="symbol">(</span><span class="string">'a b c d e f'</span><span class="symbol">)</span>
+<span class="normal">s </span><span class="symbol">=</span><span class="normal"> </span><span class="function">Tactic</span><span class="symbol">(</span><span class="string">'qfnra-nlsat'</span><span class="symbol">).</span><span class="function">solver</span><span class="symbol">()</span>
+<span class="normal">s</span><span class="symbol">.</span><span class="function">add</span><span class="symbol">(</span>
+<span class="normal">    a</span><span class="symbol">&gt;</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> a</span><span class="symbol">&lt;</span><span class="number">200</span><span class="symbol">,</span>
+<span class="normal">    b</span><span class="symbol">&gt;</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> b</span><span class="symbol">&lt;</span><span class="number">200</span><span class="symbol">,</span>
+<span class="normal">    c</span><span class="symbol">&gt;</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> c</span><span class="symbol">&lt;</span><span class="number">200</span><span class="symbol">,</span>
+<span class="normal">    d</span><span class="symbol">&gt;</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> d</span><span class="symbol">&lt;</span><span class="number">200</span><span class="symbol">,</span>
+<span class="normal">    e</span><span class="symbol">&gt;</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> e</span><span class="symbol">&lt;</span><span class="number">200</span><span class="symbol">,</span>
+<span class="normal">    f</span><span class="symbol">&gt;</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> f</span><span class="symbol">&lt;</span><span class="number">200</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">+</span><span class="normal">f</span><span class="symbol">)**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> d</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">119</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="symbol">(</span><span class="normal">e</span><span class="symbol">+</span><span class="normal">f</span><span class="symbol">)**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> c</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> </span><span class="number">70</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">,</span>
+<span class="normal">    e</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">30</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> a</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">,</span>
+<span class="normal">    f</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="number">30</span><span class="symbol">**</span><span class="number">2</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> b</span><span class="symbol">**</span><span class="number">2</span><span class="symbol">,</span>
+<span class="normal">    a</span><span class="symbol">*</span><span class="normal">d </span><span class="symbol">==</span><span class="normal"> </span><span class="number">119</span><span class="symbol">*</span><span class="number">30</span><span class="symbol">,</span>
+<span class="normal">    b</span><span class="symbol">*</span><span class="normal">c </span><span class="symbol">==</span><span class="normal"> </span><span class="number">70</span><span class="symbol">*</span><span class="number">30</span><span class="symbol">,</span>
+<span class="normal">    a</span><span class="symbol">*</span><span class="normal">f </span><span class="symbol">-</span><span class="normal"> </span><span class="number">119</span><span class="symbol">*</span><span class="normal">e </span><span class="symbol">+</span><span class="normal"> a</span><span class="symbol">*</span><span class="normal">e </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span>
+<span class="normal">    b</span><span class="symbol">*</span><span class="normal">e </span><span class="symbol">-</span><span class="normal"> </span><span class="number">70</span><span class="symbol">*</span><span class="normal">f </span><span class="symbol">+</span><span class="normal"> b</span><span class="symbol">*</span><span class="normal">f </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span>
+<span class="normal">    d</span><span class="symbol">*</span><span class="normal">e </span><span class="symbol">==</span><span class="normal"> c</span><span class="symbol">*</span><span class="normal">f</span><span class="symbol">)</span>
+<span class="keyword">print</span><span class="normal"> s</span><span class="symbol">.</span><span class="function">check</span><span class="symbol">()</span><span class="normal"> </span><span class="comment"># solve the problem</span>
+<span class="keyword">print</span><span class="normal"> s</span><span class="symbol">.</span><span class="function">model</span><span class="symbol">()</span><span class="normal"> </span><span class="comment"># print the solution</span>
+</tt></pre>
+
+</div>
+...and find the same solution as the other tools.
+<H1>Conclusion</H1>
+It's safe to say that we've... beaten the "crossing ladders puzzle" to a pulp :&#x2011;)<p>
+What's more important, is that the methods we tried (especially Maxima and Sage)
+can be used to address any non-linear system of equations.
+<p>And that's far more important than solving funny, entertaining puzzles :&#x2011;)
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/ladders.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

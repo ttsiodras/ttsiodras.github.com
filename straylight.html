@@ -1,0 +1,1144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/straylight.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Optimizing code for the European Space Agency</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Optimizing code for the European Space Agency</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(June 2013, <a href="http://redd.it/1fl1n1">Reddit-ed</a>)</em></p>
+
+<h2>Optimizing code for the European Space Agency</h2>
+
+<div>
+<div style="float:right; text-align:right; margin-bottom:1em">
+<small><em>First make it work; then make it work right; then make it work fast!</em></small><br><b>Kent Beck</b></div>
+</div>
+
+<p><a href="https://github.com/ttsiodras/straylight">
+<img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub">
+</a></p>
+
+<div class="tldr">
+<b>For the TL;DR crowd:</b>
+In one of the Tasks <a href="#note1">[1]</a> of a European Space Agency project that I am working on,
+I ported IDL code to C++/CUDA - <b>achieving a 35x speedup</b>.
+The code <a href="https://github.com/ttsiodras/straylight">is on GitHub</a>,
+and in this blog post I reproduce the main points of the 
+<a href="https://github.com/ttsiodras/straylight/raw/master/doc/finalReport.pdf">deliverable</a> I wrote,
+explaining the optimizations I used to get the performance levels we needed 
+(cache-related optimizations, SSE, OpenMP, CUDA, etc).
+</div>
+
+<div class="toc desktop-only">
+<ul class="nav nav-tabs nav-stacked">
+<li><h4><b>Quick navigation</b></h4></li>
+<li><a href="#Output_verification">1. Output verification</a></li>
+<li>&nbsp;</li>
+<li><a href="#Low-hanging_fruit">2. Low-hanging fruit</a></li>
+<li><a href="#The_1-_and_2-dimensional_types">2.1. The matrix types</a></li>
+<li><a href="#For-loops">2.2. For-loops</a></li>
+<li><a href="#Mutation_of_data">2.3. Mutation of data</a></li>
+<li><a href="#Memory_use_and_garbage_collection">2.4. IDL Garbage collection</a></li>
+<li><a href="#The_scaling_factor_-_OpenMP">2.5. Scaling with OpenMP</a></li>
+<li><a href="#Improving_2D_matrices">2.6. Improving 2D matrices</a></li>
+<li>&nbsp;</li>
+<li><a href="#Optimizing_the_core_logic">3. Optimizing the core logic</a></li>
+<li><a href="#The_naive_convolution">3.1. The naive convolution</a></li>
+<li><a href="#Branch_prediction_and_line_references">3.2. Branch prediction / lines</a></li>
+<li><a href="#Using_SIMD_instructions_SSE">3.3. Using SIMD instructions</a></li>
+<li><a href="#Memory_bandwidth:_the_final_frontier">3.4. Memory bandwidth</a></li>
+<li><a href="#Eigen">3.5. Eigen</a></li>
+<li><a href="#OpenMP_and_memory_bandwidth">3.6. OpenMP vs memory rates</a></li>
+<li><a href="#Better_use_of_cache_lines">3.7. Better use of cache lines</a></li>
+<li><a href="#Intel_vs_AMD">3.8. Intel vs AMD</a></li>
+<li><a href="#Memory_bandwidth_and_scalability">3.9. Scalability</a></li>
+<li>&nbsp;</li>
+<li><a href="#Using_a_GPU">4. Using a GPU (CUDA)</a></li>
+<li><a href="#Memory_bandwidth_and_textures">4.1. Textures</a></li>
+<li><a href="#Running_the_CUDA_kernel">4.2. Running the CUDA kernel</a></li>
+<li><a href="#CUDA_Results">4.3. CUDA results</a></li>
+<li>&nbsp;</li>
+<li><a href="#Final_results_and_future_work">5. Final results and future work</a></li>
+</ul>
+</div>
+
+<p>The StrayLight algorithm performs digital processing on data sent from satellites, clearing up unintended lighting effects recorded inside them. </p>
+
+<p>The prototype provided by <a href="http://www.esa.int">ESA</a> personnel, was implemented in the <a href="http://en.wikipedia.org/wiki/IDL_(programming_language)">IDL</a> programming language. IDL is a near-perfect match for its intended audience, offering an easy way for scientists and engineers to analyze and process data (scalars, vectors, matrices, etc, as well as ready-made library functions for FFTs, interpolations, convolutions,&nbsp;...)</p>
+
+<p>Moreover, the associated <em>REPL <a href="#note2">[2]</a></em> execution environment compiles the IDL code on the fly (in a manner very similar to that of a JIT engine <a href="#note3">[3]</a>). In collaboration with the highly optimized implementations of the underlying primitives, the end result offered by IDL is an excellent balance between code complexity and run-time speed.</p>
+
+<p>There is, however, room for improvement in that final regard - speed.</p>
+
+<p>The following sections demonstrate how we increased the overall execution speed of the complete StrayLight algorithm (including the PSF computation) in our development machine <a href="#note4">[4]</a> by a factor of close to 8x, through porting of the IDL code to C++/CUDA. In fact, since the calculation of the PSF data is not frame-dependent <a href="#note5">[5]</a>, the parts of the computation that have to be performed per frame  <strong>are executing 35 times faster</strong>, enabling real-time processing.</p>
+
+<p><a name="Output_verification"></a></p>
+
+<h2>1. Output verification</h2>
+
+<p>Before optimizing anything, we first had to establish the correctness of our implementation.</p>
+
+<p>To make sure that the results of the C++ implementation would not deviate from the IDL one, logging "stages" were introduced in the original IDL code. These are simply code blocks that can optionally log the contents of 1- or 2-dimensional variables to files, allowing us to perform comparisons of the results.</p>
+
+<p>The original IDL code was thus broken down into 13 stages, each one logging different parts of the computation process's results:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="symbol">...</span>
+<span class="symbol">;</span><span class="normal"> Use </span><span class="variable">debug</span><span class="symbol">=</span><span class="number">1</span><span class="normal"> to </span><span class="keyword">enable</span><span class="normal"> logging</span>
+<span class="normal">debug </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span>
+<span class="symbol">;</span><span class="normal">debug </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span>
+<span class="symbol">...</span>
+<span class="symbol">;</span><span class="normal"> Computation of the incidence angle variations </span><span class="keyword">in</span><span class="normal"> radian</span>
+<span class="variable">theta0_M1</span><span class="symbol">=</span><span class="normal">abs</span><span class="symbol">(</span><span class="normal">delta_incidence_angle</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]*!</span><span class="normal">pi</span><span class="symbol">/</span><span class="number">180</span><span class="symbol">.*(...</span>
+<span class="variable">theta0_M2</span><span class="symbol">=</span><span class="normal">abs</span><span class="symbol">(</span><span class="normal">delta_incidence_angle</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]*!</span><span class="normal">pi</span><span class="symbol">/</span><span class="number">180</span><span class="symbol">.*(...</span>
+<span class="variable">theta0_M3</span><span class="symbol">=</span><span class="normal">abs</span><span class="symbol">(</span><span class="normal">delta_incidence_angle</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">]*!</span><span class="normal">pi</span><span class="symbol">/</span><span class="number">180</span><span class="symbol">.*(...</span>
+
+<span class="keyword">if</span><span class="normal"> debug eq </span><span class="number">1</span><span class="normal"> </span><span class="keyword">then</span><span class="normal"> begin</span>
+<span class="normal">    </span><span class="variable">file_output</span><span class="symbol">=</span><span class="string">'./output_data/stage1'</span>
+<span class="normal">    get_lun</span><span class="symbol">,</span><span class="normal"> lun_out</span>
+<span class="normal">    openw</span><span class="symbol">,</span><span class="normal"> lun_out</span><span class="symbol">,</span><span class="normal"> file_output</span>
+<span class="normal">    </span><span class="keyword">printf</span><span class="symbol">,</span><span class="normal"> lun_out</span><span class="symbol">,</span><span class="normal"> theta0_M1</span>
+<span class="normal">    </span><span class="keyword">printf</span><span class="symbol">,</span><span class="normal"> lun_out</span><span class="symbol">,</span><span class="normal"> theta0_M2</span>
+<span class="normal">    </span><span class="keyword">printf</span><span class="symbol">,</span><span class="normal"> lun_out</span><span class="symbol">,</span><span class="normal"> theta0_M3</span>
+<span class="normal">    close</span><span class="symbol">,</span><span class="normal"> /all</span>
+<span class="normal">end</span>
+
+<span class="symbol">...</span>
+
+<span class="keyword">if</span><span class="normal"> debug eq </span><span class="number">1</span><span class="normal"> </span><span class="keyword">then</span><span class="normal"> begin</span>
+<span class="normal">    </span><span class="variable">file_output</span><span class="symbol">=</span><span class="string">'./output_data/stage2'</span>
+<span class="normal">    get_lun</span><span class="symbol">,</span><span class="normal"> lun_out</span>
+
+<span class="symbol">...</span>
+
+</tt></pre>
+</div>
+
+<p>The C++ implementation was subsequently built stepwise, verifying that each time a stage was reached, the results did not deviate from the ones generated by IDL. Since the work involved floating point numbers, we begun the implementation with a <tt>typedef</tt> that would allow easily switching - if necessary - from single to double precision:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ </span><span class="usertype">head</span><span class="normal"> src</span><span class="symbol">/</span><span class="normal">configStraylight</span><span class="symbol">.</span><span class="normal">h</span>
+<span class="symbol">...</span>
+<span class="keyword">typedef</span><span class="normal"> </span><span class="type">float</span><span class="normal"> fp</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<p>To be able to compare the output files with configurable degrees of accuracy, we then wrote a simple Python script:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+<span class="preproc">import</span><span class="normal"> sys</span>
+<span class="preproc">from</span><span class="normal"> itertools </span><span class="preproc">import</span><span class="normal"> izip</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">compare</span><span class="symbol">(</span><span class="normal">filename1</span><span class="symbol">,</span><span class="normal"> filename2</span><span class="symbol">):</span>
+<span class="normal">    elemNo </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span>
+<span class="normal">    lineCnt </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> l1</span><span class="symbol">,</span><span class="normal">l2 </span><span class="keyword">in</span><span class="normal"> </span><span class="function">izip</span><span class="symbol">(</span><span class="function">open</span><span class="symbol">(</span><span class="normal">filename1</span><span class="symbol">),</span><span class="normal"> </span><span class="function">open</span><span class="symbol">(</span><span class="normal">filename2</span><span class="symbol">)):</span>
+<span class="normal">        lineCnt </span><span class="symbol">+=</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">        valuesa </span><span class="symbol">=</span><span class="normal"> l1</span><span class="symbol">.</span><span class="function">split</span><span class="symbol">()</span>
+<span class="normal">        valuesb </span><span class="symbol">=</span><span class="normal"> l2</span><span class="symbol">.</span><span class="function">split</span><span class="symbol">()</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal">y </span><span class="keyword">in</span><span class="normal"> </span><span class="function">zip</span><span class="symbol">(</span><span class="normal">valuesa</span><span class="symbol">,</span><span class="normal">valuesb</span><span class="symbol">):</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="function">abs</span><span class="symbol">(</span><span class="function">float</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">))&gt;</span><span class="number">1e-10</span><span class="symbol">:</span>
+<span class="normal">                result </span><span class="symbol">=</span><span class="normal"> </span><span class="function">abs</span><span class="symbol">(</span><span class="function">float</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">)-</span><span class="function">float</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">))/</span><span class="function">abs</span><span class="symbol">(</span><span class="function">float</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1e-5</span>
+<span class="normal">            </span><span class="keyword">elif</span><span class="normal"> </span><span class="function">abs</span><span class="symbol">(</span><span class="function">float</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">))&gt;</span><span class="number">1e-10</span><span class="symbol">:</span>
+<span class="normal">                result </span><span class="symbol">=</span><span class="normal"> </span><span class="function">abs</span><span class="symbol">(</span><span class="function">float</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">)-</span><span class="function">float</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">))/</span><span class="function">abs</span><span class="symbol">(</span><span class="function">float</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">))</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1e-5</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">                elemNo </span><span class="symbol">+=</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">                </span><span class="keyword">continue</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> result</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"In line"</span><span class="symbol">,</span><span class="normal"> </span><span class="function">str</span><span class="symbol">(</span><span class="normal">lineCnt</span><span class="symbol">)+</span><span class="string">":"</span><span class="symbol">,</span><span class="normal"> x</span><span class="symbol">,</span><span class="normal"> y</span>
+<span class="normal">                </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"i.e. element:"</span><span class="symbol">,</span><span class="normal"> elemNo</span>
+<span class="normal">                sys</span><span class="symbol">.</span><span class="function">exit</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span>
+<span class="normal">            elemNo </span><span class="symbol">+=</span><span class="normal"> </span><span class="number">1</span>
+
+<span class="keyword">if</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">!=</span><span class="normal"> </span><span class="number">3</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="normal"> </span><span class="string">"Usage:"</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> </span><span class="string">" &lt;file1&gt; &lt;file2&gt;"</span>
+<span class="normal">    sys</span><span class="symbol">.</span><span class="function">exit</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span>
+<span class="function">compare</span><span class="symbol">(</span><span class="normal">sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">],</span><span class="normal"> sys</span><span class="symbol">.</span><span class="normal">argv</span><span class="symbol">[</span><span class="number">2</span><span class="symbol">])</span>
+<span class="normal">sys</span><span class="symbol">.</span><span class="function">exit</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">)</span>
+</tt></pre>
+</div>
+
+<p>This Python script compares two files, line by line - comparing the contained numbers to a configurable degree of accuracy.
+The log files it works with are the ones generated by the IDL code - which end up quite big (the algorithm operates on large data buffers). The script therefore doesn't load the file contents in memory all at once, and instead opts to use the iterator protocols of Python - processing each line individually.</p>
+
+<p>Notice that the comparison is not an absolute one: the boolean result is computed based on the relative difference between the two samples, so it adapts nicely to different magnitudes (if both values are too close to zero, it just ignores them).</p>
+
+<p>This comparison process (verifying outputs from all stages) was added as a rule to the <tt>Makefile</tt> that builds the C++ source code. Every time the C++ code was extended to reach a new stage, a <em>make test</em> was used to verify that the outputs from IDL and C++ did not deviate.</p>
+
+<p><a name="Low-hanging_fruit"></a></p>
+
+<h1>2. Low-hanging fruit</h1>
+
+<p><a name="The_1-_and_2-dimensional_types"></a></p>
+
+<h2>2.1. The matrix types</h2>
+
+<p>ESA's prototype IDL code operated on both 1- and 2-dimensional matrices. These were initially represented in the C++ code with:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">typedef</span><span class="normal"> std</span><span class="symbol">::</span><span class="usertype">vector&lt;fp&gt;</span><span class="normal">  m1d</span><span class="symbol">;</span>
+<span class="keyword">typedef</span><span class="normal"> std</span><span class="symbol">::</span><span class="usertype">vector&lt;m1d&gt;</span><span class="normal"> m2d</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<ul>
+<li>The STL <em>vector</em> type represents data internally by allocating them in a contiguous space on the heap. Cache-performance wise, this means that a <tt>vector&lt;fp&gt;</tt> is no different than a classic heap-allocated array (<em>fp *pVariable=new Type[...]</em>). The only performance differences to watch for were (a) in the lost low-level optimization opportunities that a plain array offers to a good compiler (inlining, loop-unrolling, etc), as well as (b) the case of 2-dimensional matrices. The effort involved in optimizing these was postponed for <a href="#m1d">later</a> implementation stages.</li>
+<li>The <tt>vector&lt;vector&lt;...>></tt> scheme also allowed individual lines of the two dimensional matrix to be assigned to <em>m1d&amp;</em> references, outside the inner-loops. This offered significant speed advantages, as shown <a href="#lines">below</a>.</li>
+</ul>
+
+<p><a name="For-loops"></a></p>
+
+<h2>2.2. For-loops</h2>
+
+<p>By handling vectors and matrices as high-level entities, IDL is in many ways behaving like pure functional languages (e.g. Haskell), which work on immutable data. IDL in fact explicitely states that imperative constructs like <tt>for</tt> loops impact speed, and counter-suggests using high-level primitives:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">theta0_M1 </span><span class="symbol">=</span><span class="normal"> delta_incidence_angle</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]*!</span><span class="normal">pi</span><span class="symbol">/</span><span class="number">180</span><span class="symbol">.*</span><span class="normal">indgen</span><span class="symbol">(...</span>
+</tt></pre>
+</div>
+
+<p>In C++, however, ...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">// Computation of the incidence angle variations </span>
+<span class="usertype">m1d</span><span class="normal">  </span><span class="function">theta0_M1</span><span class="symbol">(</span><span class="normal">image_dim_x</span><span class="symbol">);</span>
+<span class="keyword">for</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">image_dim_x</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    theta0_M1</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> delta_incidence_angle</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]*</span><span class="normal">M_PI</span><span class="symbol">/</span><span class="number">180</span><span class="symbol">.*...</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>...the compiler can utilize low-level speed optimizations inside <tt>for</tt> loops: it can store variables in registers, thus avoiding memory accesses ; it can unroll the loop, if it figures out that this will be faster. More importantly, it can choose to use SIMD instructions (like Intel SSE or AVX) to significantly speed up the loop (SSE instructions allow operations on 4 floats to be done in one cycle; AVX allows 8).</p>
+
+<p>The run-time library implementation of IDL's base primitives may in fact already be using SIMD instructions; a compiler however, is far better equipped to mix and match various low-level optimizations alongside SIMD implementations - and figure out where using them makes sense and where it doesn't. SIMD-wise, it's the difference between having a technology only in parts of your runtime library, and having it automatically applied wherever in your algorithm it makes sense to do so.</p>
+
+<p><a name="Mutation_of_data"></a></p>
+
+<h2>2.3. Mutation of data</h2>
+
+<p>Speed-wise, the IDL engine is facing another insurmountable problem: the immutability aspects of many of the operations performed in the original code. For example, this IDL code...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">theta0_M1 </span><span class="symbol">=</span><span class="normal"> delta_incidence_angle</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]*!</span><span class="normal">pi</span><span class="symbol">/</span><span class="number">180</span><span class="symbol">.*(</span><span class="normal">indgen</span><span class="symbol">(</span>
+<span class="normal">    image_dim_x</span><span class="symbol">)</span><span class="normal">-image_dim_x</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)/...</span>
+</tt></pre>
+</div>
+
+<p>... describes an operation in terms of actions on immutable vectors. In this case, <tt>indgen</tt> is utilized to <em>actually</em> generate a vector of size <tt>image_dim_x</tt>, on whose elements (which are generated to be monotonically increasing) a subtraction of <tt>image_dim_x/2</tt> is performed.</p>
+
+<p>Contrast this to the C++ version:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">for</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">image_dim_x</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    theta0_M1</span><span class="symbol">[</span><span class="normal">i</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> delta_incidence_angle</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]*</span><span class="normal">M_PI</span><span class="symbol">/</span><span class="number">180</span><span class="symbol">.*</span>
+<span class="normal">        </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">-</span><span class="normal">image_dim_x</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)/...</span>
+</tt></pre>
+</div>
+
+<p>This is far more efficient:</p>
+
+<ul>
+<li>The C++ version is not wasting memory to create a "temporary" vector. The only reason <tt>indgen</tt> is used in the IDL code to create this vector (with values from <tt>-image_dim_x/2</tt> to <tt>image_dim_x/2-1</tt>) is that loops are too slow in IDL. C++ has no such problems - and with that factor removed, it is easy to see that <tt>indgen</tt> is in fact generating a useless vector (from an execution-speed viewpoint).</li>
+<li>More importantly, the extra memory space of the temporary vector "pollutes" the CPU cache. The cache has to handle accesses to this vector's memory just like it does for any other - when in fact, the vector's data will be immediately afterwards thrown out of the cache (with the corresponding penalty of accessing the next required data from the next-level of cache, or even main memory).</li>
+</ul>
+
+<p>The proper utilization of the CPU cache is a common factor in many of the speedups achieved by our C++ code, as we will see in the following sections.</p>
+
+<p><a name="Memory_use_and_garbage_collection"></a></p>
+
+<h2>2.4. Memory use and garbage collection</h2>
+
+<p>The <em>gdl</em> execution environment (<em>REPL</em>) operates like many other interpreters - it employs garbage collection techniques to perform memory management.</p>
+
+<p>Running <tt>top -b</tt> allowed us to monitor the memory usage of the execution of both the IDL and the C++ versions of the code:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ top -b </span><span class="symbol">|</span><span class="normal"> grep --line-buffered gdl</span>
+<span class="normal">PID   USER   VIRT  RES  SHR  S </span><span class="symbol">%</span><span class="normal">CPU </span><span class="symbol">%</span><span class="normal">MEM   TIME</span><span class="symbol">+</span><span class="normal">   COMMAND</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1282m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">1g </span><span class="number">7988</span><span class="normal"> R   </span><span class="number">97</span><span class="normal"> </span><span class="number">18.6</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">04.30</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1282m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">1g </span><span class="number">7988</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">18.6</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">07.30</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1282m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">1g </span><span class="number">7988</span><span class="normal"> R  </span><span class="number">101</span><span class="normal"> </span><span class="number">18.6</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">07.63</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1134m 819m </span><span class="number">7988</span><span class="normal"> R   </span><span class="number">99</span><span class="normal"> </span><span class="number">13.7</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">10.63</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1282m 967m </span><span class="number">7988</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">16.2</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">13.65</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1134m 967m </span><span class="number">7992</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">16.2</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">16.65</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1430m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">2g </span><span class="number">8004</span><span class="normal"> R   </span><span class="number">99</span><span class="normal"> </span><span class="number">21.1</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">17.98</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1430m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">2g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">101</span><span class="normal"> </span><span class="number">21.1</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">20.70</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1430m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">2g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">21.1</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">22.47</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1430m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">2g </span><span class="number">8004</span><span class="normal"> R   </span><span class="number">99</span><span class="normal"> </span><span class="number">21.1</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">25.45</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1578m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">4g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">23.6</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">28.46</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1578m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">4g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">23.6</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">29.01</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1578m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">4g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">23.6</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">32.02</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1874m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">6g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">27.4</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">35.03</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2171m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">0g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">33.5</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">38.03</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2171m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">0g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">33.5</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">41.05</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2171m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">0g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">33.5</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">44.05</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2171m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">0g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">33.5</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">47.06</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2171m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">0g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">101</span><span class="normal"> </span><span class="number">33.5</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">47.41</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2319m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">1g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">35.9</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">50.42</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2171m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">0g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">33.5</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">53.42</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2911m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">7g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">45.8</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">56.43</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2911m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">7g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">45.8</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">59.44</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2911m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">7g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">45.8</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">02.43</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2911m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">7g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">45.8</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">05.45</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 3059m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">8g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">48.3</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">08.45</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 3059m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">9g </span><span class="number">8004</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">48.3</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">11.46</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1282m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">0g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">17.0</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">14.47</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1282m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">1g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">18.6</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">17.48</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1282m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">0g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">17.2</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">20.48</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1430m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">2g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">21.1</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">23.49</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1430m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">2g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">21.1</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">26.49</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2023m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">8g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">31.0</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">29.50</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2023m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">8g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">31.0</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">32.51</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2171m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">9g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">32.6</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">35.52</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2171m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">0g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">33.5</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">38.52</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2023m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">8g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">31.0</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">41.53</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2763m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">5g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">43.4</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">44.53</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2763m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">5g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">43.4</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">47.55</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2911m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">7g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">45.8</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">50.54</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 2911m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">7g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">45.8</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">53.55</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 3059m </span><span class="number">2</span><span class="symbol">.</span><span class="normal">8g </span><span class="number">8024</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">48.3</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">56.56</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1295m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">1g </span><span class="number">8044</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">18.9</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">59.57</span><span class="normal"> gdl</span>
+<span class="number">10288</span><span class="normal"> ttsiod 1759m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">4g </span><span class="number">8768</span><span class="normal"> R  </span><span class="number">100</span><span class="normal"> </span><span class="number">24.7</span><span class="normal">   </span><span class="number">2</span><span class="symbol">:</span><span class="number">02.58</span><span class="normal"> gdl</span>
+<span class="symbol">...</span>
+
+<span class="normal">$ top -b </span><span class="symbol">|</span><span class="normal"> grep --line-buffered strayLight</span>
+<span class="normal">PID   USER   VIRT  RES   SHR S </span><span class="symbol">%</span><span class="normal">CPU </span><span class="symbol">%</span><span class="normal">MEM   TIME</span><span class="symbol">+</span><span class="normal">   COMMAND</span>
+<span class="number">10352</span><span class="normal"> ttsiod 1091m 978m  </span><span class="number">844</span><span class="normal"> R  </span><span class="number">123</span><span class="normal"> </span><span class="number">16.3</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">03.70</span><span class="normal"> strayLight</span>
+<span class="number">10352</span><span class="normal"> ttsiod 1245m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">1g  </span><span class="number">844</span><span class="normal"> R  </span><span class="number">593</span><span class="normal"> </span><span class="number">18.1</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">15.52</span><span class="normal"> strayLight</span>
+<span class="number">10352</span><span class="normal"> ttsiod 1102m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">0g  </span><span class="number">844</span><span class="normal"> R  </span><span class="number">551</span><span class="normal"> </span><span class="number">17.1</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">26.09</span><span class="normal"> strayLight</span>
+<span class="number">10352</span><span class="normal"> ttsiod 1318m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">1g  </span><span class="number">844</span><span class="normal"> R  </span><span class="number">570</span><span class="normal"> </span><span class="number">18.7</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">37.21</span><span class="normal"> strayLight</span>
+<span class="number">10352</span><span class="normal"> ttsiod 1242m </span><span class="number">1</span><span class="symbol">.</span><span class="normal">0g  </span><span class="number">844</span><span class="normal"> R  </span><span class="number">573</span><span class="normal"> </span><span class="number">17.9</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">48.42</span><span class="normal"> strayLight</span>
+<span class="number">10352</span><span class="normal"> ttsiod 1089m 972m  </span><span class="number">864</span><span class="normal"> R  </span><span class="number">552</span><span class="normal"> </span><span class="number">16.2</span><span class="normal">   </span><span class="number">0</span><span class="symbol">:</span><span class="number">59.01</span><span class="normal"> strayLight</span>
+<span class="number">10352</span><span class="normal"> ttsiod 1089m 972m  </span><span class="number">864</span><span class="normal"> R  </span><span class="number">592</span><span class="normal"> </span><span class="number">16.2</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">10.78</span><span class="normal"> strayLight</span>
+<span class="number">10352</span><span class="normal"> ttsiod 1089m 972m  </span><span class="number">864</span><span class="normal"> R  </span><span class="number">597</span><span class="normal"> </span><span class="number">16.2</span><span class="normal">   </span><span class="number">1</span><span class="symbol">:</span><span class="number">22.73</span><span class="normal"> strayLight</span>
+</tt></pre>
+</div>
+
+<p>Focusing on the memory usage columns (<em>VIRT and RES)</em>, we observed the following:</p>
+
+<ul>
+<li>The C++ version of the algorithm used far less memory than the IDL one. As explained in the previous section, this can be attributed to (a) the fact that "temporary" vectors introduced in IDL to avoid <tt>for</tt> loops are thrown away completely in C++, and (b) in C++ we can modify a vector in-place if it suits our purpose. Both of these factors combine to make C++ use around 1GB of memory, when IDL is using 3GB. This means that CPU caches are stressed a lot more, and inevitably, speed suffers.</li>
+<li>Notice also the pattern of increase: as the algorithm runs, the interpreter is monotonically increasing memory usage, until it reaches 3GB - at which point, a sharp drop is noticed, which brings it down to around 1GB ; and then the cycle repeats. This is very similar to the patterns of other systems where memory is garbage collected - and it has a noticeable impact on speed, which is of course absent from the C++ implementation (where memory is managed explicitely in the matrix classes: allocated in the constructor, released in the destructor).</li>
+<li>Equally important - the absence of a garbage-collection cycle means that the execution profile of the C++ code remains constant: each image is processed in the same time as any other.</li>
+</ul>
+
+<p>Lines in the shell output above were emitted every 3 seconds by <tt>top -b</tt>; there were a lot more lines while running the IDL code than when running the C++ one, since the overall execution time lasted close to 8 times longer.</p>
+
+<p>The astute reader may be wondering about the results reported in column <tt>TIME</tt>; but that is easily explained by the fact that this column contains the <em>accumulated</em> time spent in all cores of the machine. The C++ version makes use of all of them (notice the <tt>CPU</tt> column) - which brings us nicely into discussing the matter of multi-threading.</p>
+
+<p><a name="The_scaling_factor_-_OpenMP"></a></p>
+
+<h2>2.5. Scaling with OpenMP</h2>
+
+<p>In the pursuit of execution speed, it is of paramount importance to take advantage of the multiple cores inside modern CPUs.</p>
+
+<p>In the case of IDL, this can only be done in terms of multiprocessing - i.e. running multiple instances of the IDL engine, each one processing a different input image.</p>
+
+<p>This, however, is not as performant as multi-threading <em>from inside</em> a single process. The reason, has to do with the caches' behaviour - and in particular, with their utilization factor:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#ifdef</span><span class="normal"> USE_OPENMP</span>
+<span class="preproc">#pragma</span><span class="normal"> omp parallel </span><span class="keyword">for</span>
+<span class="preproc">#endif</span>
+<span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> i_y</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i_y</span><span class="symbol">&lt;</span><span class="normal">image_dim_y</span><span class="symbol">;</span><span class="normal"> i_y</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> j</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">image_dim_x</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span>
+<span class="normal">       input_image_corrected</span><span class="symbol">[</span><span class="normal">i_y</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">            input_image</span><span class="symbol">[</span><span class="normal">i_y</span><span class="symbol">][</span><span class="normal">j</span><span class="symbol">]</span><span class="normal"> </span>
+<span class="normal">            </span><span class="symbol">*</span><span class="normal"> </span>
+<span class="normal">            correction_direct_peak</span><span class="symbol">[</span><span class="normal">j</span><span class="symbol">];</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>This part of our C++ code uses an OpenMP <tt>#pragma</tt>, directing the compiler to generate code that spawns threads - with each thread processing a different "batch" of <tt>i_y</tt> scanlines. The key thing to notice here, is that <em>all</em> threads operate on the <em>same</em> buffers: they read from the <tt>input_image</tt> and <tt>correction_direct_peak</tt> matrices, and output to <tt>input_image_corrected</tt>.</p>
+
+<p>In comparison, when multiple instances of this same code are executed concurrently from multiple processes that operate on <em>different</em> images, the L<sub>n</sub> cache is, in-effect, completely thrashed. Even one of our images is too big to fit inside the L3 cache <a href="#note6">[6]</a> ; multiple concurrent instances are simply disastrous in terms of cache usage.</p>
+
+<p>What this means, is that the CPU caches - and in particular L<sub>n</sub>, the last level cache, which is shared between all CPU cores - are far better utilized with multithreading (as opposed to multiprocessing). Right after this code block, there is another one that works on the <tt>input_image_corrected</tt> buffer - and when using multithreading, it will find large parts of the data already in cache.</p>
+
+<p>Further note-worthy aspects of the code:</p>
+
+<ul>
+<li>The <tt>#ifdef</tt> makes sure that multi-threading only applies when the user wants it to - for example, it is disabled during debug builds. The definition of the <tt>USE_OPENMP</tt> is performed via the usual <em>autoconf</em>'s <tt>./configure</tt> invocation (prior to building the code), which (a) detects if the current enviroment supports OpenMP and (b) checks whether the user has requested a debug build. Only if both filters pass, will it <tt>#define USE_OPENMP</tt>.</li>
+<li>Examining the data of the previous section, i.e. the outputs of <tt>top -b</tt>, we notice that the reported CPU utilization in the case of C++ rose immediately to close to 600%, fully utilizing all 6 available cores. It stayed there until the program finished, due to the judicious use of OpenMP <tt>pragma</tt>s in the various processing loops of our C++ code.</li>
+</ul>
+
+<p><a name="Improving_2D_matrices"></a></p>
+
+<h2>2.6. Improving 2D matrices</h2>
+
+<p><a name="m1d"></a>
+Having witnessed how much impact cache utilization had on our performance, we revisited the implementation of 2D matrices as vectors of vectors. Changing that form into one that would keep all of a matrix's data in <em>a single heap block</em>, would - in theory - improve our cache utilization:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">class</span><span class="normal"> </span><span class="classname">m2d</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="keyword">public</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> _width</span><span class="symbol">,</span><span class="normal"> _height</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">fp</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">_pData</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="function">m2d</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> y</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> x</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="symbol">:</span>
+<span class="normal">        </span><span class="function">_width</span><span class="symbol">(</span><span class="normal">x</span><span class="symbol">),</span><span class="normal"> </span>
+<span class="normal">        </span><span class="function">_height</span><span class="symbol">(</span><span class="normal">y</span><span class="symbol">),</span><span class="normal"> </span>
+<span class="normal">        </span><span class="function">_pData</span><span class="symbol">(</span><span class="keyword">new</span><span class="normal"> fp</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">*</span><span class="normal">x</span><span class="symbol">])</span><span class="normal"> </span>
+<span class="normal">        </span><span class="cbracket">{}</span>
+<span class="normal">    </span><span class="symbol">~</span><span class="function">m2d</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+<span class="normal">        </span><span class="keyword">delete</span><span class="normal"> </span><span class="symbol">[]</span><span class="normal"> _pData</span><span class="symbol">;</span><span class="normal"> </span>
+<span class="normal">        _pData</span><span class="symbol">=</span><span class="normal">NULL</span><span class="symbol">;</span><span class="normal"> </span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    fp</span><span class="symbol">&amp;</span><span class="normal"> </span><span class="keyword">operator</span><span class="symbol">()(</span><span class="type">int</span><span class="normal"> y</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> x</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> _pData</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">*</span><span class="normal">_width </span><span class="symbol">+</span><span class="normal"> x</span><span class="symbol">];</span><span class="normal"> </span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    fp</span><span class="symbol">*</span><span class="normal"> </span><span class="function">getLine</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> y</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+<span class="normal">        </span><span class="keyword">return</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">_pData</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">*</span><span class="normal">_width</span><span class="symbol">];</span><span class="normal"> </span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="type">void</span><span class="normal"> </span><span class="function">reset</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+<span class="normal">        </span><span class="function">memset</span><span class="symbol">(</span><span class="normal">_pData</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">fp</span><span class="symbol">)*</span><span class="normal">_width</span><span class="symbol">*</span><span class="normal">_height</span><span class="symbol">);</span><span class="normal"> </span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="keyword">private</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="function">m2d</span><span class="symbol">(</span><span class="keyword">const</span><span class="normal"> m2d</span><span class="symbol">&amp;);</span>
+<span class="normal">    m2d</span><span class="symbol">&amp;</span><span class="normal"> </span><span class="keyword">operator</span><span class="symbol">=(</span><span class="keyword">const</span><span class="normal"> m2d</span><span class="symbol">&amp;);</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<p>The code above provided the primitives necessary for our work with 2d- matrices:</p>
+
+<ul>
+<li>It allocates all necessary memory in a single heap block</li>
+<li>It provides indexing through <tt>operator()</tt>, so one can use simple syntax to access matrix elements (e.g. <em>matrixVariable(y,x) = value;</em>)</li>
+<li>Access to individual "lines" of the matrix is obtained via <tt>getLine</tt>, which emulates assigning references to the contained <em>m1d</em> of the STL-based version - this is important, <a href="#lines">speed-wise</a>.</li>
+<li>It offers a <tt>reset</tt> function to clear the contained data to 0.0.</li>
+<li>It provides a private copy constructor and assignment operator, <em>thus forcing the user to always pass these matrices by reference, never by value</em>.</li>
+<li>It automatically releases all the memory we used in the destructor (and therefore, avoids memory leaks).</li>
+</ul>
+
+<p>When benchmarked, this change provided a modest 10% increase in our execution speed.</p>
+
+<p><a name="Optimizing_the_core_logic"></a></p>
+
+<h1>3. Optimizing the core logic</h1>
+
+<p>After concluding a first porting pass over all the steps of the algorithm, and having already achieved a nice speedup against <em>gdl</em>, we turned our attention to the parts that matterred the most: the ones that must be done per-frame. It quickly became clear to us that the PSF-calculations could be performed <em>only during the processing of the first input frame</em>, and then re-used for all subsequent input frames. This would leave only the convolution and the FFTs to be done per each input frame.</p>
+
+<p>For the FFTs, we decided to use FFTW - <em><a href="http://www.fftw.org">"The Fastest Fourier Transform in the West"</a></em> ; a library that is heavily optimized, to the point of using both multithreading <em>and</em> SIMD instructions. After applying it to our problem, benchmarking stages 10 and 11 - i.e. the convolution of the image with the PSF data and the subsequent FFTs - gave the following results:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ </span><span class="symbol">.</span><span class="normal">/src/strayLight</span>
+<span class="symbol">...</span>
+<span class="normal">Stage10 alone took </span><span class="number">5895</span><span class="normal"> ms</span><span class="symbol">.</span>
+<span class="normal">Stage11 alone took </span><span class="number">87</span><span class="normal"> ms</span><span class="symbol">.</span>
+</tt></pre>
+</div>
+
+<p>The last two stages - the only ones that have to be performed <em>per input frame</em> - took approximately 6 seconds to execute on our machine. Stage 10 - the convolution - dominated the execution time, accounting for 68 times more work than the FFTs. Inevitably, the convolution became the primary target for further optimization efforts.
+<a name="initial"></a>
+<a name="The_naive_convolution"></a></p>
+
+<h2>3.1. The naive convolution</h2>
+
+<p>Our first implementation was a direct translation of the convolution definition (<em>assuming IDL's EDGE_WRAP mode</em>):</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">// inX,inY: input frame dimensions, kX,kY:  Convolution kernel dimensions</span>
+<span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">inY</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">inX</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="type">float</span><span class="normal"> sum</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">.,</span><span class="normal"> k</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">&lt;</span><span class="normal">kY</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">l</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">&lt;</span><span class="normal">kX</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">++)</span>
+<span class="normal">                sum </span><span class="symbol">+=</span><span class="normal"> input_image_corrected</span><span class="symbol">[(</span><span class="normal">i</span><span class="symbol">+</span><span class="normal">k</span><span class="symbol">)%</span><span class="normal">inY</span><span class="symbol">][(</span><span class="normal">j</span><span class="symbol">+</span><span class="normal">l</span><span class="symbol">)%</span><span class="normal">inX</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">*</span>
+<span class="normal">                       psf_high_res</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">][</span><span class="normal">l</span><span class="symbol">];</span>
+<span class="normal">        high_res_output_image</span>
+<span class="normal">            </span><span class="symbol">[(</span><span class="normal">i</span><span class="symbol">+</span><span class="normal">kY</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)%</span><span class="normal">inY</span><span class="symbol">]</span>
+<span class="normal">            </span><span class="symbol">[(</span><span class="normal">j</span><span class="symbol">+</span><span class="normal">kX</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)%</span><span class="normal">inX</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> sum</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>The code is relatively simple: it uses the <em>STL vector</em>-based form of the <em>m2d</em> definition, so it follows the familiar pattern of accessing 2D arrays in C++ (<em>matrix[y][x]</em>) to multiply the convolution kernel with the image data, and accumulate and store the result. </p>
+
+<p>Unfortunately, it also took around 5900 ms to execute in our machine.</p>
+
+<p><a name="Branch_prediction_and_line_references"></a></p>
+
+<h2>3.2. Branch prediction and line references</h2>
+
+<p>Further investigation pointed to two issues:</p>
+
+<ul>
+<li>Profiling indicated that the modulo operator - used to implement the EDGE_WRAP IDL logic - was compiled to <em>very</em> slow code in our AMD CPU. We addressed this via simple <em>if</em> conditionals: modern CPUs' branch prediction worked wonderfully in our case, because most of the modulo operations in the inner loop do nothing - only near the end of the inner loop do they actually switch code paths. To assist them further, we indicated as such, via GCC's <tt>__builtin_expect</tt> (see Listing below) - basically we told GCC to order the code "giving preference" to the path where the <tt>ofsX</tt> variable is within bounds. <b><em>Update:</em></b> this issue was later revealed to be an issue with our GCC version - later versions of the compiler fixed the problem, emitting code almost as fast as our conditional-based code. Still, our version remained faster - because of the <tt>__builtin_expect</tt>.
+<a name="lines"></a></li>
+<li>Using <tt>vector&lt;vector&lt;float&gt;&gt;</tt> to represent the 2D arrays, meant that the indexing of the first dimension provided access to a vector, which was subsequently indexed again to get to the single floating point value. We took advantage of the fact that frame lines are individual STL vectors, and assigned them outside the inner loops - to <em>m1d&amp;</em> "line" references:</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">inY</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> sY </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">+</span><span class="normal">kY</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">sY </span><span class="symbol">&gt;=</span><span class="normal"> inY</span><span class="symbol">)</span><span class="normal"> sY </span><span class="symbol">-=</span><span class="normal"> inY</span><span class="symbol">;</span>
+<span class="normal">    m1d</span><span class="symbol">&amp;</span><span class="normal"> high_res_output_image_line </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">        high_res_output_image</span><span class="symbol">[</span><span class="normal">sY</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">inX</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="symbol">(</span><span class="type">float</span><span class="normal"> sum</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">.,</span><span class="normal">k</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">&lt;</span><span class="normal">kY</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> ofsY </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">+</span><span class="normal">k</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ofsY</span><span class="symbol">&gt;=</span><span class="normal">inY</span><span class="symbol">)</span><span class="normal"> ofsY </span><span class="symbol">-=</span><span class="normal"> inY</span><span class="symbol">;</span>
+<span class="normal">            m1d</span><span class="symbol">&amp;</span><span class="normal"> input_image_corrected_line </span><span class="symbol">=</span>
+<span class="normal">                input_image_corrected</span><span class="symbol">[</span><span class="normal">ofsY</span><span class="symbol">];</span>
+<span class="normal">            m1d</span><span class="symbol">&amp;</span><span class="normal"> psf_high_res_line </span><span class="symbol">=</span><span class="normal"> psf_high_res</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">l</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal">l</span><span class="symbol">&lt;</span><span class="normal">kX</span><span class="symbol">;</span><span class="normal">l</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> ofsX </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">+</span><span class="normal">l</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">__builtin_expect</span><span class="symbol">(</span><span class="normal">ofsX</span><span class="symbol">&gt;=</span><span class="normal">inX</span><span class="symbol">,</span><span class="number">0</span><span class="symbol">))</span><span class="normal"> </span>
+<span class="normal">                    ofsX </span><span class="symbol">-=</span><span class="normal"> inX</span><span class="symbol">;</span>
+<span class="normal">                sum </span><span class="symbol">+=</span><span class="normal"> input_image_corrected_line</span><span class="symbol">[</span><span class="normal">ofsX</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span>
+<span class="normal">                       psf_high_res_line</span><span class="symbol">[</span><span class="normal">l</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> outOfsX </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">+</span><span class="normal">kX</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">outOfsX</span><span class="symbol">&gt;=</span><span class="normal">inX</span><span class="symbol">)</span><span class="normal"> outOfsX </span><span class="symbol">-=</span><span class="normal"> inX</span><span class="symbol">;</span>
+<span class="normal">        high_res_output_image_line</span><span class="symbol">[</span><span class="normal">outOfsX</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> sum</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>Combined, these two changes provided a tremendous 800% speed boost:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ </span><span class="symbol">.</span><span class="normal">/src/strayLight</span>
+<span class="normal">Stage10 alone took </span><span class="number">738</span><span class="normal"> ms</span><span class="symbol">.</span>
+</tt></pre>
+</div>
+
+<p><a name="Using_SIMD_instructions_SSE"></a></p>
+
+<h2>3.3. Using SIMD instructions (SSE)</h2>
+
+<p>Investigating SSE intrinsics came next. In theory, SSE instructions would provide a 4x boost, since they work with <tt>__m128</tt> instances. The <tt>__m128</tt> type is directly mapped by compilers to the XMM<sub>n</sub> 128-bit SSE registers, that carry 4 IEEE754 single precision floating point numbers. Operations on these registers, operate on all 4 single-precision floating point numbers - in most cases, in a single CPU cycle. </p>
+
+<p>This proved to be quite challenging. In order to work efficiently, SSE instructions need memory accesses to be aligned to offsets that are multiples of 16. There <em>are</em> unaligned access instructions (e.g. <tt>mm_loadu_ps</tt> instead of <tt>mm_load_ps</tt>), but these run at much lower speeds than their aligned counterparts.</p>
+
+<p>We therefore modified our <tt>m2d</tt> definitions to use our own, custom, 16x-offsets memory allocator:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">typedef</span><span class="normal"> </span><span class="type">float</span><span class="normal"> fp</span><span class="symbol">;</span>
+<span class="keyword">typedef</span><span class="normal"> </span><span class="usertype">vector&lt;fp, AlignmentAllocator&lt;fp,16&gt; &gt;</span><span class="normal"> m1d</span><span class="symbol">;</span>
+<span class="keyword">typedef</span><span class="normal"> </span><span class="usertype">vector&lt;m1d&gt;</span><span class="normal"> m2d</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<p>Having done that, it was necessary to somehow ensure that the inner loop's memory accesses...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="type">float</span><span class="normal"> sum </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0.0</span>
+<span class="keyword">for</span><span class="normal"> </span><span class="symbol">(...)</span><span class="normal"> </span><span class="comment">// nested loops</span>
+<span class="normal">    sum </span><span class="symbol">+=</span><span class="normal"> </span>
+<span class="normal">        input_image_corrected_line</span><span class="symbol">[</span><span class="normal">ofsX</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">*</span>
+<span class="normal">        psf_high_res_line</span><span class="symbol">[</span><span class="normal">l</span><span class="symbol">];</span>
+</tt></pre>
+</div>
+
+<p>... could be morphed into <tt>__m128</tt> accesses (i.e. 4 single-precision floats multiplied in one step) - guaranteeing at the same time that these accesses would always be aligned to 16x offsets.</p>
+
+<p>However, the inner loop works on each output float-sum one at a time:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">inY</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">  </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">inX</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="comment">// read input_image_corrected_line[i*inX + j]...</span>
+</tt></pre>
+</div>
+
+<p>This seemed impossible - until we realized that we could create 4 copies of the convolution kernel, each one shifted by 0,1,2,3 slots to the right. This meant that we could ALWAYS base the <tt>__m128</tt> to multiples of 16x offsets, and just multiply with a <em>different</em> kernel each time:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="usertype">__m128</span><span class="normal"> </span><span class="function">sum4</span><span class="symbol">(</span><span class="function">_mm_set1_ps</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">.));</span><span class="normal"> </span><span class="comment">// init 4 float sums</span>
+<span class="keyword">for</span><span class="normal"> </span><span class="symbol">(...)</span><span class="normal"> </span><span class="comment">// nested loops</span>
+<span class="normal">    </span><span class="comment">// select properly shifted kernel!</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> kIdx </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">+</span><span class="normal">l</span><span class="symbol">)&amp;</span><span class="number">0x3</span><span class="symbol">;</span><span class="normal"> </span>
+<span class="normal">    </span><span class="usertype">__m128</span><span class="normal"> fourImageSamples </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">        </span><span class="symbol">*(</span><span class="normal">__m128</span><span class="symbol">*)&amp;</span><span class="normal">input_image_corrected_line</span><span class="symbol">[</span><span class="normal">ofsX</span><span class="symbol">];</span>
+<span class="normal">    sum4 </span><span class="symbol">+=</span><span class="normal"> fourImageSamples </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(*(</span><span class="normal">__m128</span><span class="symbol">*)&amp;</span><span class="normal">kernels</span><span class="symbol">[</span><span class="normal">kIdx</span><span class="symbol">][</span><span class="normal">k</span><span class="symbol">][</span><span class="normal">l</span><span class="symbol">]);</span>
+</tt></pre>
+</div>
+
+<p>This is what the core loops changed into:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">inY</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> sY </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">+</span><span class="normal">kY</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">sY </span><span class="symbol">&gt;=</span><span class="normal"> inY</span><span class="symbol">)</span><span class="normal"> sY </span><span class="symbol">-=</span><span class="normal"> inY</span><span class="symbol">;</span>
+<span class="normal">    m1d</span><span class="symbol">&amp;</span><span class="normal"> high_res_output_line </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">        high_res_output_image</span><span class="symbol">[</span><span class="normal">sY</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">inX</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">__m128</span><span class="normal"> </span><span class="function">sum4</span><span class="symbol">(</span><span class="function">_mm_set1_ps</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">.));</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal">k</span><span class="symbol">&lt;</span><span class="normal">kY</span><span class="symbol">;</span><span class="normal">k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> ofsY </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">+</span><span class="normal">k</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ofsY</span><span class="symbol">&gt;=</span><span class="normal">inY</span><span class="symbol">)</span><span class="normal"> ofsY </span><span class="symbol">-=</span><span class="normal"> inY</span><span class="symbol">;</span>
+<span class="normal">            m1d</span><span class="symbol">&amp;</span><span class="normal"> input_image_line </span><span class="symbol">=</span>
+<span class="normal">                input_image_corrected</span><span class="symbol">[</span><span class="normal">ofsY</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">l</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal">l</span><span class="symbol">&lt;</span><span class="normal">kX</span><span class="symbol">+</span><span class="number">3</span><span class="symbol">;</span><span class="normal">l</span><span class="symbol">+=</span><span class="number">4</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">j </span><span class="symbol">&amp;&amp;</span><span class="normal"> l</span><span class="symbol">&gt;=</span><span class="normal">kX</span><span class="symbol">)</span><span class="normal"> </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> ofsX </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">+</span><span class="normal">l</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ofsX</span><span class="symbol">&gt;=</span><span class="normal">inX</span><span class="symbol">)</span><span class="normal"> ofsX </span><span class="symbol">-=</span><span class="normal"> inX</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="comment">// Make sure we are at 16x !</span>
+<span class="normal">                ofsX </span><span class="symbol">=</span><span class="normal"> ofsX </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="symbol">~</span><span class="number">0x3</span><span class="symbol">;</span><span class="normal">  </span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> kIdx </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">+</span><span class="normal">l</span><span class="symbol">)&amp;</span><span class="number">0x3</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="usertype">__m128</span><span class="normal"> fourImageSamples </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">                    </span><span class="symbol">*(</span><span class="normal">__m128</span><span class="symbol">*)&amp;</span><span class="normal">input_image_line</span><span class="symbol">[</span><span class="normal">ofsX</span><span class="symbol">];</span>
+<span class="normal">                sum4 </span><span class="symbol">+=</span><span class="normal"> fourImageSamples </span><span class="symbol">*</span><span class="normal"> </span>
+<span class="normal">                    </span><span class="symbol">(*(</span><span class="normal">__m128</span><span class="symbol">*)&amp;</span><span class="normal">kernels</span><span class="symbol">[</span><span class="normal">kIdx</span><span class="symbol">][</span><span class="normal">k</span><span class="symbol">][</span><span class="normal">l</span><span class="symbol">]);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> outOfsX </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">+</span><span class="normal">kX</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">outOfsX</span><span class="symbol">&gt;=</span><span class="normal">inX</span><span class="symbol">)</span><span class="normal"> outOfsX </span><span class="symbol">-=</span><span class="normal"> inX</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="comment">// At this point, we have 4 sums stored in our</span>
+<span class="normal">        </span><span class="comment">// 128-bit SSE accumulator - we need to consolidate</span>
+<span class="normal">        </span><span class="comment">// all 4 of them into a single float:</span>
+<span class="normal">        </span><span class="comment">// We therefore use the hadd_ps instruction,</span>
+<span class="normal">        </span><span class="comment">// to "collapse" all 4 into 1:</span>
+<span class="normal">        sum4 </span><span class="symbol">=</span><span class="normal"> </span><span class="function">_mm_hadd_ps</span><span class="symbol">(</span><span class="normal">sum4</span><span class="symbol">,</span><span class="normal"> sum4</span><span class="symbol">);</span>
+<span class="normal">        sum4 </span><span class="symbol">=</span><span class="normal"> </span><span class="function">_mm_hadd_ps</span><span class="symbol">(</span><span class="normal">sum4</span><span class="symbol">,</span><span class="normal"> sum4</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="function">_mm_store_ss</span><span class="symbol">(</span>
+<span class="normal">            </span><span class="symbol">&amp;</span><span class="normal">high_res_output_line</span><span class="symbol">[</span><span class="normal">outOfsX</span><span class="symbol">],</span><span class="normal"> sum4</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>The result: this modified SSE version of the convolution run in 645 ms, giving a further 12.5% speedup.</p>
+
+<p>This, admittedly, was a bit disappointing - SSE instructions execute 4 floating point multiplications per cycle, and yet the achieved speedup was a meager 12.5% instead of something close to 400%.</p>
+
+<p><a name="Memory_bandwidth:_the_final_frontier"></a></p>
+
+<h2>3.4. Memory bandwidth: the final frontier</h2>
+
+<p>Unfortunately, SSE performance (as is the case for any SIMD technology: MMX, AVX, etc) is limited by how fast one can "feed" the algorithm with data; in plain words, by memory bandwidth. </p>
+
+<p>Our StrayLight's convolution is by definition a <em>very</em> memory intensive operation: it accesses data from a big frame buffer, and writes to an equally big output one. To be exact: <tt>input_image_corrected</tt> is a 5271x813 float array, containing a grand total of 17MB of data (<em>each single precision floating point number occupies 4 bytes, so 5271x813x4 = 17141292 bytes</em>) - far too big, that is, to fit in current CPUs' caches. And that's not even taking into account the accesses to the kernels and the output writes to <tt>high_res_output_image</tt>.</p>
+
+<p>To investigate exactly how well the cache is utilized, we employed cachegrind (the cache analyzing part of <a href="http://www.valgrind.org">Valgrind</a>, a suite of tools for debugging and profiling:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ valgrind --tool</span><span class="symbol">=</span><span class="normal">cachegrind src/strayLight</span>
+<span class="symbol">...</span>
+<span class="normal">$ cg_annotate --auto</span><span class="symbol">=</span><span class="normal">yes </span><span class="symbol">.</span><span class="normal">/cache</span><span class="symbol">*</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>CacheGrind then annotated our memory access patterns per code line - here's what it reported for the two lines of our innermost loop:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="usertype">__m128</span><span class="normal"> fourImageSamples </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">*(</span><span class="normal">__m128</span><span class="symbol">*)&amp;</span><span class="normal">input_image_line</span><span class="symbol">[</span><span class="normal">ofsX</span><span class="symbol">];</span>
+<span class="normal">sum4 </span><span class="symbol">+=</span><span class="normal"> fourImageSamples </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(*(</span><span class="normal">__m128</span><span class="symbol">*)&amp;</span><span class="normal">kernels</span><span class="symbol">[</span><span class="normal">kIdx</span><span class="symbol">][</span><span class="normal">k</span><span class="symbol">][</span><span class="normal">l</span><span class="symbol">]);</span>
+
+<span class="symbol">...</span>
+
+<span class="normal">Ir           I1mr ILmr  Dr          D1mr      DLmr</span>
+<span class="number">943</span><span class="symbol">,</span><span class="number">262</span><span class="symbol">,</span><span class="number">925</span><span class="normal">  </span><span class="number">0</span><span class="normal">    </span><span class="number">0</span><span class="normal">     </span><span class="number">565</span><span class="symbol">,</span><span class="number">957</span><span class="symbol">,</span><span class="number">755</span><span class="normal"> </span><span class="number">2</span><span class="symbol">,</span><span class="number">950</span><span class="symbol">,</span><span class="number">495</span><span class="normal"> </span><span class="number">271</span><span class="symbol">,</span><span class="number">491</span>
+</tt></pre>
+</div>
+
+<p>Instruction-cache wise, we had no misses (I1mr and ILmr). Data-cache wise, we read 565 million times, out of which only 3 million are missing the level 1 cache - and out of these 3 million, only 270 thousand are missing the final L2/3 cache.</p>
+
+<p>In other words, given what we are doing, we are very cache-efficient;
+SSE instructions fail to provide 4x speed, not because we used them wrongly - but because they have to wait for the caches/memory to provide the data they can work on.</p>
+
+<p><a name="sweetspot"></a>
+This theory was further validated, when we attempted to add multi-threading (via OpenMP) to the outer loop... (i.e. different threads per "batch" of y- scanlines):</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#ifdef</span><span class="normal"> USE_OPENMP</span>
+<span class="preproc">#pragma</span><span class="normal"> omp parallel </span><span class="keyword">for</span>
+<span class="preproc">#endif</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">inY</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+</tt></pre>
+</div>
+
+<p>We saw the performance nose-dive...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ </span><span class="symbol">.</span><span class="normal">/src/strayLight</span>
+<span class="normal">Stage10 alone took </span><span class="number">2413</span><span class="normal"> ms</span><span class="symbol">.</span>
+</tt></pre>
+</div>
+
+<p>...because, to put it simply, the multiple threads demanded <em>even more</em> memory bandwidth. Since we didn't have any to spare, we ended up "thrashing" the cache, increasing the cache-misses, and paying the resulting speed penalty.</p>
+
+<p><a name="Eigen"></a></p>
+
+<h2>3.5. Eigen</h2>
+
+<p>The introduction of the 4 shifted kernels complicated our convolution code. We therefore kept searching for an alternative, clearer way to make use of SSE instructions - and in the end, we used the ingenious <a href="http://eigen.tuxfamily.org">Eigen</a> C++ template library. Eigen provides C++ templates that actually determine where and how to emit SSE intrinsics during compilation-time (i.e. C++ templates that operate as code generators). </p>
+
+<p>Our code was greatly simplified, and we retained the small speedup we gained with SSE intrinsics:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">IMGHEIGHT</span><span class="symbol">-</span><span class="normal">KERNEL_SIZE</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="usertype">fp</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">high_res_output_image_line </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">        </span><span class="symbol">&amp;</span><span class="function">high_res_output_image</span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">+</span><span class="normal">KERNEL_SIZE</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">,</span><span class="normal">KERNEL_SIZE</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">IMGWIDTH</span><span class="symbol">-</span><span class="normal">KERNEL_SIZE</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+
+<span class="normal">        </span><span class="comment">// Eigen allows for a concise expression of the</span>
+<span class="normal">        </span><span class="comment">// convolution logic - a rectangular area is</span>
+<span class="normal">        </span><span class="comment">// multiplied item-wise with another one,</span>
+<span class="normal">        </span><span class="comment">// and the resulting area is summed.</span>
+<span class="normal">        </span><span class="usertype">fp</span><span class="normal"> sum </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">            input_image_corrected</span><span class="symbol">.</span><span class="normal">block</span><span class="symbol">&lt;</span><span class="normal">KERNEL_SIZE</span><span class="symbol">,</span><span class="normal">KERNEL_SIZE</span><span class="symbol">&gt;(</span><span class="normal">i</span><span class="symbol">,</span><span class="normal">j</span><span class="symbol">)</span>
+<span class="normal">                </span><span class="symbol">.</span><span class="function">cwiseProduct</span><span class="symbol">(</span><span class="normal">psf_high_res</span><span class="symbol">).</span><span class="function">sum</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="symbol">*</span><span class="normal">high_res_output_image_line</span><span class="symbol">++</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> sum</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">=</span><span class="normal">IMGWIDTH</span><span class="symbol">-</span><span class="normal">KERNEL_SIZE</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">IMGWIDTH</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">fp</span><span class="normal"> sum </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">&lt;</span><span class="normal">KERNEL_SIZE</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">l</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">&lt;</span><span class="normal">KERNEL_SIZE</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                sum </span><span class="symbol">+=</span><span class="normal"> </span><span class="function">input_image_corrected</span><span class="symbol">(</span>
+<span class="normal">                    </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">+</span><span class="normal">k</span><span class="symbol">)%</span><span class="normal">IMGHEIGHT</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">+</span><span class="normal">l</span><span class="symbol">)%</span><span class="normal">IMGWIDTH</span><span class="symbol">)*</span><span class="function">psf_high_res</span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">,</span><span class="normal">l</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="function">high_res_output_image</span><span class="symbol">((</span><span class="normal">i</span><span class="symbol">+</span><span class="normal">KERNEL_SIZE</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)%</span><span class="normal">IMGHEIGHT</span><span class="symbol">,</span>
+<span class="normal">           </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">+</span><span class="normal">KERNEL_SIZE</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)%</span><span class="normal">IMGWIDTH</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> sum</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+<span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="normal">IMGHEIGHT</span><span class="symbol">-</span><span class="normal">KERNEL_SIZE</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">IMGHEIGHT</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">IMGWIDTH</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="usertype">fp</span><span class="normal"> sum </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">&lt;</span><span class="normal">KERNEL_SIZE</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="symbol">(</span><span class="normal">l</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">&lt;</span><span class="normal">KERNEL_SIZE</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                sum </span><span class="symbol">+=</span><span class="normal"> </span><span class="function">input_image_corrected</span><span class="symbol">(</span>
+<span class="normal">                    </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">+</span><span class="normal">k</span><span class="symbol">)%</span><span class="normal">IMGHEIGHT</span><span class="symbol">,</span>
+<span class="normal">                    </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">+</span><span class="normal">l</span><span class="symbol">)%</span><span class="normal">IMGWIDTH</span><span class="symbol">)*</span><span class="function">psf_high_res</span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">,</span><span class="normal">l</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="function">high_res_output_image</span><span class="symbol">(</span>
+<span class="normal">            </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">+</span><span class="normal">KERNEL_SIZE</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)%</span><span class="normal">IMGHEIGHT</span><span class="symbol">,</span>
+<span class="normal">            </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">+</span><span class="normal">KERNEL_SIZE</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)%</span><span class="normal">IMGWIDTH</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> sum</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>Eigen's templates store and use sizing information during compile-time. In our particular case, the sizing of <tt>&lt;KERNEL_SIZE, KERNEL_SIZE&gt;</tt> informs the relevant template about our intention to operate on a rectangular area, the size of which is a compile-time constant. The fact that it is a compile-time constant allows the compiler to do additional optimizations, like loop-unrolling - but before we digress too far, the important thing is that the call to the <tt>.cwiseProduct</tt> member triggers Eigen to generate the corresponding SSE intrinsics. Alignment issues are automatically handled inside Eigen, so the resulting code is much cleaner than our manually-written efforts of the previous section.</p>
+
+<p>Unfortunately, Eigen can't cope with the parts of the convolution where the kernel spans across the image borders. We were therefore forced to write manual versions of these loops (lines 14-40 in the Listing above) for the "border" parts of the convolution. Their speed impact was found to be inconsequential.</p>
+
+<p><a name="OpenMP_and_memory_bandwidth"></a></p>
+
+<h2>3.6. OpenMP and memory bandwidth</h2>
+
+<p>After porting to Eigen, we re-introduced OpenMP, by applying the same OpenMP directive (<em>#pragma omp parallel for</em>) to the outer loop:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ </span><span class="symbol">.</span><span class="normal">/src/strayLight</span>
+<span class="normal">Stage10 alone took </span><span class="number">477</span><span class="normal"> ms</span><span class="symbol">.</span>
+</tt></pre>
+</div>
+
+<p>Speed did improve further in this case, from 645 to 477 ms.</p>
+
+<p>For SSE intrinsics to work fast, we made sure that memory accesses were aligned to 16x. To accomplish that, the algorithm was changed into one that copies and shifts the convolution kernel 4 times, and reads from the proper shifted-copy in the direct multiplications of <tt>__m128</tt> entities. The unfortunate side-effect, however, was that by cloning the convolution kernel 4 times, the algorithm was also using up more memory - and far more importantly, the CPU caches now had to deal with memory accesses to 4 separate kernels <em>during the inner <tt>x-</tt> loop</em> - i.e. support accesses that are far less coalesced than those done by the textbook version of the convolution, that uses a single kernel.</p>
+
+<p>Eigen solves the problem without this impact, so it does a better job than we did. The inner convolution-kernel-loop is unrolled, with standalone multiplications (i.e. standard single-precision multiplies) for the left and right remainders of the kernel borders (modulo-4, since SSE work on 4 floats per instruction), and using <tt>mulps</tt> to multiply 4 floats at a time for the main body of the rectangular area. We basically get the best of both worlds: without messing up our code, we use SSE multiplication for most of the convolution kernel multiplies (resorting to slow multiplies only on the kernel's left and right borders) and are able to "juggle" with the OpenMP number of threads, to find the optimal number of threads (for our available memory bandwidth).</p>
+
+<p>We came to understand that this latter part is in fact a general principle: When a problem is memory-bandwidth limited, configurable multithreading (like OpenMP) allows easy identification of the "sweet spot" in terms of balancing memory bandwidth and computation power (number of threads). By using OpenMP pragmas in the loops, one is able to increase the threads used (via the <tt>OMP_NUM_THREADS</tt> environment variable) and find the optimal number of threads for the specific code. When additional threads worsen the speed, the "memory saturation point" has been reached.</p>
+
+<p><a name="Better_use_of_cache_lines"></a></p>
+
+<h2>3.7. Better use of cache lines</h2>
+
+<p>The fact that CacheGrind reported some final-level cache misses was disconcerting; these cost a lot, because they forced reading from main memory.</p>
+
+<p>The fastest convolution code at this stage was structured like this:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#ifdef</span><span class="normal"> USE_OPENMP</span>
+<span class="preproc">#pragma</span><span class="normal"> omp parallel </span><span class="keyword">for</span>
+<span class="preproc">#endif</span>
+<span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">inY</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">inX</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">float</span><span class="normal"> sum</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">.;</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">&lt;</span><span class="normal">kY</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="symbol">...</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">l</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">&lt;</span><span class="normal">kX</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="symbol">...</span>
+<span class="normal">                sum </span><span class="symbol">+=</span>
+<span class="normal">                  input_image_corrected_line</span>
+<span class="normal">                    </span><span class="symbol">[</span><span class="normal">ofsX</span><span class="symbol">]*</span><span class="normal">psf_high_res_line</span><span class="symbol">[</span><span class="normal">l</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="symbol">...</span>
+<span class="normal">        high_res_output_image_line</span><span class="symbol">[</span><span class="normal">outOfsX</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> sum</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>The two innermost loops are therefore traversing the kernel, first in the <tt>y-</tt> dimension, and then in the <tt>x-</tt> dimension. </p>
+
+<p>This, however, also meant that the code was crossing cache lines: CPUs have a very fast, but limited in size Level 1 cache, that is broken down into cache lines. The size of the cache lines, on current CPUs, ranges between 16 and 64 consecutive bytes; the key word being, <em>consecutive</em>. By having the two inner loops move first in <tt>y-</tt> and then in <tt>x-</tt> dimensions, the innermost accesses are constantly straddling cache lines. Moving the two <tt>y-</tt> traversing loops (one of the image, and one of the kernel) on top, so that the two innermost loops only traverse <tt>x-</tt> dimensions, would obviously make much better use of the L1 cache:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#ifdef</span><span class="normal"> USE_OPENMP</span>
+<span class="preproc">#pragma</span><span class="normal"> omp parallel </span><span class="keyword">for</span>
+<span class="preproc">#endif</span>
+<span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">i</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">&lt;</span><span class="normal">inY</span><span class="symbol">;</span><span class="normal"> i</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> sY </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">+</span><span class="normal">kY</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">sY </span><span class="symbol">&gt;=</span><span class="normal"> inY</span><span class="symbol">)</span><span class="normal"> sY </span><span class="symbol">-=</span><span class="normal"> inY</span><span class="symbol">;</span>
+<span class="normal">    m1d</span><span class="symbol">&amp;</span><span class="normal"> high_res_output_line </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">        high_res_output_image</span><span class="symbol">[</span><span class="normal">sY</span><span class="symbol">];</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">k</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">&lt;</span><span class="normal">kY</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> ofsY </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">+</span><span class="normal">k</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ofsY</span><span class="symbol">&gt;=</span><span class="normal">inY</span><span class="symbol">)</span><span class="normal"> ofsY </span><span class="symbol">-=</span><span class="normal"> inY</span><span class="symbol">;</span>
+<span class="normal">        m1d</span><span class="symbol">&amp;</span><span class="normal"> input_image_line </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">            input_image_corrected</span><span class="symbol">[</span><span class="normal">ofsY</span><span class="symbol">];</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">j</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">&lt;</span><span class="normal">inX</span><span class="symbol">;</span><span class="normal"> j</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> outOfsX </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">+</span><span class="normal">kX</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">outOfsX</span><span class="symbol">&gt;=</span><span class="normal">inX</span><span class="symbol">)</span><span class="normal"> outOfsX </span><span class="symbol">-=</span><span class="normal"> inX</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">l</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">&lt;</span><span class="normal">kX</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                m1d</span><span class="symbol">&amp;</span><span class="normal"> psf_high_res_line </span><span class="symbol">=</span><span class="normal"> </span>
+<span class="normal">                    psf_high_res</span><span class="symbol">[</span><span class="normal">k</span><span class="symbol">];</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> ofsX </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">+</span><span class="normal">l</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ofsX</span><span class="symbol">&gt;=</span><span class="normal">inX</span><span class="symbol">)</span><span class="normal"> ofsX </span><span class="symbol">-=</span><span class="normal"> inX</span><span class="symbol">;</span>
+<span class="normal">                high_res_output_line</span><span class="symbol">[</span><span class="normal">outOfsX</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+=</span><span class="normal"> </span>
+<span class="normal">                    input_image_line</span><span class="symbol">[</span><span class="normal">ofsX</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> </span>
+<span class="normal">                    psf_high_res_line</span><span class="symbol">[</span><span class="normal">l</span><span class="symbol">];</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>And indeed, speed soared by 200%:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ </span><span class="symbol">.</span><span class="normal">/src/strayLight</span>
+<span class="normal">Stage10 alone took </span><span class="number">238</span><span class="normal"> ms</span><span class="symbol">.</span>
+</tt></pre>
+</div>
+
+<p>Note that overall, this version of the code writes Kernel<sub>sizeY</sub> x Kernel<sub>sizeX</sub> more data than the previous one - but it does this on the L1 caches, never straddling cache lines - CacheGrind reports:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="symbol">...</span><span class="normal"> Dw           D1mw DLmw  </span>
+<span class="symbol">...</span><span class="normal"> </span><span class="number">518</span><span class="symbol">,</span><span class="number">819</span><span class="symbol">,</span><span class="number">202</span><span class="normal">  </span><span class="number">0</span><span class="normal">    </span><span class="number">0</span>
+</tt></pre>
+</div>
+
+<p>So even though the amount of writes increased by two orders of magnitude, speed <em>increased</em>, because we made sure that <strong>all</strong> these write accesses fall within the L1 cache lines - there are no cache misses at all (<tt>D1mw</tt> and <tt>DLmw</tt> are 0).</p>
+
+<p>When the effort begun, we were at 5900 ms; which means that at this stage, convolution speed had improved by a factor of 24.8x.</p>
+
+<p><a name="Intel_vs_AMD"></a></p>
+
+<h2>3.8. Intel vs AMD</h2>
+
+<p>Running the IDL version as well as the 4 C++ versions of the convolution on a machine equipped with an Intel CPU (<em>a Celeron E3400 dual-core with 1MB SmartCache</em>) the following results were observed:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">home$ make time</span>
+<span class="number">1772</span><span class="normal"> ms from inside GDL</span>
+<span class="number">1760</span><span class="normal"> ms from inside GDL</span>
+<span class="number">1758</span><span class="normal"> ms from inside GDL</span>
+<span class="number">1844</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.1</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">directly from theory</span><span class="symbol">).</span>
+<span class="number">1844</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.1</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">directly from theory</span><span class="symbol">).</span>
+<span class="number">1844</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.1</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">directly from theory</span><span class="symbol">).</span>
+<span class="number">1093</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.2</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">modulo and m1d lines</span><span class="symbol">).</span>
+<span class="number">1093</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.2</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">modulo and m1d lines</span><span class="symbol">).</span>
+<span class="number">1093</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.2</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">modulo and m1d lines</span><span class="symbol">).</span>
+<span class="normal"> </span><span class="number">825</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.4</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">SSE intrinsics</span><span class="symbol">).</span>
+<span class="normal"> </span><span class="number">825</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.4</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">SSE intrinsics</span><span class="symbol">).</span>
+<span class="normal"> </span><span class="number">826</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.4</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">SSE intrinsics</span><span class="symbol">).</span>
+<span class="normal"> </span><span class="number">703</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.5</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Eigen</span><span class="symbol">).</span>
+<span class="normal"> </span><span class="number">701</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.5</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Eigen</span><span class="symbol">).</span>
+<span class="normal"> </span><span class="number">703</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.5</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">Eigen</span><span class="symbol">).</span>
+<span class="normal"> </span><span class="number">641</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.7</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">cache-optimal</span><span class="symbol">).</span>
+<span class="normal"> </span><span class="number">640</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.7</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">cache-optimal</span><span class="symbol">).</span>
+<span class="normal"> </span><span class="number">640</span><span class="normal"> ms </span><span class="keyword">for</span><span class="normal"> Listing </span><span class="number">4.7</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">cache-optimal</span><span class="symbol">).</span>
+</tt></pre>
+</div>
+
+<p>Each form of the convolution was executed 3 times, to make certain we were not looking at skewed results because of OS-related switching (program scheduling, etc).</p>
+
+<p>The Intel CPU in question was equipped with 1MB of "smart-cache" - shared between both cores. This was much smaller than the 8MB cache of the AMD Phenom, but the results were surprisingly good.</p>
+
+<p>The Intel CPU did not suffer nearly as much as the AMD one with the modulo operator - in fact the modulo-computation is only 40% slower than the one with conditionals. This obviously applied to IDL too, since we saw both <em>gdl</em> and the naive convolution performing similarly. It is worth noting that a cheap Intel CPU run the "naive" convolution implementation 4 times faster than the much more expensive 6-core AMD Phenom II X6.</p>
+
+<p>Just like the AMD CPU, however, the Celeron quickly reached the memory bandwidth "saturation" point discussed in the previous sections: the optimizations implemented <em>did</em> make a difference, but the improvements with each step were much smaller than the ones experienced on the AMD CPU. With the final version of the convolution (i.e. the cache-friendly OpenMP version) the work is done 3 times faster than with the naive implementation (640 ms down from 1844 ms) - where as in the AMD CPU the difference was far more dramatic: 238 ms down from 5900 ms.</p>
+
+<p>The AMD machine does win in the end, running the algorithm in 238 ms - but it has 3 times more CPU cores, and 8 times bigger L3 cache. It appears that the "smart-cache" Intel hardware is automatically solving many of the memory bandwidth issues that we had to deal with when working with our AMD CPU.</p>
+
+<p><a name="Memory_bandwidth_and_scalability"></a></p>
+
+<h2>3.9. Memory bandwidth and scalability</h2>
+
+<p>In the previous sections, we saw that the balance between memory bandwidth, cache utilization and number of cores is an important one. Indeed, if the algorithm is thrashing the cache, increasing the cores used can very well end up <a href="#sweetspot">hurting performance</a> instead of helping it. </p>
+
+<p>After our cache-related optimizations, however, the complete StrayLight algorithm (not just the convolution) can be seen to monotonically improve when using more cores of our 6-core Athlon:</p>
+
+<div class="scrollableContainer">
+<img src="straylight.png" alt="Increasing the number of threads and approaching the memory barrier"><br>
+<em>Increasing the number of threads and approaching the memory barrier</em>
+</div>
+
+<p>It can also be seen that the memory bandwidth is a "barrier" - as we increase the cores used, speed clearly improves less and less, in a logarithmic manner. The additional cores stress the caches more, demand more memory bandwidth, and would, eventually - if we had more than 6 cores to set <em>OMP_NUM_THREADS</em> to - reach a point where the performance would deteriorate instead of improve (as <a href="#sweetspot">we saw</a> for the SSE version of the algorithm).</p>
+
+<p><a name="Using_a_GPU"></a></p>
+
+<h1>4. Using a GPU <em>(CUDA)</em></h1>
+
+<p>Modern graphics processing units (GPUs) offer massively parallel hardware architectures, allowing for optimized implementations of computational algorithms. We therefore decided to conclude our optimization efforts with an attempt to port StrayLight's convolution to the dominant GPU programming API, NVIDIA's <a href="https://developer.nvidia.com/what-cuda">CUDA</a>.</p>
+
+<p><a name="Memory_bandwidth_and_textures"></a></p>
+
+<h2>4.1. Memory bandwidth and textures</h2>
+
+<p>We have already seen in the previous sections that whenever multithreading is put to use, there is a balancing act between the number of threads executing and the available memory bandwidth. The large number of available GPU threads (<em>768 in the card we used <a href="#note4">[4]</a></em>) makes this balancing act all the more important.</p>
+
+<p>The CUDA literature points out that for algorithms that read lots of data, an efficient way to access them  is to place the data inside the GPU's textures. Graphics cards' hardware has been optimized over decades to perform texture lookups in the most optimal way possible. We therefore placed the image and kernel data inside textures:</p>
+
+<div class='codegenWrapper'>
+<pre><tt>
+<span class="comment">// global variables storing the two textures, that hold:</span>
+
+<span class="comment">// - the input image data</span>
+<span class="usertype">texture&lt;float1, 1, cudaReadModeElementType&gt;</span><span class="normal">     g_cudaMainMatrixTexture</span><span class="symbol">;</span>
+
+<span class="comment">// - the convolution kernel data</span>
+<span class="usertype">texture&lt;float1, 1, cudaReadModeElementType&gt;</span><span class="normal">     g_cudaMainKernelTexture</span><span class="symbol">;</span>
+<span class="symbol">...</span>
+
+<span class="type">void</span><span class="normal"> </span><span class="function">cudaConvolution</span><span class="symbol">(</span><span class="usertype">fp</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">cudaOutputImage</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="usertype">cudaChannelFormatDesc</span><span class="normal"> channel1desc </span><span class="symbol">=</span><span class="normal"> cudaCreateChannelDesc</span><span class="symbol">&lt;</span><span class="normal">float1</span><span class="symbol">&gt;();</span>
+<span class="normal">    </span><span class="usertype">cudaChannelFormatDesc</span><span class="normal"> channel2desc </span><span class="symbol">=</span><span class="normal"> cudaCreateChannelDesc</span><span class="symbol">&lt;</span><span class="normal">float1</span><span class="symbol">&gt;();</span>
+<span class="normal">    </span><span class="function">cudaBindTexture</span><span class="symbol">(</span>
+<span class="normal">        NULL</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">g_cudaMainMatrixTexture</span><span class="symbol">,</span><span class="normal"> cudaMainMatrix</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">channel1desc</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">        WIDTH</span><span class="symbol">*</span><span class="normal">HEIGHT</span><span class="symbol">*</span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">fp</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="function">cudaBindTexture</span><span class="symbol">(</span>
+<span class="normal">        NULL</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">g_cudaMainKernelTexture</span><span class="symbol">,</span><span class="normal"> cudaMainKernel</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">&amp;</span><span class="normal">channel2desc</span><span class="symbol">,</span>
+<span class="normal">        KERNEL_SIZE</span><span class="symbol">*</span><span class="normal">KERNEL_SIZE</span><span class="symbol">*</span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">fp</span><span class="symbol">));</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> blks </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">WIDTH</span><span class="symbol">*</span><span class="normal">HEIGHT </span><span class="symbol">+</span><span class="normal"> THREADS_PER_BLOCK </span><span class="symbol">-</span><span class="normal"> </span><span class="number">1</span><span class="symbol">)/</span><span class="normal">THREADS_PER_BLOCK</span><span class="symbol">;</span>
+<span class="normal">    DoWork</span><span class="symbol">&lt;&lt;&lt;</span><span class="normal"> blks</span><span class="symbol">,</span><span class="normal"> THREADS_PER_BLOCK </span><span class="symbol">&gt;&gt;&gt;(</span><span class="normal">cudaOutputImage</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="comment">// error handling</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>Note that when using double-precision, we had to resort to <a href="https://developer.nvidia.com/cuda-faq">an official "hack" from NVIDIA's FAQ on CUDA</a>: there are no double precision textures in CUDA, but one can emulate them via <tt>texture&lt;int2, 1, ...&gt;</tt>.</p>
+
+<p><a name="Running_the_CUDA_kernel"></a></p>
+
+<h2>4.2. Running the CUDA kernel</h2>
+
+<p>The next step was the spawning of the CUDA convolution kernel, to be executed over hundreds of threads - more precisely, over a number of blocks, each one executing <em>THREADS_PER_BLOCK</em> threads. Each one of these thread blocks, is mapped by the CUDA API to a Streaming Multiprocessor (SM), and executed to completion. Each thread is computing a single output convolution "pixel".</p>
+
+<p>Just as experienced for CPUs (in the previous sections), there is a "sweet spot" for the balance between the GPU's memory bandwidth and the number of threads we should actually spawn. Even though this problem is also addressed by the much faster GPU memory (GDDR5), finding the optimal balance is still necessary. To that end, we used the <em>THREADS_PER_BLOCK</em> macro, and fine-tuned it with testing, to make it perfectly match our own card's capacity. This was accomplished via an external Python script that automatically patched the macro definition, recompiled and benchmarked - for a range of different values of <em>THREADS_PER_BLOCK</em>. </p>
+
+<p>Coding the actual CUDA kernel was pretty straightforward:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">__global__ </span><span class="usertype">void</span><span class="normal"> </span><span class="function">DoWork</span><span class="symbol">(</span><span class="usertype">fp</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">cudaOutputImage</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">unsigned</span><span class="normal"> idx </span><span class="symbol">=</span><span class="normal"> blockIdx</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">*</span><span class="normal">blockDim</span><span class="symbol">.</span><span class="normal">x </span><span class="symbol">+</span><span class="normal"> threadIdx</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">idx </span><span class="symbol">&gt;=</span><span class="normal"> IMGWIDTH</span><span class="symbol">*</span><span class="normal">IMGHEIGHT</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">return</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">// From the thread and block indexes, find the actual image sample</span>
+<span class="normal">    </span><span class="comment">// that we will be working on:</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> i </span><span class="symbol">=</span><span class="normal"> idx </span><span class="symbol">/</span><span class="normal"> IMGWIDTH</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> j </span><span class="symbol">=</span><span class="normal"> idx </span><span class="symbol">%</span><span class="normal"> IMGWIDTH</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="comment">// The convolution outer loops - iterating over the output image</span>
+<span class="normal">    </span><span class="comment">// 'pixels' is effected in the CUDA kernel spawning ; only the</span>
+<span class="normal">    </span><span class="comment">// convolution kernel's vertical and horizontal loops are here:</span>
+<span class="normal">    </span><span class="usertype">fp</span><span class="normal"> sum</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">.;</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> k</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">&lt;</span><span class="normal">kY</span><span class="symbol">;</span><span class="normal"> k</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> ofsY </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">+</span><span class="normal">k</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ofsY</span><span class="symbol">&gt;=</span><span class="normal">IMGHEIGHT</span><span class="symbol">)</span><span class="normal"> ofsY </span><span class="symbol">-=</span><span class="normal"> IMGHEIGHT</span><span class="symbol">;</span>
+
+<span class="normal">        </span><span class="comment">// Compute the image and kernel lines' offsets</span>
+<span class="normal">        </span><span class="comment">// (reused in the inner loop below)</span>
+<span class="normal">        </span><span class="type">unsigned</span><span class="normal"> input_image_corrected_line_Offset </span><span class="symbol">=</span><span class="normal"> IMGWIDTH</span><span class="symbol">*</span><span class="normal">ofsY</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="type">unsigned</span><span class="normal"> psf_high_res_line_Offset </span><span class="symbol">=</span><span class="normal"> kX</span><span class="symbol">*</span><span class="normal">k</span><span class="symbol">;</span>
+
+<span class="preproc">        #pragma</span><span class="normal"> unroll</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> l</span><span class="symbol">=</span><span class="number">0</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">&lt;</span><span class="normal">kX</span><span class="symbol">;</span><span class="normal"> l</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="type">int</span><span class="normal"> ofsX </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">+</span><span class="normal">l</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">ofsX</span><span class="symbol">&gt;=</span><span class="normal">IMGWIDTH</span><span class="symbol">)</span><span class="normal"> ofsX </span><span class="symbol">-=</span><span class="normal"> IMGWIDTH</span><span class="symbol">;</span>
+
+<span class="normal">            </span><span class="comment">// Texture fetches - these are cached!</span>
+<span class="normal">            sum </span><span class="symbol">+=</span><span class="normal"> </span><span class="function">tex1Dfetch</span><span class="symbol">(</span><span class="normal">g_cudaMainMatrixTexture</span><span class="symbol">,</span>
+<span class="normal">                              input_image_corrected_line_Offset </span><span class="symbol">+</span><span class="normal"> ofsX</span><span class="symbol">).</span><span class="normal">x</span>
+<span class="normal">                   </span><span class="symbol">*</span>
+<span class="normal">                   </span><span class="function">tex1Dfetch</span><span class="symbol">(</span><span class="normal">g_cudaMainKernelTexture</span><span class="symbol">,</span>
+<span class="normal">                              psf_high_res_line_Offset </span><span class="symbol">+</span><span class="normal"> l</span><span class="symbol">).</span><span class="normal">x</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> outOfsX </span><span class="symbol">=</span><span class="normal"> j</span><span class="symbol">+</span><span class="normal">kX</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">outOfsX</span><span class="symbol">&gt;=</span><span class="normal">IMGWIDTH</span><span class="symbol">)</span><span class="normal"> outOfsX </span><span class="symbol">-=</span><span class="normal"> IMGWIDTH</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="type">int</span><span class="normal"> sY </span><span class="symbol">=</span><span class="normal"> i</span><span class="symbol">+</span><span class="normal">kY</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">sY </span><span class="symbol">&gt;=</span><span class="normal"> IMGHEIGHT</span><span class="symbol">)</span><span class="normal"> sY </span><span class="symbol">-=</span><span class="normal"> IMGHEIGHT</span><span class="symbol">;</span>
+<span class="normal">    cudaOutputImage</span><span class="symbol">[</span><span class="normal">sY</span><span class="symbol">*</span><span class="normal">IMGWIDTH </span><span class="symbol">+</span><span class="normal"> outOfsX</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> sum</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>With the exception of using <em>tex1Dfetch</em> to access the 2d- image and kernel data, this code is very similar to the inner loops we wrote in the previous sections. Notice also that only the convolution-kernel-related loops are in this code, since the outer loops are hidden in the spawning of the CUDA kernel. In the beginning of the CUDA kernel, the thread and block identifiers are used to figure out which image "pixel" we will be working on in this thread.</p>
+
+<p><a name="CUDA_Results"></a></p>
+
+<h2>4.3. CUDA Results</h2>
+
+<p>The resulting code, executed inside a relatively cheap graphics card (<em>we used a GeForce GTX 650 Ti with 1GB GDDR5 memory, which retails at the time of writing for around 130 euros</em>) gave a further speedup of 500% - <strong>lowering the time taken by the convolution to 51 ms, a 115x speedup (two orders of magnitude) over our <a href="#initial">initial</a> implementation</strong>.</p>
+
+<p><a name="Final_results_and_future_work"></a></p>
+
+<h1>5. Final results and future work</h1>
+
+<p>We focused on the parts of the StrayLight algorithm that are executed per input image, and managed to lower them down to only 168 ms. This amounts to a <strong>35x</strong> speedup - in the convolution, FFT, and linear interpolation stages. The previous sections demonstrated how this speedup was achieved.</p>
+
+<p>There is potential for additional optimizations ; we only ported the convolution stage to CUDA, so we could simply port more. We are also paying the price for transfering the convolution input data from host to GPU memory, and transfering the output image data back out. By porting more stages of the algorithm for execution in the GPU, the transfers to and from GPU memory would be restricted to a minimum. Future work towards that direction may be necessary, if the speedup we have achieved so far is not deemed to be sufficient for the mission.</p>
+
+<h2>Notes</h2>
+
+<ol>
+<li><a name="note1"></a>Task 2.2 of the European Space Agency's project, <em>"<a href="http://taste.tuxfamily.org">TASTE</a> Maintenance and Evolutions" - P12001, PFL-PTE / JK / ats / 412.2012i</em></li>
+<li><a name="note2"></a>REPL, <a href="http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop">Read-eval-print loop</a></li>
+<li><a name="note3"></a>JIT, <a href="http://en.wikipedia.org/wiki/Just-in-time_compilation">Just-in-Time compilation</a></li>
+<li><a name="note4"></a>Development was performed on an AMD Phenom II X6 running at 3.2 GHz. The machine was equipped with 8GB of DDR3 RAM, and a GeForce GTX 650 Ti with 1GB GDDR5 memory. It was also running the stable branch of Debian Linux, with the <a href="http://gnudatalanguage.sourceforge.net/">GNU Data Language</a> <em>gdl</em> interpreter installed.</li>
+<li><a name="note5"></a>Unless frame size changes at run-time.</li>
+<li><a name="note6"></a>To be exact: <tt>input_image_corrected</tt> is a 5271x813 float array, containing a grand total of 17MB of data (<em>each single precision floating point number occupies 4 bytes, so 5271x813x4 = 17141292 bytes</em>).</li>
+</ol>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sun Feb 21 12:56:49 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/straylight.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

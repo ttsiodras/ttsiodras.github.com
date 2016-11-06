@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/mandelSSE.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>A realtime Mandelbrot zoomer in SSE assembly and CUDA</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">A realtime Mandelbrot zoomer in SSE assembly and CUDA</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+              <em>(Written around 2002, enhanced with OpenMP and CUDA in 2009)</em><br>&nbsp;<br>
+  <div class="rightFloat scrollableContainer">
+  <img hspace="10" vspace="10" alt="Mandelbrot zoomer" src="mandel.gif"><br>
+  <em>Yep, looks boring when it doesn't move...</em>
+  </div>
+  Back in 2002, I wanted to try out SSE programming. I bought and 
+  installed an Athlon-XP based motherboard, and over the better part 
+  of a weekend, I created a simple implementation of a Mandelbrot zoomer 
+  in native SSE assembly. I was happy to see that it was almost 3 times 
+  faster than pure C - even when compared to pipelined floating point
+  calculations.<p>
+  Many years later, I revisited the code and enhanced it to use the GNU 
+  autotools; it therefore became portable to all Intel platforms under
+  the sun (Linux/x86, Mac OS/X, Windows (via MinGW gcc), OpenBSD/amd64 
+  and FreeBSD/amd64). Benchmarks showed - as expected - that OSes had
+  very little to do with such "pure" calculations as this;
+  speed was pretty much the same under all of them (I used libSDL for
+  portable HW-assisted "blitting" of the pixel data).<p>
+  Recently (2009), I learned how to use OpenMP and Intel TBB to make use
+  of additional CPUs/cores - so I added OpenMP <tt>#pragmas</tt> to both 
+  the pure-C and SSE modes... and smiled as I saw my little Atom330
+  get a boost from 58 to around 150 frames per second. The manually written SSE 
+  code was also using GCC's AT/T syntax, so it could be automatically inlined 
+  by GCC even at <tt>-O3</tt> optimizations.<p>
+  I thought that this was the limit - what else could I do now but to sit back 
+  and wait for CPU cores to multiply?... Perhaps buy an i7?<p>
+  Nope. Wrong.<p>
+  Last weekend, I got to play with an NVIDIA GT240 (around 100$). Having
+  read a lot of blogs about GPU programming, I downloaded 
+  the CUDA SDK and started reading some samples.<p>
+  In less than one hour, I went from my rather complex
+  SSE inline assembly, to a simple, clear Mandelbrot implementation...
+  that run... 15 times faster!<p>
+  Let me say this again: 1500% faster. Jaw dropping. Or put a different way: I went 
+  from 147fps at 320x240...  to 210fps... at 1024x768!<p>
+  I only have one comment for my fellow developers:<p>
+  The algorithm in question was perfect for a CUDA implementation.
+  You won't always get this kind of speedups (while at the same time doing it
+  with clearer and significantly less code).<p>
+  But regardless of that, you <em>must</em> start looking into GPGPU
+  coding: CUDA (and soon, OpenCL) can become <em>huge</em> game changers.<p>
+  If you don't, you are in danger of missing... significant opportunities...<p>
+  <b><em>Update, one week later:</em></b> It turned out that my GT240 is so
+  ...fresh, that the Linux drivers aren't yet up to speed - they are driving
+  my card at Performance Level 1 instead of 2 (i.e. at 324MHz memory clock
+  instead of 1700MHz!). Under Windows, the code runs at an astonishing 420
+  frames per second, so the speedup is not 15x, it is in fact more like 30x...
+  <p>
+  <b><em>Update, March 2010:</em></b> The newest NVIDIA drivers (195.36.15) have
+  corrected the bug - the Linux and Windows versions now run at identical speeds:
+  Blazing ones :&#x2011;)
+  <h2>Downloads</h2>
+  <h3>SSE version</h3>
+  The portable GPL source code for the SSE version is <a href="mandelsse-1.2.tar.bz2">here</a>.<p>
+  Compile and run with... 
+  <pre class="o">./configure &amp;&amp; make &amp;&amp; ./src/mandelSSE</pre>
+  <p>
+  You can zoom-in/zoom-out with the left and right mouse buttons. Hit ESC and
+  it will report the frames per second achieved.
+  <p>
+  If you are a Windows user, <a href="Mandelbrot_SSE_benchmark.7z">here is a Win32 binary</a>
+  (compiled via TDM/MinGW, and compressed <a href="http://www.7-zip.org/">with 7-zip</a>). To use it, simply unzip the package and run <tt>mandelSSE.exe</tt>.
+
+  <h3>CUDA version</h3>
+  The CUDA package (<a href="mandelcuda-1.0.tar.bz2">portable GPL source code</a>), 
+  is also available. The program also uses 
+  OpenGL to blit the CUDA-generated data on the screen - this way there's no 
+  moving of pixel data back-and-forth between the CPU and the GPU: they are
+  calculated on the GPU global memory, and they are drawn from that (via a texture).
+  <p>If you are working under Windows, a 
+  <a href="mandelcuda-1.0-win32.7z">precompiled Windows binary is here</a> (compressed <a href="http://www.7-zip.org/">with 7-zip</a>).
+  Make sure you disable Vertical Sync in order to get the maximum frame rate.
+  <h2>Code comparison</h2>
+  Just so you understand what I meant by "getting a speedup with clearer
+  and simpler code", this is the CUDA <tt>CoreLoop</tt>, from inside src/mandel.cu:
+  if you have ever coded a Mandelbrot zoomer, you'll probably agree that this is one of the 
+  simplest ways to implement it:
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">__global__ </span>
+<span class="type">void</span><span class="normal"> </span><span class="function">CoreLoop</span><span class="symbol">(</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">p</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> xld</span><span class="symbol">,</span><span class="normal"> </span><span class="type">float</span><span class="normal"> yld</span><span class="symbol">,</span><span class="normal"> </span><span class="comment">/* Left-Down coordinates */</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> xru</span><span class="symbol">,</span><span class="normal"> </span><span class="type">float</span><span class="normal"> yru</span><span class="symbol">,</span><span class="normal"> </span><span class="comment">/* Right-Up coordinates */</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> MAXX</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> MAXY</span><span class="symbol">)</span><span class="normal">   </span><span class="comment">/* Window size */</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> re</span><span class="symbol">,</span><span class="normal">im</span><span class="symbol">,</span><span class="normal">rez</span><span class="symbol">,</span><span class="normal">imz</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">float</span><span class="normal"> t1</span><span class="symbol">,</span><span class="normal"> t2</span><span class="symbol">,</span><span class="normal"> o1</span><span class="symbol">,</span><span class="normal"> o2</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> k</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">unsigned</span><span class="normal"> result </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">unsigned</span><span class="normal"> idx </span><span class="symbol">=</span><span class="normal"> blockIdx</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">*</span><span class="normal">blockDim</span><span class="symbol">.</span><span class="normal">x </span><span class="symbol">+</span><span class="normal"> threadIdx</span><span class="symbol">.</span><span class="normal">x</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> y </span><span class="symbol">=</span><span class="normal"> idx </span><span class="symbol">/</span><span class="normal"> MAXX</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> x </span><span class="symbol">=</span><span class="normal"> idx </span><span class="symbol">%</span><span class="normal"> MAXX</span><span class="symbol">;</span>
+<span class="normal">    </span>
+<span class="normal">    re </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="type">float</span><span class="symbol">)</span><span class="normal"> xld </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">xru</span><span class="symbol">-</span><span class="normal">xld</span><span class="symbol">)*</span><span class="normal">x</span><span class="symbol">/</span><span class="normal">MAXX</span><span class="symbol">;</span>
+<span class="normal">    im </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="type">float</span><span class="symbol">)</span><span class="normal"> yld </span><span class="symbol">+</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">yru</span><span class="symbol">-</span><span class="normal">yld</span><span class="symbol">)*</span><span class="normal">y</span><span class="symbol">/</span><span class="normal">MAXY</span><span class="symbol">;</span>
+
+<span class="normal">    rez </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">.</span><span class="normal">0f</span><span class="symbol">;</span>
+<span class="normal">    imz </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">.</span><span class="normal">0f</span><span class="symbol">;</span>
+
+<span class="normal">    k </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">k </span><span class="symbol">&lt;</span><span class="normal"> ITERA</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">	o1 </span><span class="symbol">=</span><span class="normal"> rez </span><span class="symbol">*</span><span class="normal"> rez</span><span class="symbol">;</span>
+<span class="normal">	o2 </span><span class="symbol">=</span><span class="normal"> imz </span><span class="symbol">*</span><span class="normal"> imz</span><span class="symbol">;</span>
+<span class="normal">	t2 </span><span class="symbol">=</span><span class="normal"> </span><span class="number">2</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> rez </span><span class="symbol">*</span><span class="normal"> imz</span><span class="symbol">;</span>
+<span class="normal">	t1 </span><span class="symbol">=</span><span class="normal"> o1 </span><span class="symbol">-</span><span class="normal"> o2</span><span class="symbol">;</span>
+<span class="normal">	rez </span><span class="symbol">=</span><span class="normal"> t1 </span><span class="symbol">+</span><span class="normal"> re</span><span class="symbol">;</span>
+<span class="normal">	imz </span><span class="symbol">=</span><span class="normal"> t2 </span><span class="symbol">+</span><span class="normal"> im</span><span class="symbol">;</span>
+<span class="normal">	</span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">o1 </span><span class="symbol">+</span><span class="normal"> o2 </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">4</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">	    result </span><span class="symbol">=</span><span class="normal"> k</span><span class="symbol">;</span>
+<span class="normal">	    </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">	</span><span class="cbracket">}</span>
+<span class="normal">	k</span><span class="symbol">++;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    p</span><span class="symbol">[</span><span class="normal">y</span><span class="symbol">*</span><span class="normal">MAXX </span><span class="symbol">+</span><span class="normal"> x</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> lookup</span><span class="symbol">[</span><span class="normal">result</span><span class="symbol">];</span><span class="normal"> </span><span class="comment">// Palettized lookup</span>
+<span class="cbracket">}</span>
+</tt></pre>
+
+</div>
+  &nbsp;<br>
+  Now compare that to the SSE main loop (brace yourselves):
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">        </span><span class="comment">;  x' = x^2 - y^2 + a</span>
+<span class="normal">        </span><span class="comment">;  y' = 2xy + b</span>
+<span class="normal">        </span><span class="comment">;</span>
+<span class="normal">        </span><span class="keyword">mov</span><span class="normal">     </span><span class="variable">ecx</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">        movaps  xmm</span><span class="number">5</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">fours</span><span class="symbol">]</span><span class="normal">     </span><span class="comment">; 4.     4.     4.     4.       ; xmm5</span>
+<span class="normal">        movaps  xmm</span><span class="number">6</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">re</span><span class="symbol">]</span><span class="normal">        </span><span class="comment">; a0     a1     a2     a3       ; xmm6</span>
+<span class="normal">        movaps  xmm</span><span class="number">7</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">im</span><span class="symbol">]</span><span class="normal">        </span><span class="comment">; b0     b1     b2     b3       ; xmm7</span>
+<span class="normal">        xorps   xmm</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">0</span><span class="normal">        </span><span class="comment">; 0.     0.     0.     0.</span>
+<span class="normal">        xorps   xmm</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">1</span><span class="normal">        </span><span class="comment">; 0.     0.     0.     0.</span>
+<span class="normal">        xorps   xmm</span><span class="number">3</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">3</span><span class="normal">        </span><span class="comment">; 0.     0.     0.     0.       ; xmm3</span>
+<span class="preproc">loop1:</span>
+<span class="normal">        movaps  xmm</span><span class="number">2</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">0</span><span class="normal">        </span><span class="comment">; x0     x1     x2     x3       ; xmm2</span>
+<span class="normal">        mulps   xmm</span><span class="number">2</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">1</span><span class="normal">        </span><span class="comment">; x0*y0  x1*y1  x2*y2  x3*y3    ; xmm2</span>
+<span class="normal">        mulps   xmm</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">0</span><span class="normal">        </span><span class="comment">; x0^2   x1^2   x2^2   x3^2     ; xmm0</span>
+<span class="normal">        mulps   xmm</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">1</span><span class="normal">        </span><span class="comment">; y0^2   y1^2   y2^2   y3^2     ; xmm1</span>
+<span class="normal">        movaps  xmm</span><span class="number">4</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">0</span>
+<span class="normal">        addps   xmm</span><span class="number">4</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">1</span><span class="normal">        </span><span class="comment">; x0^2+y0^2  x1...              ; xmm4</span>
+<span class="normal">        subps   xmm</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">1</span><span class="normal">        </span><span class="comment">; x0^2-y0^2  x1...              ; xmm0</span>
+<span class="normal">        addps   xmm</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">6</span><span class="normal">        </span><span class="comment">; x0'    x1'    x2'    x3'      ; xmm0</span>
+<span class="normal">        movaps  xmm</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">2</span><span class="normal">        </span><span class="comment">; x0*y0  x1*y1  x2*y2  x3*y3    ; xmm1</span>
+<span class="normal">        addps   xmm</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">1</span><span class="normal">        </span><span class="comment">; 2x0*y0 2x1*y1 2x2*y2 2x3*y3   ; xmm1</span>
+<span class="normal">        addps   xmm</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">7</span><span class="normal">        </span><span class="comment">; y0'    y1'    y2'    y3'      ; xmm1</span>
+<span class="normal">        cmpltps xmm</span><span class="number">4</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">5</span><span class="normal">        </span><span class="comment">; &lt;4     &lt;4     &lt;4     &lt;4 ?     ; xmm2</span>
+<span class="normal">        movaps  xmm</span><span class="number">2</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">4</span>
+
+<span class="comment">; at this point, xmm2 has all 1s in the non-overflowed pixels</span>
+
+<span class="normal">        movmskps </span><span class="variable">eax</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">4</span><span class="normal">        </span><span class="comment">; (lower 4 bits reflect comparisons)</span>
+<span class="normal">        andps   xmm</span><span class="number">4</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">ones</span><span class="symbol">]</span><span class="normal">      </span><span class="comment">; so, prepare to increase the non-over</span>
+<span class="normal">        addps   xmm</span><span class="number">3</span><span class="symbol">,</span><span class="normal"> xmm</span><span class="number">4</span><span class="normal">        </span><span class="comment">; by updating the 4 bailout counters</span>
+<span class="normal">        </span><span class="keyword">or</span><span class="normal">      </span><span class="variable">eax</span><span class="symbol">,</span><span class="normal"> </span><span class="variable">eax</span><span class="normal">          </span><span class="comment">; have all 4 pixels overflowed ?</span>
+<span class="normal">        </span><span class="keyword">jz</span><span class="normal">      </span><span class="keyword">short</span><span class="normal"> nomore      </span><span class="comment">; yes, we're done</span>
+
+<span class="normal">        </span><span class="keyword">inc</span><span class="normal">     </span><span class="variable">ecx</span>
+<span class="normal">        </span><span class="keyword">cmp</span><span class="normal">     </span><span class="variable">ecx</span><span class="symbol">,</span><span class="normal"> </span><span class="number">119</span>
+<span class="normal">        </span><span class="keyword">jnz</span><span class="normal">     </span><span class="keyword">short</span><span class="normal"> loop</span><span class="number">1</span>
+</tt></pre>
+
+</div>
+  Convinced? :&#x2011;)<p>
+  Not only was this SSE code a pain to write, and impossible to maintain... It is now
+  an order of magnitude slower than what you can get with cheap GPUs!<p>Times have changed (yet again)...
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/mandelSSE.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

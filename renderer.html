@@ -1,0 +1,657 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/renderer.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Renderer 2.x - Basic 3D algorithms</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Renderer 2.x - Basic 3D algorithms</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <div class="toc">
+<ul class="nav nav-tabs nav-stacked">
+<li><h4><b>Table of contents</b></h4></li>
+<li><a href="#intro">Introduction</a></li>
+<li><a href="#features">Features</a></li>
+<li><a href="#shots">Screenshots</a></li>
+<li><a href="#sm">Shadow Mapping</a></li>
+<li><a href="#ao">Ambient Occlusion</a></li>
+<li><a href="cudarenderer-BVH.html">CUDA version</a></li>
+<li><a href="#downloads">Downloads</a></li>
+<li><a href="#cmd">Command line params</a></li>
+<li><a href="#c3d">Creating 3D objects</a></li>
+<li><a href="#rants">Rants</a></li>
+</ul>
+</div>
+<a href="https://github.com/ttsiodras/renderer"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a>
+<h2>Recent changes:</h2>
+<table border="0" summary="Changelog">
+<tr valign="top"><td><em>April 2012:</em></td><td> Cleaned up triangle setup code via <a href="http://stackoverflow.com/questions/264269">X-Macros</a><br></td></tr>
+<tr valign="top"><td><em>September 2011:</em></td><td> (Internal release, mail me if you want it) <a href="http://dl.dropbox.com/u/15540796/mychess.png">red-blue glasses 3D</a><br></td></tr>
+<tr valign="top"><td><em>August 2011:</em></td><td> Added Intel's Morphological Anti-aliasing (<a href="http://software.intel.com/en-us/articles/mlaa-efficiently-moving-antialiasing-from-the-gpu-to-the-cpu/">MLAA</a>)<br></td></tr>
+<tr valign="top"><td><em>February 2011:</em></td><td> <A href="http://redd.it/fgbfr">CUDA "port" of raytracer mode posted to Reddit</A><br></td></tr>
+<tr valign="top"><td width="20%"><em>January 2011:</em></td><td> Added raytracing mode:<br>reflections, refractions, shadows, ambient occlusion and anti-aliasing.<br></td></tr>
+<tr valign="top"><td><em>December 2010:</em></td><td> <A href="http://redd.it/euxzx">CUDA "port" of raycaster mode posted to Reddit</A><br></td></tr>
+<tr valign="top"><td><em>July 2010:</em></td><td> <A href="http://www.reddit.com/r/programming/comments/csg3a/a_simple_3d_benchmark_in_html5javascript/">Javascript "port" of points-only mode posted to Reddit</A><br> </td></tr>
+<tr valign="top"><td><em>May 2010:</em></td><td> <A href="http://bit.ly/byERfd">Added to the Phoronix Test Suite</A><br></td></tr>
+<tr valign="top"><td><em>April 2010:</em></td><td> <A href="http://www.reddit.com/r/programming/comments/blxpi/recreational_programming_a_swonly_3d_renderer/">Reddit-ed!</A><br></td></tr>
+</table>
+<h3>Downloads</h3>
+<a href="#downloads">Click here</a> to get portable GPL source code and Windows binaries.
+<a name="intro"></a>
+<h2>Introduction</h2>
+  One of my hobbies that has persisted over the years is my real-time 
+  pure-software 3D renderer. I began writing it in the days of Hercules 
+  and CGA cards... and will probably be playing with the code for as long as I live :&#x2011;)
+<p>
+  My priorities, ever since I started doing this, are simple: <b>try to make the code as clear and concise as possible, 
+  while using good algorithms to improve the rendering speed</b>. In plain words, my primary care is the clarity 
+  of the code - as well as the renderer's speed.
+
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="10" alt="Refraction" src="chessRefraction.jpg"><br>
+  <em>Generated in the renderer's raytracing mode, with reflections and refractions enabled.</em>
+  </div>
+
+  <p>Conciseness and clarity are mostly accomplished via C++ templates, that unify the incremental calculations for the rasterizers
+  and the ray intersections for the raytracers. And as for speed, we are now firmly in the age of multi-core CPUs - so 
+  software rasterizing can (finally) do per-pixel lighting and soft-shadows in real-time, while raytracing can generate 
+  beautiful images in a matter of seconds.
+  <table summary="Rendering a statue with a SW renderer" align="center">
+  <tr>
+  <td>
+<center>
+<!--object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/M2cFz6190ZM&hl=en_US&fs=1&rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/M2cFz6190ZM&hl=en_US&fs=1&rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object-->
+<!--object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="http://www.youtube.com/v/M2cFz6190ZM&amp;hl=en_US&amp;fs=1&amp;rel=0"><param name="movie" value="http://www.youtube.com/v/0FrAZis6Wfk"><param name="allowFullScreen" value="true"></object-->
+<object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="https://www.youtube.com/v/M2cFz6190ZM&amp;hl=en_US&amp;fs=1&amp;rel=0">
+    <param name="movie" value="https://www.youtube.com/v/M2cFz6190ZM">
+    <param name="allowFullScreen" value="true">
+    <!-- Fallback content -->
+    <a href="https://www.youtube.com/watch?v=M2cFz6190ZM">
+    <img src="ajax-video.jpg" width="480" height="360" alt="Rendered statue">
+    </a>
+</object>
+</center>
+  </td></tr></table>
+  <br>&nbsp;<br>
+  The renderer allows switching between rasterizing and raytracing in real-time - so one navigates quickly with the 
+  rasterizers, and requests a raytracing when the viewpoint is interesting.
+  <div class="rightFloat scrollableContainer">
+  <img hspace="10" vspace="10" alt="Rendered statue" src="ajax-small.gif"><br>
+  <em>On a 4-core Phenom, the shadow-mapped<br>version runs at 60 frames/sec.<br>The raytraced version: 3 sec/frame ;&#x2011;)</em>
+  </div>
+<a name="features"></a>
+  <h3>Features</h3>
+
+  <p>This is a <em>(more or less)</em> clean implementation of the 
+  basic algorithms in polygon-based 3D graphics. The code includes...
+  <ul>
+  <li>3D transformations (from world coordinates, to camera-space/light-space coordinates)
+  <li>Point rendering (vertex-based or triangle-based)
+  <li>Anti-aliased lines rendering
+  <li>Gouraud shading (complete Phong equation calculated per vertex)
+  <li>Phong shading (complete Phong equation calculated per pixel)
+  <li>Z-Buffer hidden surface removal
+  <li>Shadow mapping 
+  <li>Soft shadow mapping
+  <li>Raytracing, with shadows, reflections, refractions, ambient occlusion and anti-aliasing
+  <li>Portable display and keyboard handling through libSDL
+  </ul>
+  <p>The supported 3D formats are:
+  <ul>
+  <li><b>.3ds</b>, i.e. the well known 3D Studio format (via lib3ds)
+  <li><b>.tri</b>, a simple binary dump of vertex and triangle data
+  <li><b>.ply</b> (only the ASCII kind, as saved from <a href="http://meshlab.sourceforge.net/">MeshLab</a> and <a href="http://freshmeat.net/projects/shadevis/">shadevis</a>)
+  </ul>
+  <p>Implementation wise, the code...
+  <ul>
+  <li>Is orchestrated via autoconf/automake, so it will
+  compile and run cleanly on most platforms (tested so far on Linux/x86,
+  Mac OS/X, Windows (using TDM/MinGW gcc), OpenSolaris (GCC/TBB), OpenBSD/amd64 
+  and FreeBSD/amd64)
+  <li>Includes a separate <tt>VisualC</tt> directory for Windows/MSVC users, 
+  with all dependencies pre-packaged for easy compilation
+  <li>Can be configured to use 
+  <a href="http://www.openmp.org">OpenMP</a>, provided that your compiler's
+  support for OpenMP is mature enough (e.g. GCC since version 4.3.2)
+  <li>Can be configured to use 
+  <a href="http://www.threadingbuildingblocks.org">Intel Threading Building 
+  Blocks</a>, thus taking advantage of multi-core CPUs and executing faster
+  <li>Uses C++ template-based metaprogramming, in order
+  to move as much rendering logic as possible from run-time to compile-time.
+  </ul>
+  Speed-wise...<p>This is a software-only renderer, so don't expect hardware
+  class (OpenGL) speeds. Then again, speed is a relative thing: the train 
+  object (available inside the source package, in the "3D-Objects" folder) 
+  was rendered (in soft-shadows mode) at a meager 6fps on an Athlon 
+  XP, back in 2003. Around 2005, however, a Pentium4 desktop at work took 
+  this up to 11 fps. As of 2007, by way of Intel's Threading Building Blocks
+  (or OpenMP) the code uses both cores of a Core2Duo to run at 23fps... 
+  And since it uses TBB/OpenMP, it will automatically make use of any 
+  additional cores... so give the CPUs a few more years... :&#x2011;)<p>
+  <em><b>Update, November 2009</b>: On a 4-core AMD Phenom at 3.2GHz, the
+  train now spins at 80 frames per second... Give me more cores! :&#x2011;)</em>
+  <p>The code also runs 20-25% faster if compiled under 64-bit environments.
+  <a name="shots"></a>
+  <h3>Screenshots</h3>
+  Skipping points rendering, lets begin with an anti-aliased rendering of a train:
+
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="20" alt="Anti-aliased train" src="trainLines.png"><br>
+  <em>Notice the anti-aliasing in the zoomed section</em>
+  </div>
+
+  Moving on to more interesting rendering modes: the same train looks far better
+  with shadow mapping, which allows rendering self-shadowing objects in real-time,
+  even when using multiple light sources (35 frames per second on a Core2Duo):
+  
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="20" alt="Shadow mapped train" src="trainTwoLights.png"><br>
+  <em>Shadow mapping - self shadowing</em>
+  </div>
+
+  In many such 3D models self-shadowing is easily identifiable, especially if we
+  <a href="ajax.jpg" rel="lightbox" title="Self-shadowing statue">zoom in</a>.
+  This nice chessboard exhibits it, too - running with shadow-mapping at 40 fps on a Core2Duo:
+ 
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="10" alt="Chessboard" src="chessBoard.jpg"><br>
+<em>Gotta find time to hook this up with gnuchess! :&#x2011;)</em>
+  </div>
+
+  The renderer also includes a SAH/AABB/BVH raytracer (<em>i.e. a raytracer
+  that accelerates ray intersections using a Bounded Volume Hierarchy,
+  formed from Axis-Aligned Bounding Boxes, created via a Surface Area 
+  Heuristic</em>). The results are of course, not real-time - but 
+  quality-wise, they are on a class of their own: here's how the chessboard 
+  looks when raytraced with reflections and 
+  shadows (<em>11 seconds to render this frame on the same machine</em>):
+
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="10" alt="Raytraced chessboard" src="chessRaytraced.jpg"><br>
+  </div>
+
+  Raytracing is orders of magnitude slower than rasterizing, but it creates beautiful images... 
+  I recently (Feb 2011) completed my first steps in speeding it up with CUDA (<a href="cudarenderer-BVH.html">check it out</a>).
+  Notice also how zooming-in on a pawn shows reflections of reflections...
+
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="10" alt="Reflections of reflections" src="reflections.jpg">
+  </div>
+
+  ...and finally, this is how refractions create a glass dragon (<em>31 seconds to render on a Core2Duo</em>):
+
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="10" alt="Glass dragon" src="glassDragon.gif">
+  </div>
+
+  Which brings us to the matter of speed, again: The program allows changing the rendering mode at runtime, and
+  therefore offers interactive control of the balance between rendering speed and rendering quality:
+
+  <div class="scrollableContainer">
+  <table summary="Rendering levels" width="100%">
+  <tr align="center"><td><img width="184" height="360" alt="Points" src="Stage0.png"></td>
+  <td><img width="184" height="360" alt="Ambient" src="Stage1.png"></td>
+  <td><img width="184" height="360" alt="Phong" src="Stage2.png"></td>
+  <td><img width="184" height="360" alt="Shadows" src="Stage3.png"></td></tr>
+  <tr align="center">
+  <td><em>Points</em></td>
+  <td><em>Ambient occlusion</em></td>
+  <td><em>Per-pixel Phong</em></td>
+  <td><em>Shadow maps</em></td>
+  </tr></table>
+  </div>
+
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="10" alt="Gold dragon" src="gold.jpg"><br>
+  </div>
+  <a name="sm"></a>
+  <h2>Shadow mapping and soft shadows</h2>
+  Shadow mapping offers a good balance between rendering quality and rendering speed.
+  Shadow maps are "special pictures" rendered along the normal rendering pipeline,
+  but from the point of view of the light source. They provide the "light-height"
+  information that tells the rasterizer when the pixel drawn is in shadow and when 
+  not.  In case you were wondering, here is what a 
+  <a href="shadowmap-small.png" rel="lightbox" title="Shadow map">shadow map</a> 
+  looks like (67KB image).<p>
+
+  Normally, shadow maps generate sharp, "pixelated" shadow edges, because of the
+  sampling of the shadow map. To improve this, instead of sampling only one "shadow pixel", 
+  the renderer can also use a weighted average of its neighbours, and thus provide
+  nice looking soft-shadows in real-time:
+ 
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="20" alt="Castle" src="castle.png"><br>
+<em>Self-shadowing at its finest...</em>
+</div>
+<p>
+  Fast though it is, shadow-mapping has an issue if you zoom-in: the artifacts of the shadowmap sampling become annoying... In "deep" zooms, the renderer can be switched (at runtime) to raytracing mode, to create the correct shadows:<br>&nbsp;
+
+  <div class="scrollableContainer">
+  <table summary="Shadow mapping artifacts" width="100%">
+  <tr align="center"><td><img width="260" height="414" alt="Shadow-mapped" src="millenium-shadowmapped-zoomed.png"></td>
+  <td><img width="260" height="414" alt="Soft-shadowMapped" src="millenium-softshadowmapped-zoomed.png"></td>
+  <td><img width="260" height="414" alt="Raycasted Shadows" src="millenium-raycastedshadows-zoomed.png"></td></tr>
+  <tr align="center">
+  <td><em><a href="millenium-shadowmapped.png" rel="lightbox" title="Shadow map">Shadow mapped</a></em></td>
+  <td><em><a href="millenium-softshadowmapped.png" rel="lightbox" title="Soft shadow mapped">Soft shadow mapped</a></em></td>
+  <td><em><a href="millenium-raycastedshadows.png"  rel="lightbox" title="Raycasted shadows">Raycasted shadows</a></em></td>
+  </tr></table>
+  </div>
+  <div class="redBox">
+  The "raycasted shadows" mode that I implemented in late 2010, was offering a compromise between the speed impact of a raytracer and the rendering artifacts of a rasterizer: it gave shadows the quality of a raytracer, but maintained some of the speed of a rasterizer, since everything else except the shadows was done via screen-space-linear interpolations: projected screen space coordinates, normal vectors used in Phong lighting, Z-Buffer handling, etc. It was also <a href="cudarenderer.html">ported to CUDA</a>, and got a hefty speedup.
+<p>Two weeks later, I removed this mode in favour of a full raytracer - it was slower than the rasterizer modes anyway, and a full raytracer offers far better quality. It still exists in the CUDA port, if you are interested.
+</div>
+  <a name="ao"></a>
+  <h2>Ambient Occlusion</h2>
+The renderer uses ambient occlusion to significantly improve the rendering 
+quality of indirectly lit areas.
+<p>
+For the rasterizers, it linearly interpolates
+(per-pixel) the ambient occlusion coefficient, which must be pre-calculated 
+per vertex and stored in the model (see below, "Creating more 3D objects on 
+your own").
+<p>
+For the raytracer, by uncommenting
+the <tt>#define AMBIENT_OCCLUSION</tt>, you will enable a stochastic
+ambient occlusion calculation for each raytraced pixel:
+When a triangle is intersected by a primary ray, <tt>AMBIENT_SAMPLES</tt> 
+rays will be spawned from the intersection point, and they will be used to 
+calculate the ratio of ambient light at that point.
+<p>The difference is very clear:
+  <div class="scrollableContainer">
+  <img hspace="10" vspace="10" alt="With and without ambient occlusion" 
+  src="WithAndWithoutAmbientOcclusion.gif"><br>
+  <em>With and without ambient occlusion</em></div>
+  Here's an ambient-occlusion raytracing of Sponza (<em>with 32 ambient rays cast per pixel</em>):
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="10" alt="Ambient Sponza" src="ambientSponza.gif"><br>
+</div>
+  ...and another set, for a church and a conference room:
+  <div class="scrollableContainer">
+  <img hspace="20" vspace="10" alt="Church" src="church.and.conference.gif">
+</div>
+<a name="downloads"></a>
+  <h2>Download, compile and run</h2>
+  <div class="redBox">
+  <b>Warning about hyper-threading</b><p>
+  If your CPU uses hyper-threading, your "virtual" cores may help or may <b>destroy</b>
+  your performance. On an Atom 330 (2 real cores, each one appearing as two "virtual"), 
+  the "virtual" cores help a lot: running with four threads, the raytracer is 1.3x faster
+  than running with two. On an dual-CPU, Intel Xeon W5580 however (total of 8 real cores, 
+  appearing as 16 "virtual"), the speed increases almost linearly as we increase threads, 
+  until we reach 8 - <em>and then the speed nose-dives, with the 16 thread version being 
+  <b>63 times slower (!)</b></em>.
+  <p>
+  If your CPU has hyper-threading enabled, make sure you check the runtime performance of the
+  renderer by exercising direct control over the number of threads: use the OMP_NUM_THREADS 
+  environment variable to control how many threads OpenMP uses.
+  </div>
+  The code is under the GPL, and lives in <a href="https://github.com/ttsiodras/renderer">GitHub</a>. Here's <a href="https://github.com/ttsiodras/renderer/archive/v2.3a.tar.gz">a tarball with the latest source code</a> (last update: 2.3a, Oct 2015).
+  <a href="renderer-2.x.latest-mingw32.7z">Windows binaries</a> are also available (compiled with TDM/MinGW and Pthread-W32, and compressed with <a href="http://www.7-zip.org/">7-zip</a>).
+  <p><b>For Windows/MSVC users:</b>
+<p>Just open the project solution (under <tt>VisualC/</tt>) and compile for
+Release mode. It is configured by default to use Intel TBB for multithreading,
+since Microsoft decided to omit OpenMP support from the free version
+of its compiler (the Visual C++ Express Edition). All dependencies (include files
+and libraries for SDL and TBB) are pre-packaged under <tt>VisualC/</tt>, so compilation is
+as easy as it can get. 
+<p>When the binary is built, right-click on
+"Renderer-2.x" in the Solution explorer, and select "Properties".
+Click on "Configuration Properties/Debugging", and enter
+<tt>..\..\3D-Objects\chessboard.tri</tt>
+inside the "Command Arguments" text box. Click on OK, hit Ctrl-F5,
+and you should be seeing the chessboard spinning. Use the controls
+described below to fly around the object.
+<p>
+The default compilation options are set for maximum optimization, using
+SSE2 instructions.
+<p>
+If you have the commercial version of the compiler (which supports
+OpenMP) you can switch from TBB to OpenMP:
+<table border="0" summary="Switch to OpenMP"><tr><td>
+<ul>
+<li>Configuration Properties - C/C++ - Language - OpenMP: Set To "Yes"
+<li>Configuration Properties - Preprocessor - Definitions: Change USE_TBB to USE_OPENMP
+</ul>
+</td></tr></table>
+...and recompile.
+<p><b>For everybody else (Linux, BSDs, Mac OS/X, etc)</b>
+  <p>Compilation follows the well known procedure...
+  <div class="rightFloat scrollableContainer">
+  <img hspace="5" vspace="5" alt="Voyager, gimp-ed a little :&#x2011;)" src="voyager.png"><br>
+<em>Voyager (yep, I Gimp-ed the lens flare :&#x2011;)</em>
+</div>
+  <pre>
+  <b>bash$</b> ./configure
+  <b>bash$</b> make</pre>
+  The source package includes a copy of the sources for lib3ds 1.3.0, and the
+  build process will automatically build lib3ds first.
+  <p>
+  SSE, SSE2 and SSSE3 x86 SIMD optimizations will be detected by <tt>configure</tt>,
+  but if you have a non-Intel CPU, pass your own CXXFLAGS flags, e.g.
+  <pre>
+  <b>bash$</b> CXXFLAGS="-maltivec" ./configure
+  <b>bash$</b> make</pre>
+  Compiling under 64-bit environments (e.g. AMD64 or Intel EM64T) is further improving speed; 
+  compiled with the same options, the code runs 25% faster under my 64-bit Debian.<br>
+  <table align="center" summary="OS/X" width="95%"><tr><td>
+  <a name="OSX"></a>
+  <font color="red"><em>A note for Mac OS/X and FreeBSD developers:</em></font> The default 
+  FreeBSD and Mac OS/X environments (XCode) include
+  an old version of GCC (4.2.x). This version is known to have issues with OpenMP,
+  so if you do use it, your only available option with multicore machines is
+  Intel TBB (which works fine). You can, however, download the latest GCC from
+  ports, if you use FreeBSD, or from 
+  <a href="http://hpc.sourceforge.net">High Performance Computing</a> for Mac OS/X -
+  they both offer the latest GCC series. Results are much better this way: OpenMP works fine,
+  and support for the SSE-based <tt>-mrecip</tt> option boosts the speed by more than 30%.
+  </td></tr></table><br>
+
+  <div class="scrollableContainer">
+  <img hspace="5" vspace="5" alt="Parthenon (Elgin) marbles" src="West_Frieze.jpg"><br>
+  <em>Some of the Parthenon's art (Elgin marbles)...</em>
+  </div>
+  After a successful make, fly around the objects with:
+  <pre>
+  <b>bash$</b> cd 3D-Objects
+  <b>bash$</b> ../src/renderer/renderer chessboard.tri</pre>
+  <ul>
+  <li>Hit 'R' to stop/start auto-spin.
+  <li>Use the cursor keys, 'A' and 'Z' to pilot.
+  <li>Rotate the light with 'W', 'Q'.
+  <li>'S' and 'F' are 'strafe' left/right, 'E' and 'D' are 'strafe' up/down.<br>
+  (strafe keys don't work in auto-spin mode).
+  <li>The '1' to '0' keys as well as the PageUp/PageDown change the rendering mode, cycling through:
+  <ul>
+    <li>Points
+    <li>Points via triangle culling
+    <li>Anti-aliased lines
+    <li>Ambient <em>(when ambient occlusion data are available in the 3D model, this actually looks good)</em>
+    <li>Gouraud (complete Phong lighting per vertex)
+    <li>Phong (complete Phong lighting per pixel)
+    <li>Phong and shadow maps
+    <li>Phong and soft shadow maps
+    <li>Raytracing, with shadows and reflections
+    <li>Raytracing, with shadows, reflections and anti-aliasing
+  </ul>
+  <li>ESC quits.
+  </ul>
+  Try the other 3D objects, too: <tt>trainColor.tri, legocar.3ds, pharaoh.ply, etc</tt>...<br>
+  <a name="cmd"></a>
+  <p><b>Command line parameters</b></p>
+<pre class="o">
+Usage: renderer [OPTIONS] [FILENAME]
+
+  -h         this help
+  -r         print FPS reports to stdout (every 5 seconds)
+  -b         benchmark rendering of N frames (default: 100)
+  -n N       set number of benchmarking frames
+  -w         use two lights
+  -m &lt;mode&gt;  rendering mode:
+       1 : point mode
+       2 : points based on triangles (culling,color)
+       3 : triangles, wireframe anti-aliased
+       4 : triangles, ambient colors
+       5 : triangles, Gouraud shading, ZBuffer
+       6 : triangles, per-pixel Phong, ZBuffer
+       7 : triangles, per-pixel Phong, ZBuffer, Shadowmaps
+       8 : triangles, per-pixel Phong, ZBuffer, Soft shadowmaps
+       9 : triangles, per-pixel Phong, ZBuffer, raycasted shadows
+       0 : raytracing, with shadows, reflections and anti-aliasing
+</pre>
+  <a name="c3d"></a>
+  <p><b>Creating more 3D objects on your own</b></p>
+  The rasterizer output is looking much better if the model carries pre-calculated
+  ambient occlusion information per vertex. To do this:
+  <ol>
+  <li>Use <a href="http://meshlab.sourceforge.net/">MeshLab</a> to convert your 3D object to .PLY.
+  <li>Load it up in <a href="http://ostatic.com/shadevis">shadevis</a> and hit ENTER 
+  to have shadevis calculate the ambient occlusion factors per vertex. After that, 
+  hit 'D' as many times as necessary to lower the diffuse light to 0%, and hit 'a' 
+  to pump up the ambient to 100%. Hit 'S' to save the object.
+  <li>Load the saved '..._vis.ply' with my renderer.
+  </ol>
+  <em><b>Update:</b> You can now use Meshlab to perform the same work, from:
+  "Filters / Color creation and processing / Ambient occlusion per vertex". Then
+  save your object as <tt>.ply</tt> (Stanford polygon format) and make sure you
+  have only "Color" (from the "Vert" group) selected (also, uncheck "Binary encoding").</em><p>
+  Enjoy!
+  <a name="rants"></a>
+  <p>&nbsp;
+  <div style="background-color:#CCDDCC; padding:20px; border:1px solid black">
+  <div style="float:left; padding:5px 20px 5px 20px; text-align:center">
+  <img hspace="0" vspace="0" alt="Tie fighter" src="tie.png"><br>
+  <em>The dark side... of coding SMP</em>
+  </div>
+  <b>Rant 1: Why did you do this, you crazy person?</b><p>
+  Well... I've always loved coding real-time 3D graphics. Experimenting 
+  with new algorithms, trying to make things run faster, look better... 
+  And as a side effect, I became a better coder&nbsp;:&#x2011;)
+  <p>Anyway, these sources are 
+  my "reference" implementations. At some point around 2003, I decided that it 
+  was time to clean up the code that I've been hacking on over the years
+  and focus on code clarity - ignoring execution speed. To that end, floating 
+  point is used almost everywhere (fixed-point begone!) and this being Phong 
+  shading, the complete lighting equation is calculated per pixel. I basically 
+  created a "clean" implementation of everything I have ever learned about 
+  polygon-related graphics. The clarity of the code also paved the way for the 
+  <a href="trimesh.html">OpenGL</a> and <a href="cudarenderer.html">CUDA</a> versions...</p>
+  <p><b>Rant 2: Tales of Multicore</b>
+  <p>This code was single threaded until late 2007. At that point, I heard
+  about OpenMP, and decided to try it out. I was amazed at how easy it was
+  to make the code "OpenMP-aware": I simply added a couple of pragmas in the
+  for-loops that drew the triangles and the shadow buffers, and ...presto!
+
+  <p>The only things I had to change were static variables, which had to be 
+  moved to stack space. Threading code can't tolerate global/static data, 
+  because race conditions immediately appeared when more than one thread 
+  worked on them.
+
+<div class="rightFloat scrollableContainer">
+<img hspace="10" vspace="10" alt="Rendered statue" src="lucyRaytraced.jpg"><br>
+<em>Once I began using OpenMP, the<br>
+renderer crashed many C++ compilers.<br>
+As of 2009, they have finally adapted!</em><br>
+</div>
+  <p>Only two compilers truly supported OpenMP at the time: Intel's compiler 
+(version 8.1) and Microsoft's CL. GCC unfortunately died with 
+'internal compiler error'. I reported this to the GCC forums, found out
+that I was not the only one who had noticed, and was told (by the forum
+guys) to wait.
+
+<p>While waiting for GCC to catch up, I kept researching multicore technologies.
+Functional languages seem particularly adept to SMP, and I've put them
+next in line in my R&amp;D agenda (Ocaml and F# in particular). Before leaving
+C++ behind, though, I heard about Intel Threading Building Blocks (TBB)
+and decided to put them to the test. TBB is a portable set of C++ templates 
+that makes writing threading code a lot easier than legacy APIs 
+(<tt>CreateThread</tt>, <tt>_beginthread</tt>, <tt>pthread_create</tt>, etc). 
+TBB is also open-source, so it was easy to work with it and figure out its 
+internals. Truth be told, it also required more changes in my code 
+(OpenMP required almost none). Still, it is a vast improvement compared 
+to conventional threading APIs.
+
+<p>I must also confess that I have not invested a lot of effort in using these 
+technologies; I only enhanced two of my main rendering loops to make them SMP 
+aware. Still, this was enough to boost the speed (on a Core2Duo) by 80%! 
+Judging by the gain/effort ratio, this is one of the best bargains I've ever 
+found...
+
+<p>As of now (October 2008), GCC 4.3.2 is up to speed and compiles OpenMP 
+code just fine. TBB is of course running perfectly (since it is simply a C++
+template library), so choose freely between any of the two, and easily 
+achieve portable multithreading. 
+
+<p>When I say portable, I mean it: these are the tests I did...
+<ol>
+<li>OpenMP binaries (<tt>./configure --enable-openmp --disable-tbb</tt>) for...
+    <ul>
+    <li>Windows (via TDM/MinGW GCC 4.3.2)
+    <li>Linux (via GCC >= 4.3.2 in both 32 and 64bit)
+    <li>Linux (via Intel's compiler in 32 bit)
+    <li>FreeBSD 8.0 (via latest GCC version, installed through ports, in 64bit)
+    <li>Mac OS/X (follow <a href="#OSX">these instructions</a> to get a GCC
+    that supports important SSE optimizations (<tt>-mrecip</tt>) and
+      has stable support for OpenMP - Xcode's GCC 4.2.x is too old for OpenMP).
+    </ul>
+<li>TBB binaries (<tt>./configure --disable-openmp --enable-tbb</tt>) for...
+    <ul>
+    <li>Linux (via GCC in both 32 and 64bit)
+    <li>Linux (via Intel's compiler in 32 bit)
+    <li>Mac OS/X (even with Xcode's old GCC 4.2.x)
+    <li>FreeBSD 8.0/64bit
+    <li>OpenSolaris (tested with 2008.11 / GCC 3.4.3)
+    </ul>
+<li>Single-threaded binaries for...
+    <ul>
+    <li>Poor OpenBSD4.3/64: it doesn't have real, SMP threads. Not yet, at least :&#x2011;)
+      It only has user-space ones (as Linux did at some point).  
+      But it does compile the code, albeit in single-threaded mode.
+    </ul>
+</ol>
+<p>Talk about portable code!
+<div class="scrollableContainer leftFloat">
+<img hspace="0" vspace="0" width="306" height="179" alt="Torus" src="torus.png"><br>
+<em>Dynamic scheduling makes sure all cores<br>are kept busy, even for low tesselations</em>
+</div>
+<p>If you're still in the... dark ages and use legacy APIs (<tt>CreateThread</tt>, 
+<tt>_beginthread</tt>, <tt>pthread_create</tt>, etc) you are really missing out:
+Under both OpenMP and Intel TBB, I increased the rendering frame rate of 
+the train object by more than 40%, by simply replacing...
+<pre>
+#pragma omp parallel for
+</pre>
+with
+<pre>
+#pragma omp parallel for schedule(dynamic,100)
+</pre>
+(similar change for TBB, at code inside <tt>Scene.cc</tt>).<p>Why? Because these
+modern threading APIs allow us to easily adapt to different loads per thread, by
+using dynamic thread scheduling.
+</div>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:35:19 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/renderer.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

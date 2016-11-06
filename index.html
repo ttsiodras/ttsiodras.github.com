@@ -1,0 +1,302 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="google-site-verification" content="MKES-Qir3HnZqvUc25hjVeLJkPQdwqhSGwpBrEWbDe0" >
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/index.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<meta name="google-site-verification" content="S9q-VjLVz4b4-DlbSpiyv85Lfml4E0rgDw4zWoAz9lc">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Artifacts of my free-time programming</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Artifacts of my free-time programming</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <div>
+    Welcome!
+    <p>
+    My&nbsp;name&nbsp;is&nbsp;<a href="cv.pdf">Thanassis</a>, and in the pages below,
+    I am pleased to share with you some of my free-time creations, like...
+    <ul style="overflow: hidden">
+        <li><a href="renderer.html">3D graphics</a> real-time rendering 
+        <li>simulating <a href="gravity.html">the universe</a> and <a href="wavePhysics.html">water waves</a>
+        <li><a href="score4.html">AI </a> coding in many programming languages
+        <li>fooling <a href="ladders.html">around </a> with <a href="primes.html">mathematics</a>
+        <li><a href="unblock.html">solving</a> puzzles
+        <li>Android <a href="android.html">hacking</a>
+        <li>...and many more.
+    </ul>
+    Start exploring below - and enjoy! :-)
+    <p>
+    <em>(this site is a mirror of my <a href="http://www.thanassis.space/">main page</a>)</em>
+</div>
+<div style="clear:both; margin-bottom:2em; text-align:left">
+	<div class="toc desktop-only">
+		<h4 style="">Table of Contents</h4>
+		<ul class="nav nav-tabs nav-stacked">
+		<li><a href="#Coding">Coding</a>
+		<li><a href="#ReverseEngineering">Reverse Engineering</a>
+		<li><a href="#Utilities">Utilities</a>
+		<li><a href="#Graphics">Graphics</a>
+		<li><a href="#Puzzles">Puzzles</a>
+		<li><a href="#VideoAudio">Video/Audio</a>
+		<li><a href="#SO">My StackOverflow posts</a>
+		<li><a href="#Misc">Miscellaneous</a>
+		</ul>
+	</div>
+	<div style="margin-top:1em">
+		<a name="Coding"></a>
+		<b>Coding</b>
+		<ul>
+		    <li><a href="coverage.html">Code coverage and embedded platforms</a><br>
+		    How to perform code coverage analysis on embedded platforms without filesystems</li>
+
+		    <li><a href="bashheimer.html">What is running inside my bash?</a> (<font color="red"><b>Reddit, Hacker News</b></font>)<br>
+		    How I used GDB and Linux magic, to address a... self-inflicted wound.</li>
+
+		    <li><a href="straylight.html">Optimizing code for the European Space Agency</a> (<font color="red"><b>Reddit</b></font>)<br>
+		    35x speedup, using SIMD, cache-awareness, OpenMP and CUDA (C++).</li>
+
+		    <li><a href="yield.html">The power of Python's yield</a><br>
+		    Computing permutations elegantly and efficiently.</li>
+
+		    <li><a href="cpp.html">For C developers that hate C++</a> (<font color="red"><b>Reddit</b></font>)<br>
+		    I think they are missing out.</li>
+
+		    <li><a href="score4jsreact.html">React and TypeScript - the frontend strikes back</a><br>
+		    How I ported my Score4 UI from JS/Canvas to TypeScript/React.</li>
+
+		    <li><a href="score4.html">Artificial Intelligence: Playing Score4 (Connect Four)</a> (<font color="red"><b>Reddit, Hacker News</b></font>)<br>
+		    Implementing Minimax using functional and imperative style (F#, OCaml, C#, C++, Javascript, LISP)</li>
+
+		    <li><a href="stackusage.html">Stack-checking for code that executes in orbit</a> (<font color="red"><b>Reddit, Hacker News</b></font>)<br>
+		    Making sure that stack overflows are impossible (C/C++, Python, objdump)</li>
+
+		    <li><a href="asn1.html">Useful old technologies: ASN.1</a> (<font color="red"><b>Reddit</b></font>)<br>
+		    Using ASN.1 to optimally transfer messages in terms of memory, CPU and network requirements (C/C++, Python, F#)</li>
+
+		    <li><a href="HeapCheck.html">HeapCheck</a><br>
+		    E-fence inspired Win32 Debugging Allocator (C,C++).</li>
+
+		    <li><a href="python.html">Python, what are you doing?</a><br>
+		    Python always does what I want. Except this once.</li>
+
+		    <li><a href="makefile.html">Writing Makefiles</a><br>
+		    Handling build dependencies and code generators using <em>make</em>.</li>
+
+		    <li><a href="yieldDifferences.html">Differences of yield amongst languages</a><br>
+		    How <tt>yield</tt> behaves in different languages (Python, C#, F#).</li>
+
+		    <li><a href="myvim.html">Why I use VIM</a><br>
+		    How using VIM helps me be a more productive programmer.</li>
+
+		    <li><a href="pythonFlattenDictionaries.html">Functional-style in Python</a><br>
+		    Using Python's 'reduce' to flatten a list of dictionaries.</li>
+
+		    <li><a href="youtube.html">Playing back Youtube annotations offline</a><br>
+		    Drive MPlayer via Python and ImageMagick, to playback Youtube videos and their annotations - offline.</li>
+
+		    <li><a href="xmacros.html">Don't Repeat Yourself (via X-macros)</a><br>
+		    Avoiding code repetition in C and C++.</li>
+
+		    <li><a href="pythonTypeChecking.html">Python "compile-time" type checking</a><br>
+		    Detect invalid parameter types being passed to functions (Python).</li>
+
+		    <li><a href="regexp.html">VIM, XML and a regular expression mystery</a> (<font color="red"><b>Reddit</b></font>)<br>
+		    Adding SAXCount and auto-alignment support for .xml files in my editor (VIM, Perl regexp).</li>
+
+		    <li><a href="wavePhysics.html">Simulating waves in Javascript</a><br>
+		    Applying a simplified wave equation to 1- and 2-dimensional waves (Javascript, MathJax).</li>
+
+		    <li><a href="arm.html">Building a tiny ARM-based server</a> (<font color="red"><b>Hacker News</b></font>)<br>
+		    Using an old low-powered SoC, I built an always-on 3.5 Watt server (Unix glory).</li>
+
+		    <li><a href="primes.html">The Ulam spiral</a><br>
+		    Reliving an old memory, when I first met programming (Python, PyPy).</li>
+
+		    <!--li><a href="rant.html">Venting steam</a><br>
+		    Pure, undilluted, foam-in-mouth ranting.</li-->
+		</ul>
+
+		<a name="ReverseEngineering"></a>
+		<b>Reverse Engineering</b>
+		<ul>
+		    <li><a href="android.html">Freeing my Android tablet</a><br>
+		    How I rooted my tablet using my programming / debugging skills (C, Android, bash, HW hacking)</li>
+		</ul>
+
+		<a name="Utilities"></a>
+		<b>Utilities</b>
+		<ul>
+		    <li><a href="win32backup.html">Optimal Windows backups with rsync and Volume Shadow Copy</a><br>
+		    Backing up a Windows box, utilizing open-source and Microsoft tools.</li>
+
+		    <li><a href="gnuplotStreaming.html">Visualize real-time data streams with Gnuplot</a><br>
+		    Streaming data to Gnuplot in real-time (Perl, Gnuplot).</li>
+
+		    <li><a href="rsbep.html">Survive bad sectors and scratched CDs/DVDs</a> (<font color="red"><b>Slashdot</b></font>)<br>
+		    Shielding your files with Reed-Solomon codes (C, x86 asm, python-fuse, FUSE).</li>
+
+		    <li><a href="backup.html">Optimal remote backups with rsync over Samba</a><br>
+		    Backing up a remote Linux box, when all you have... is Windows (hard links and sparse files).</li>
+
+		    <li><a href="buildWikipediaOffline.html">Building a (fast) Wikipedia offline reader</a> (<font color="red"><b>Slashdot</b></font>)<br>
+		    Put Wikipedia on your laptop (C++, Python, Perl).</li>
+
+		    <li><a href="Offline-rsync.html">Offline rsync</a><br>
+		    Synchronize remote file trees with no network (Perl).</li>
+
+		    <li><a href="fillupDVD.html">How hard can it be to fill up a DVD?</a><br>
+		    Gain DVD space with dynamic programming (Python).</li>
+
+		    <li><a href="greekHtmlToLatex.html">Converting Greek polytonic HTML to LATEX</a><br>
+		    LaTEX from HTML-based ancient Greek (Python), e.g. the <a href="acathist.html">Acathist Hymn</a> to the Virgin Mother.</li>
+
+		    <li><a href="coolAMD.html">Software cooling an Athlon XP/1600+</a><br>
+		    "Detect the HLT command" (C).</li>
+		</ul>
+
+		<a name="Graphics"></a>
+		<b>Graphics coding</b>
+		<ul>
+		    <li><a href="cudarenderer-BVH.html">Real-time raytracing: Renderer 2.x in CUDA</a> (<font color="red"><b>Reddit</b></font>)<br>
+		    Porting my renderer to CUDA - will the speed increase? (C++, CUDA)<br></li>
+
+		    <li><a href="trimesh.html">Using hardware: Renderer 2.x in
+		    OpenGL</a><br>
+		    Real-time Phong/ZBuffer rendering through OpenGL fragment shaders (C++, OpenGL).<br></li>
+
+		    <li><a href="renderer.html">Using software: Renderer 2.x</a> (<font color="red"><b>Reddit</b></font>)<br>
+		    Portable GPL software renderer: multi-threaded, Phong, ZBuffer, Soft-ShadowMaps, Ambient Occlusion, MLAA, Raytracing (C++, SDL, Intel TBB, OpenMP).<br></li>
+
+		    <li><a href="SouthGreece.html">SouthGreece</a><br>
+		    Real-time flying over South Greece (Windows/Linux).</li>
+
+		    <li><a href="mandelSSE.html">A real-time Mandelbrot zoomer done via OpenMP/SSE and via CUDA</a><br>
+		    The joy of reaching the limits of your H/W (C, x86 SSE assembly, OpenMP, SDL, OpenGL, CUDA)
+
+		    <li><a href="games.html">SDL hacks</a> (<font color="red"><b>Slashdot</b></font>)<br>
+		    Simulators for fireworks, waves and snow flakes (C++, SDL)
+
+		    <li><a href="gravity.html">Simulating the universe with 300 Python lines</a> (<font color="red"><b>Reddit</b></font>)<br>
+		    What does gravity do to a set of celestial objects with random velocities? (Python).</li>
+
+		    <li><a href="trender.html">Trender</a><br>
+		    Very old code that performs simple software-only rendering of 3D Studio .asc
+		    files. For archiving purposes only :&#x2011;) (C++, SDL).</li>
+		</ul>
+
+		<a name="Puzzles"></a>
+		<b>Puzzles</b>
+		<ul>
+		    <li><a href="unblock.html">Automatically solving the "Unblock Me" puzzle</a> (<font color="red"><b>Reddit</b></font>)<br>
+		    From iPhone screenshots, to heuristics, to recursion, to Breadth-First-Search (C++).</li>
+
+		    <li><a href="ladders.html">The crossing ladders puzzle</a><br>
+		    Loads of equations... what to do? (Python, GNU gsl, Octave, Maxima)</li>
+
+		    <li><a href="knightstour.html">The Knight's Tour</a> (<font color="red"><b>Slashdot</b></font>)<br>
+		    Moving a Knight, visit all squares of a chess board just once (Python).</li>
+
+		    <li><a href="euler31.html">Combining coins to form a target sum</a><br>
+		    Project Euler problem 31 (C, Python).</li>
+
+		    <li><a href="amIsick.html">A mysterious sickness has surfaced</a><br>
+		    Your intuition will fool you... (Python).</li>
+
+		    <li><a href="100prisoners.html">100 prisoners... an unbelievable puzzle</a><br>
+		    I had to code the solution to believe it... (Python).</li>
+
+		    <li><a href="stats_nostalgia.html">Playing with probabilities</a><br>
+		    Answering a lottery question.</li>
+		</ul>
+
+		<a name="VideoAudio"></a>
+		<b>Video / Audio</b>
+		<ul>
+		    <li><a href="x264.html">MPEG-2 (DVD) transcoding to H.264</a><br>
+		    H264 changes the quality/bitrate equation (Perl).</li>
+
+		    <li><a href="ivtc.html">IVTC and DECIMATE</a><br>
+		    NTSC filters for <b>transcode</b> (C).</li>
+
+		    <li><a href="mp3pro.html">Playing mp3PRO files under Linux</a><br>
+		    Closed formats are painful... (MPlayer debugging).</li>
+
+		    <li><a href="atmega168.html">Playing music with a microcontroller</a><br>
+		    (ATmega168, AVR-gcc).</li>
+		</ul>
+
+		<a name="SO"></a>
+		<b>Best of my <a href="http://stackoverflow.com">Stack Overflow</a> posts</b>
+		<ul>
+		    <li><a href="http://stackoverflow.com/questions/5850243/fsharp-runs-my-algorithm-slower-than-python">FSharp runs my algorithm slower than Python!</a><br>
+		    My first test of F# - what just happened? (Python,F#)</li>
+
+		    <li><a href="http://stackoverflow.com/questions/3884121/haskell-function-application-and-currying">Haskell - I feel old...</a><br>
+		    A mystery of syntax (Haskell).</li>
+
+		    <li><a href="http://stackoverflow.com/questions/5301706/default-values-in-templates-with-template-arguments-c">Default values in C++ template arguments</a><br>
+		    Metaprogramming with C++ templates (C++).</li>
+
+		    <li><a href="http://stackoverflow.com/questions/7538584/f-vs-ocaml-stack-overflow">F# vs OCaml: Stack overflow</a><br>
+		    Same algorithm, but: OCaml runs, F# crashes (OCaml,F#)</li>
+
+		    <li><a href="http://stackoverflow.com/questions/4817789/hyper-threading-made-my-renderer-10-times-slower">Hyper-threading made my renderer 10 times slower</a><br>
+		    Hyperthreading can exhibit disastrous speed impacts - for certain algorithms.</li>
+
+		    <li><a href="http://serverfault.com/questions/311270/from-bad-sector-to-damaged-file-did-it-for-linux-ext3-can-i-do-it-for-windo">From bad sector to damaged file (ext3/NTFS)</a><br>
+		    From a drive's bad sector offset (reported by <b>SMART</b>) identify the damaged file(s).</li>
+
+		    <li><a href="http://superuser.com/questions/259233/ntfs-restore-previous-versions">Handling NTFS "restore previous versions" failures</a><br>
+		    Recovering files via NTFS snapshots across a Windows reinstall.</li>
+
+		    <li><a href="http://superuser.com/questions/261822/freebsd-using-rsync-to-backup-a-windows-hosted-share-over-samba">Special characters in Windows filenames failed to rsync over to FreeBSD</a><br>
+		    How I rsynced properly from Windows to FreeBSD/ZFS.</li>
+		</ul>
+
+		<a name="Misc"></a>
+		<b>Miscellaneous</b>
+		<ul>
+		    <li><a href="tricks.html">UNIX/Linux notes (potpourri)</a><br>
+		    Tips and notes after a decade of Linux.</li>
+		</ul>
+	</div>
+	<br>
+	<div style="position:relative">
+		<div style="position:absolute; top:50%; margin-top:-18px; float:left; height:36px;">
+		    <a href="http://stopsoftwarepatents.eu">
+		        <img src="patent_button.png" width="88" height="36" border="0" alt="No patents">
+		    </a>
+		</div>
+		<div style="margin-left:95px">
+		Thanassis Tsiodras, Dr.-Ing.&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/100429936881221995531/about?rel=author">About me</a><br>
+		Email: <u>ttsiodras-at_gmail-dot_com</u><br>
+		<i>Dedicated to the kind souls that helped my spirit rise (a bit) from it's original state.</i>
+		</div>
+	</div>
+</div>
+
+        </div>
+    </div>
+    <script src="urchin.js" type="text/javascript"></script>
+    <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+</body>
+</html>

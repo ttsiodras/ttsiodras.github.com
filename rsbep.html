@@ -1,0 +1,387 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/rsbep.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Shielding your files with Reed-Solomon codes</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Shielding your files with Reed-Solomon codes</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <em>(July 2008)</em>
+<p>
+<small>(<em>Based on an <a href="RockFAT.html">idea</a> I had a decade ago</em>)</small>
+<h2>Changelog:</h2>
+<table border="0" summary="Changelog" style="width=100%;">
+<tr><td><em>August 3, 2008:</em></td><td><A href="http://hardware.slashdot.org/hardware/08/08/03/197254.shtml">Slashdotted!</A></td></tr>
+<tr><td><em>August 4, 2008:</em></td><td>Made a plain-C package available, to support 64-bit OSes (as well as OS/X and Cygwin users).<br></td></tr>
+<tr><td><em>March 9, 2009:</em></td><td>Made a FUSE-based filesystem that transparently uses these tools.<br></td></tr>
+<tr><td width="20%"><em>June 14, 2010:</em></td><td>Fixed memory issues reported by Valgrind - now works with all GCC versions.</td></tr>
+</table>
+  <h2>Shield my files? Why?</h2>
+  You know why!
+  <p>
+  Have you never lost a file because of storage media failure? That is,
+  have a hard drive or USB stick lose a bunch of sectors (<em>bad sectors</em>) that
+  simply happened to be the ones hosting parts (or all) of your file?
+  <p>
+  I have. More than once... :&#x2011;)
+  <p>
+  The way storage media quality has been going in the last years,
+  it is bound to happen to you, too. When it does, believe me,
+  you'll start to think seriously about ways to protect your data.
+  And you'll realize that there's quite a lot of technology to choose
+  from...
+  <ul>
+  <li><em>"Backup, backup, backup! And take it with you!"</em>
+  This is a valid and wise suggestion, but it doesn't address the 
+  details of backing up... There's more than one way to backup ;
+  <a href="backup.html">my personal favorite</a> has a lot 
+  of features you'll probably like. Unfortunately,
+  backups themselves are also stored in some kind of storage,
+  so the question is how are you certain that your backup storage
+  won't fail? And equally important, how often will you backup?
+  If you do it once per week, you might end up losing a week's
+  worth of work - is that acceptable in your line of work?
+  <li>Others will advocate RAID. Use a RAID scheme on more than one 
+  disks, and when one fails, the machine will keep on working 
+  with the rest - at least in theory. In practice, faulty RAID
+  controllers (especially the on-board garden variety) can
+  wreck havoc just as much as the faulty storage media can.
+  If you decide to go for RAID, I suggest you use your OS
+  support for software RAID (e.g. Linux md), and I also suggest
+  using the simplest possible building blocks: RAID1 (mirrors),
+  or if you really need speed, RAID10 (stripes of mirrors).
+  Even with RAID though, nothing can protect you from "silent corruption"
+  errors - e.g. IDE cable errors between the controller and the 
+  drivers, faulty power supplies, etc.
+  <li>
+  Then again, neither backup nor RAID would save you from
+  accidental deletions or file corruptions. Today's word processors
+  (thinking of Mr. Clippy, not LaTEX) are such complex beasts
+  that their crashing is considered a normal everyday activity 
+  (which is why they were "enhanced" years ago with periodic 
+  auto-saves).
+  On one of these crashes, chances are you'll find your document 
+  corrupted. A solution, you ask? Simple: Use version control... 
+  Subversion or Git are wonders of the world - the former even has 
+  nice GUIs for non-technical folk. You can then recover from deletions and
+  corruptions, since your repository would provide the file again. 
+  <br>&nbsp;&nbsp;&nbsp;Then again, you may be forced to work in "lone wolf" 
+  mode... Working with your laptop in airport lounges and 
+  dark, secluded caves (known as "hotels").  Access to the web 
+  may be missing or firewalled, and therefore there may be no way to 
+  hook your laptop to your company's repository...
+  <li>Burning to re-writable DVDs? Chances are that when disaster strikes, 
+  you will find your precious backup DVD is scratched... Or that your
+  USB stick in your keychain didn't survive the constant scratching 
+  from your keys...
+  </ul>
+  My point?
+  <p>
+  There's no such thing as "enough protection" for your data - the more 
+  you have, the better the chances that your data will survive disasters. 
+  <p>
+  What follows is a simple description of a way I use to additionally 
+  "shield" my important files, so that even if some sectors hosting them 
+  are lost, I still end up salvaging everything.
+
+  <h2>Algorithm</h2>
+  The idea behind this process is 
+  <a href="http://www.wikipedia.org/wiki/Error-correcting_code">error correcting codes</a>, like for
+  example the ubiquitous <a href="http://www.wikipedia.org/wiki/Reed_Solomon">Reed-Solomon</a>.
+  With Reed-Solomon, <i>parity</i> bytes are used to protect a block of data 
+  from a specified maximum number of errors per block. In the tools 
+  described below, a block of 223 bytes is shielded with 32 bytes of parity. 
+  The original 223 bytes are then morphed into 255 "shielded" ones, 
+  and can be recovered even if 16 bytes from inside the "shielded" 
+  block turn to noise... 
+
+  <p>Storage media are of course block devices, that work or fail 
+  on 512-byte sector boundaries (for hard disks and floppies, at 
+  least - in CDs and DVDs the sector size is 2048 bytes). This is why the shielded stream must
+  be interleaved every N bytes (that is, the encoded bytes must be
+  placed in the shielded file at offsets 1,N,2N,...,2,2+N,etc): 
+  In this way, 512 shielded blocks pass through each sector
+  (for 512 byte sectors), and if a sector becomes defective, only 
+  <b>one</b> byte is lost in each of the shielded 255-byte blocks
+  that pass through this sector. The algorithm can handle 16 of 
+  those errors, so data will only be lost if sector i, sector i+N,
+  sector i+2N, ... up to sector i+15N are lost! Taking into account 
+  the fact that sector errors are local events (in terms of storage space), 
+  chances are quite high that the file will be completely recovered,
+  even if a large number of sectors (in this implementation: up to 127 
+  consecutive ones) are lost.
+
+  <p>I implemented this scheme <a href="RockFAT.html">back in 2000</a>
+  for my diskettes (remember them?). Recently, I discovered that
+  Debian comes with a similar utility called <b>rsbep</b>, which
+  after a few modifications is perfect for providing adequate
+  shielding to your files.
+
+  <h2>Download</h2>
+  <a href="rsbep-0.1.0-ttsiodras.tar.bz2">Here</a> is the source
+  code for my customization of <b>rsbep</b>, a utility that implements
+  the kind of Reed-Solomon-based "shielding" that we talked about.
+  The package includes 32-bit x86 assembly that makes it an order of magnitude 
+  faster than plain C ; if however you are not on a 32bit x86 platform, 
+  it will fallback to a portable C version instead 
+  (<em>a lot slower, unfortunately</em>).
+  <b>rsbep</b> is part of <b>dvbackup</b>, so some Debian users might
+  already have it installed; my version however addresses some issues
+  toward the goal we are seeking here, which is error-resiliency
+  for files against the common, bursty types of media errors. 
+  More information on what was changed is <a href="#below">below</a>.
+
+  <p>The package is easily installed under Linux, Mac OS/X, Windows(cygwin)
+  and Free/Net/OpenBSD, with the usual 
+  <pre>
+./configure 
+make 
+make install
+</pre>
+
+  <h2>Results</h2>
+  Here is a self-healing session in action:
+<pre class="o">
+<b>home:/var/tmp/recovery$</b> ls -la
+total 4108
+drwxr-xr-x 2 ttsiod ttsiod    4096 2008-07-30 22:21 .
+drwxrwxrwt 5 root   root      4096 2008-07-30 22:21 ..
+-rw-r--r-- 1 ttsiod ttsiod 4194304 2008-07-30 22:21 data
+
+<b>home:/var/tmp/recovery$</b> freeze.sh data > data.shielded
+<b>home:/var/tmp/recovery$</b> ls -la
+total 9204
+drwxr-xr-x 2 ttsiod ttsiod    4096 2008-07-30 22:21 .
+drwxrwxrwt 5 root   root      4096 2008-07-30 22:21 ..
+-rw-r--r-- 1 ttsiod ttsiod 4194304 2008-07-30 22:21 data
+-rw-r--r-- 1 ttsiod ttsiod 5202000 2008-07-30 22:21 data.shielded
+
+<b>home:/var/tmp/recovery$</b> melt.sh data.shielded > data2
+<b>home:/var/tmp/recovery$</b> md5sum data data2
+9440c7d2ff545de1ff340e7a81a53efb  data
+9440c7d2ff545de1ff340e7a81a53efb  data2
+
+<b>home:/var/tmp/recovery$</b> echo Will now create artificial corruption 
+<b>home:/var/tmp/recovery$</b> echo of 127 times 512 which is 65024 bytes
+
+<b>home:/var/tmp/recovery$</b> dd if=/dev/zero of=data.shielded bs=512 \
+			    count=127 conv=notrunc
+127+0 records in
+127+0 records out
+65024 bytes (65 kB) copied, 0,00026734 seconds, 243 MB/s
+
+<b>home:/var/tmp/recovery$</b> melt.sh data.shielded > data3
+
+rsbep: number of corrected failures   : 64764
+rsbep: number of uncorrectable blocks : 0
+
+<b>home:/var/tmp/recovery$</b> md5sum data data2 data3
+9440c7d2ff545de1ff340e7a81a53efb  data
+9440c7d2ff545de1ff340e7a81a53efb  data2
+9440c7d2ff545de1ff340e7a81a53efb  data3
+</pre>
+For those of you that don't speak UNIX,
+what you see above is a simple exercise in destruction:
+we "shield" a file with the <b>freeze.sh</b> script,
+which is part of my package; we then <b>melt.sh</b>
+the frozen file, and verify (through <b>md5sum</b>)
+that the new generated file is exactly the same as the 
+original one. We then proceed to deliberately destroy 64KB of
+the shielded file (that's a lot of consecutive sectors!),
+using <b>dd</b> to overwrite 127 sectors with zeros. We invoke 
+<b>melt.sh</b> again, and we see that the new generated 
+file (data3) has the same MD5 sum as the original one - it
+was recovered perfectly.
+  <h2>Reed-Solomon FS (a FUSE-based filesystem)</h2>
+Based on these tools, I did a quick implementation of a Reed-Solomon 
+protected filesystem, using Python/FUSE bindings:
+<pre>
+<b>bash$</b> poorZFS.py -f /reed-solomoned-data /strong
+</pre>
+This command will mount a FUSE-based filesystem in <tt>/strong</tt> (using 
+the <tt>/reed-solomoned-data</tt> directory to store the actual files and 
+their "shielded" versions). Any file you create in <tt>/strong</tt>, will 
+in fact exist under <tt>/reed-solomoned-data</tt> and will also be shielded 
+there (via <b>freeze.sh</b>). When opening for reading any file in <tt>/strong</tt>, 
+data corruption is detected (via <b>melt.sh</b>) and in case of corruption 
+the file will be corrected using the Reed-Solomon "shielded" version 
+of the file (which is stored alongside the original, and named as
+<em>originalFilename.frozen.RS</em>). The <em>.frozen.RS</em> versions
+of the files are not visible in the <tt>/strong</tt> directory, and
+are automatically created (in <tt>/reed-solomoned-data</tt>) when a file 
+(opened for writing or appending) is closed.
+<p>
+I coded this mini-fs using Python-FUSE in a couple of hours on a boring Sunday 
+afternoon, so don't trust your bank account data with it... It's just
+a proof of concept (not to mention dog-slow - due to the necessary data interleaving). 
+Still, if your machine is only equipped with one drive, this will in fact 
+transparently shield you against bad sectors, faulty power supplies,
+messy IDE cabling, etc.
+<p>
+Note: I coded this filesystem adding 20 or so lines of
+Python (spawning my freeze/melt scripts) into the Python/FUSE basic 
+example. Anyone who has ever coded a filesystem driver for Windows knows 
+why this justifies a heart attack - FUSE (and Python/FUSE) rock!
+  <h2>Changeset from original rsbep</h2><a name="below"></a>
+In case you are wondering why I had to modify <b>rsbep</b>
+here's where my version differs from the original...
+<ul>
+<li>The original version wrote 3 parameters of Reed-Solomon
+as a single line before the "shielded" data, and this made the 
+stream fragile (if this information was lost, decoding failed...)
+<li>It uses a default value of 16*255=4080 for parameter R, 
+and it can thus tolerate 4080*16=65280 consecutive bytes 
+to be lost anywhere in the stream, and still recover...
+<li>It adds file size information in the shielded stream,
+so the recovery process re-creates an exact copy of the 
+original.
+<li>I added autoconf/automake support, to detect whether a fast 32bit x86 
+asm version can be used and otherwise fall back to a plain C (slow) 
+implementation. The tools thus compile and install cleanly on many 
+operating systems (Linux, Mac OS/X, Free/Net/OpenBSD, even Windows
+with Cygwin).
+<li>Python-FUSE support.
+</ul>
+  <h2>Conclusion</h2>
+These tools works fine for me, and I always use them when
+I backup data or move them around (e.g. from work to home).
+As an example, when I move my Git repository around, 
+I always...
+<pre>
+cd /path/to/mygit/
+git gc 
+cd ..
+git clone --bare mygit mygit.bare 
+tar jcpf mygit.tar.bz mygit.bare
+freeze.sh mygit.tar.bz2 > /mnt/usbStick/mygit.tar.bz2.shielded
+</pre>
+If you so wish, feel free to add a GUI layer over them... 
+(I am a console kind of guy - I never code GUIs unless I 
+really have to :&#x2011;)<br>
+And yes, they have already saved my data a couple of times.
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/rsbep.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

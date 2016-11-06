@@ -1,0 +1,542 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/x264.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>MPEG-2 (DVD) transcoding to H.264 under UNIX</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">MPEG-2 (DVD) transcoding to H.264 under UNIX</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+              <em>(Original, February 2005)</em><br>
+  <em>(Updated, August 2006, new script keeps audio/video sync and creates VOBSUB subtitle files)</em><br>
+  <em>(Updated, August 2007, <A HREF="vobs2mkv.pl.diff">patch</A> contributed from Benjamin Pineau for latest versions of mplayer and mkvmerge)</em><br>
+
+  <h2>1. Introduction</h2>
+  The issue of taking DVD backups has been
+  a matter of intensive controversy, over both legal and technical
+  issues. I have been monitoring the latter kind (the technical)
+  ever since I was a student. Some of my free time is still spent
+  in following the technical innovations in the area, trying to
+  keep up with the best possible way of transcoding MPEG2 (a.k.a
+  DVD), in terms of balancing quality of the output with speed of
+  transcoding.
+
+  <p>For the last couple of years, I had settled on using:</p>
+
+  <ul>
+    <li>XVID for video</li>
+
+    <li>Ogg Vorbis for audio</li>
+
+    <li>Matroska for multiplexing</li>
+  </ul>...through the usage of excellent open source tools
+  (transcode, oggenc, mkvmerge). I even contributed some code to
+  the <b>transcode</b> project for handling NTSC <a href="ivtc.html">
+  telecined</a> DVDs.<br>
+  The reasons for these choices were simple:
+
+  <ul>
+    <li>No codec was better than XVID in all the codec comparisons.
+    It was one of the best in terms of quality, and it was also the
+    fastest.</li>
+
+    <li>Ogg Vorbis was also a no-brainer: even at 96 Kbits per
+    second, Ogg Vorbis audio quality is comparable to MP3
+    128Kbps!</li>
+
+    <li>Matroska, finally, is the OPTIMAL container: overhead is
+    only 0.25 percent of the final size and you can multiplex
+    everything (video, audio, text and VOBSUB subtitles) in one
+    file (AVI is hideous, with an overhead of 24 bytes per -- frame
+    -- yuck).</li>
+  </ul>Recently, however, one of the parameters changed: MPEG4 has
+  now been obsoleted in terms of quality/bitrate by a new codec:
+  <b>H264</b>.<br>
+  To give you an idea of what can be accomplished, utilizing open
+  source implementations, one can now encode 2,5 hours of
+  acceptable audiovisual quality in just one 700MB CD!
+
+  <p>I found some spare time, so I'll show you how to do it -- the
+  relevant information up to now is kinda sketchy (to put it mildly
+  :&#x2011;) However, I will only describe the crux of it, and no, please
+  don't start asking me stuff. This is only for people who have a
+  working knowledge of both UNIX and video matters, so if you don't
+  know what an aspect ratio is, or why 0.2 bits per pixel is the
+  lowest limit of acceptable MPEG4 quality, stop reading this now
+  (while you're ahead :&#x2011;).<br>
+  Sorry, but making a living writing software takes almost all of
+  my time.</p>
+
+  <p>P.S. You 'll also get a Perl script to assist the work.</p>
+
+  <h2>2. Prerequisites</h2>I'm only doing this as a hobby, so I
+  won't research into any other versions of the tools: use the same
+  version that I am, or adapt the Perl script yourself.
+
+  <ul>
+    <li>mplayer/mencoder<br>
+    <em>Mplayer 1.0pre8</em> with x264 support. If you compile it yourself, 
+    you'll first need to get x264, through a subversion repository<br>
+    (<tt>svn co svn://svn.videolan.org/x264/trunk x264</tt>).</li>
+
+    <li>tcscan<br>
+    (transcode-0.6.14)</li>
+
+    <li>oggenc<br>
+    (vorbis-tools-1.0.1)</li>
+
+    <li>mkvmerge<br>
+    (mkvtoolnix-1.6.5))</li>
+
+    <li>mpegdemux<br>
+    (mpegdemux-0.1.2)(only required if you use the Perl <a href=
+    "x264.html#script">script</a>)</li>
+  </ul>
+
+  <h2>3. Encoding</h2>Even though I have been using 'transcode' for
+  most of my hobby tests, it doesn't support H264 (not yet). Hence,
+  we are forgetting about distributed encodes (for now :&#x2011;) and are
+  going to do it through the significant other, <b>mencoder</b>.
+
+  <p>We'll tackle a rather advanced example, transcoding an NTSC
+  telecined Dolby trailer, called <tt>dolby-city.vob</tt>. You can
+  google the filename, it will immediately show up. Its rather big
+  for plain modems though (27MB), so you can try to follow through
+  these instructions with your preferred VOB anyway.</p>
+
+  <p>Naturally, if you want to encode DVD data, you'll have to
+  store the unencrypted MPEG2 data somewhere; I'm assuming you know
+  how to circumvent the CSS encryption to get to the MPEG2 data you
+  want.  <tt>mplayer -dumpstream dvd://1</tt> can lead to legal 
+  troubles in certain countries, so make sure you are not breaking 
+  any laws doing it...</p>
+
+  <p>Most of what follows is automated through a Perl script I
+  made, but since you are reading this I'm guessing you want to
+  know the details :&#x2011;)<br>
+  Click <a href="x264.html#script">here</a> to skip explanations
+  and just use the script.</p>
+
+  <p>Let's assume that your MPEG2 data are stored in a directory
+  called video:</p>
+  <pre class="o">
+<b>heaven:/var/tmp/video$</b> ls -l
+-rw-r--r-- 2 ttsiod users 27963392 2005-02-07 19:44 dolby-city.vob
+</pre>
+
+  <h3>3.1. Audio</h3>We 'll tackle the audio first: <b>mplayer</b>
+  will decode the audio and convert it to plain stereo, feeding the
+  output to a pipe:
+<pre class="o">
+<b>heaven:/var/tmp/video$</b> mkdir tmp
+<b>heaven:/var/tmp/video$</b> mkfifo tmp/fifo
+<b>heaven:/var/tmp/video$</b> tcscan -x pcm -i tmp/fifo &amp;
+<b>heaven:/var/tmp/video$</b> mplayer \
+    -ao pcm:nowaveheader:file=tmp/fifo \
+    -vo null -vc dummy -benchmark dolby-city.vob \
+    &gt;/dev/null 2&gt;&amp;1 
+</pre>
+This will output something like:
+  <pre class="o">
+.. audio frames=849.60, estimated clip length=33.98 seconds
+.. (min/max) amplitude=(-0.252/0.274), suggested rescale=3.655
+..
+</pre><b>tcscan</b> provides the normalization factor we need for
+our audio encoding process: usually, DVD audio has quite a dynamic
+range, so it needs some boosting for our transcoding. Now that
+tcscan has given us what we need, we'll encode the audio,
+normalizing it in the process.
+
+  <p>Since a volume rescale of 3.655 is 20*log10(3.655) db,
+  we...</p>
+  <pre class="o">
+<b>heaven:/var/tmp/video$</b> echo '20*l(3.655)/l(10)' | bc -l
+11.25774762587758519458
+<b>heaven:/var/tmp/video$</b> oggenc -b 64 -o audio.ogg tmp/fifo &amp;
+<b>heaven:/var/tmp/video$</b> mplayer -af volume=11.257747 -ao \
+    pcm:file=tmp/fifo -vo null \
+    -vc dummy -benchmark dolby-city.vob &gt;/dev/null 2&gt;&amp;1 
+</pre>(you can also try "-q 0" instead of "-b 64" - Vorbis audio is quite good even in 64kbps, and we'll use just that in this test).
+
+  <p>The audio part is now done (in a more or less optimal way, in
+  terms of quality/bitrate).<br>
+  Now the hard part: video.</p>
+
+  <h3>3.2. Video</h3>
+
+  <p>Video can be a pain in the neck. Before we even get to the
+  encoding part, we need to clear it up.</p>
+
+  <ul>
+    <li>it can have black bands around it (almost certain);</li>
+
+    <li>it can be interlaced (if it's from a camera, or from an
+    NTSC DVD, quite probable);</li>
+
+    <li>it can be too big for our bitrate, so it might need
+    scaling.</li>
+  </ul>You'll have to deal with this, setting up a filter chain in
+  <b>mplayer</b>.
+
+  <h4>3.2.1. Cropping</h4>Use cropdetect:
+  <pre class="o">
+<b>heaven:/var/tmp/video$</b> mplayer -vf cropdetect -nosound \
+	dolby-city.vob
+</pre>Navigate in the movie through the cursor/PgUp/PgDn keys to
+make sure you've fed the filter all it needs to see from your
+movie. In the end, abort <b>mplayer</b> and check the output for
+the last of the "crop area" lines:
+  <pre class="o">
+crop area: X: 4..715  Y: 0..479  (-vf crop=704:464:8:8)
+</pre>Crop settings are now known: <em>-vf crop=704:464:8:8</em>.
+Test them:
+  <pre class="o">
+<b>heaven:/var/tmp/video$</b> mplayer -vf crop=704:464:8:8 \
+	-nosound dolby-city.vob
+</pre>
+
+  <h4>3.2.2. Interlacing</h4>Interlacing is a different beast. Fire
+  <b>mplayer</b> again, navigate to a part in the movie with lots
+  of action, and hit the DOT key (<b>.</b>). This will pause the
+  movie, and each time you hit it again, it will step exactly one
+  frame. If the frames you see this way are clean, you don't need
+  any deinterlacer ; if they appear to be "combed", you do. I could
+  rant about the way to deinterlace for hours, but basically,
+  you'll either be content with something as simple as
+  <pre class="o">
+<b>heaven:/var/tmp/video$</b> mplayer -vf pp=lb ...
+</pre>or, if its an NTSC telecined one, with
+  <pre class="o">
+<b>heaven:/var/tmp/video$</b> mplayer -vf detc -ofps 23.976 ...
+</pre>The latter one is the one you need for the dolby-city
+trailer. It is a telecined beast, so it needs one heck of a filter
+to get back to progressive.
+
+  <h4>3.2.3. Scaling</h4>Finally, we 'll probably have to scale the
+  video. How do we decide whether we want to, or not?
+
+  <p>Mencoder's documentation suggests against this; the authors
+  feel that frame scaling is too much tampering with the original
+  video, and that this is bad. They are over-reacting; we are doing
+  this to squeeze more data in less storage, and doing this at the
+  extreme level we want to simply REQUIRES scaling (unless we are
+  targeting video bitrates more than 1MBit/sec, but then, why
+  bother with H264 and not stick to MPEG4?)</p>
+
+  <p>To cut a very long story short, it was pointless to encode
+  with MPEG4 - i.e. XVID, DIVX, or ffmpeg - to bitrates less than
+  0.2 bits per pixel. With H264, this changes: we can go lower,
+  e.g. 0.125 bits per pixel and still get acceptable quality.</p>
+
+  <p>In <tt>dolby-city.vob</tt>, the original frame size is 720x480
+  pixels, at a (progressive, after deinterlacing) frame rate of
+  23.976 fps. This means that we would need at least</p>
+  <pre class="o">
+        720 x 480 x 23,976 x 0,125 = 1035763,2 bits per second
+</pre>... if we were to avoid scaling. This bitrate is too high, we
+can't even fit a 2 hour movie in a 700MB CD with this rate.<br>
+  Since our movie has a 4:3 aspect ratio, we can simply scale to a
+  smaller window, like
+  <pre class="o">
+        512 x 384 x 23,976 x 0,125 = 589234,176 bits per second
+</pre>Notice that at this bitrate, we would be able
+to fit 2.5 hours of movie time in one 700MB CD, since
+  <pre class="o">
+        Duration in seconds = 2,5*3600 = 9000 seconds
+        Expected video size = 9000*589234,176/8 = 632 MBytes
+        Expected audio size = 9000*64000/8  = 68 MBytes
+</pre>...which would fit nicely in our 700MB target size (thanks to
+Matroska's near zero cost multiplexing).<br>
+  Notice also that we chose multiples of 16 for our frame sizes:
+  this is not a whim, it's a requirement of almost all codecs.
+
+  <h4>3.2.4. Using all filters</h4>So, to actually do this, we'll
+  use three mencoder filters:
+
+  <p><em>-vf crop=704:464:8:8,detc,scale=512:384</em></p>
+
+  <p>The reason we are first cropping, then deinterlacing and
+  finally scaling, should be obvious.<br>
+  We can now complete the sequence with the H264 encoding
+  parameters.</p>
+
+  <p>I won't bother explaining why you should always use two
+  passes, just read the relevant info (or trust me):</p>
+
+  <p><em>Pass 1:</em></p>
+  <pre class="o">
+mencoder -nosound -ofps 23.976 \
+	-vf crop=704:464:8:8,detc,scale=512:384 \
+	dolby-city.vob \
+	-o /dev/null -ovc x264 -x264encopts pass=1:bitrate=589
+</pre><em>Pass 2:</em>
+  <pre class="o">
+mencoder -nosound -ofps 23.976 \
+	-vf crop=704:464:8:8,detc,scale=512:384 \
+	dolby-city.vob \
+	-o video.avi -ovc x264 -x264encopts pass=2:bitrate=589
+</pre>Check <tt>video.avi</tt>; it has no sound, but video quality
+at this bitrate is simply beyond any comparison with MPEG4.
+
+  <h2>4. Multiplexing</h2>Finally, we'll have to create the
+  Matroska container for video and audio:
+  <pre class="o">
+mkvmerge --engage allow_avc_in_vfw_mode -o Perfect.mkv \
+    video.avi audio.ogg
+</pre>You might need to synchronize video and audio; check the
+manpage for mkvmerge and learn how to use the -y switch. Or better yet,
+use the script: it utilizes mencoder in a way that guarantees video
+and audio will be in sync.
+  <h2><a name="script"></a>5. Using the script</h2>You might
+  consider the previous steps tiresome.<br>
+  You are right; they are; and if you make one mistake along the
+  line, you could end up spending CPU time for unacceptable
+  results.
+
+  <p>That's why I coded a very simple Perl script that glues
+  together all that you've seen.<br>
+  Download it <a href="vobs2mkv.pl">here</a> and use it like
+  this: (<em>Update, August 2007: Thanks to Benjamin Pineau, if you are 
+  using the latest versions of mplayer and mkvmerge, you can download a
+  patch <A HREF="vobs2mkv.pl.diff">here</A> to support them)</em></p>
+  <pre class="o">
+<b>heaven:/var/tmp/video$</b> vobs2mkv.pl dolby-city.vob 3 Perfect.mkv
+</pre>...which requests an encoding of the <tt>dolby-city.vob</tt>
+movie, and a generation of file <tt>Perfect.mkv</tt> with a
+size around 3 MBytes.<br>
+  Follow the prompts it shows; they should be self explanatory.<br>
+  If they are not, hey, check the code! I only use simple aspects
+  of Perl, so you should be able to figure out what goes on
+  (it works for me with all the files I tried).<p>It also attempts
+  to rip any MPEG2 subtitles existing in the stream to VOBSUB files, 
+  thus allowing a "perfect" rip; optimal video/audio/subtitle encoding.
+
+  <p>This is the output (including the answers I gave) for
+  'dolby-city.vob':</p>
+  <pre class="o">
+Successfully located mplayer
+Successfully located mencoder
+Successfully located tcscan
+Successfully located mpegdemux
+Successfully located oggenc
+Successfully located ogginfo
+Successfully located mkvmerge
+Available audio channels:
+  1. 128
+Automatically choosing audio channel 128
+What codec should I utilize:
+ 1. XVID
+ 2. X264
+Choose: 2
+Identified Video stream successfully
+Identified AID 0x80 successfully
+
+Will now spawn mplayer to detect subtitle streams...
+Navigate with PgUp/PgDown to movie parts with subtitles...
+Hit ENTER when ready... and ESC to quit movie playback...
+
+No subtitles detected.
+Detected movie length of 35 seconds.
+Will now spawn mplayer to detect crop settings...
+Use the DOT key (.) to check for interlacing also...
+Hit ENTER when ready...
+~/.mplayer/subfont.ttf doesn't look like a font description, 
+ignoring.
+Cannot load font: /root/.mplayer/subfont.ttf
+The selected video_out device is incompatible with this codec.
+Try adding the scale filter, e.g. -vf spp,scale instead 
+of -vf spp.
+Do you want the codec to encode as interlaced (Y/N) ? n
+Do you need NTSC inverse telecine (Y/N) ? y
+Expected Video bitrate: 620000 bits per sec
+MPEG2 Aspect Ratio:  1.33
+FPS: 23.976
+1. 208 x 160 (0.777019006185673)
+2. 224 x 176 (0.655925135091802)
+...
+15. 496 x 384 (0.135769450005561)
+16. 528 x 400 (0.12243935855047)
+...
+Choose a number (1 - 18) : 16
+Will now spawn mplayer so that you can check your frame settings
+Press ENTER when ready...
+Did you like your frame settings (Y/N) ? y
+Scaning to find amplification factor... Please wait...
+Audio will be scaled by 3.655 (11.2577 db).
+Encoding to Ogg Vorbis 96KBits/sec...
+...
+</pre>After a couple of minutes, you'll get your Perfect.mkv.<br>
+<p>You can have a look at what happened from
+<tt>tmp/log.txt</tt>:</p>
+<pre class="o">
+<b>heaven:/var/tmp/video$</b> cat tmp/log.txt
+03:07:13 : mplayer -v -frames 0 dolby-city.vob 2>&amp;1 |
+03:07:15 : Encoding session starts
+03:07:15 : dd if=dolby-city.vob bs=1M count=2 2>/dev/null | \
+	mpegdemux -c|
+03:07:16 : mplayer -sid 0 -v -quiet dolby-city.vob 2>/dev/null |
+03:07:16 : mencoder -ovc copy   -nosound -o /dev/null \
+	-frameno-file /dev/null \
+     	   dolby-city.vob 2>/dev/null |
+03:07:17 : mplayer -nosound -benchmark -vf cropdetect \
+	-quiet dolby-city.vob |
+03:07:26 : mplayer -nosound -frames 10 dolby-city.vob 2>&amp;1 |
+03:07:47 : mplayer -nosound -really-quiet  \
+	-vf crop=704:480:8:0,detc,scale=528:400 \
+     	   dolby-city.vob >/dev/null 2>&amp;1
+03:07:48 : mv tmp/videoCropDeinterAndScale \
+	tmp/videoCropDeinterAndScale.old
+03:07:48 : rm -f tmp/fifo
+03:07:48 : mkfifo tmp/fifo
+03:07:48 : mplayer -really-quiet -aid 128 \
+	-ao pcm:file=tmp/fifo:nowaveheader -vo null \
+     	 c dummy dolby-city.vob >/dev/null 2>&amp;1 &amp;
+03:07:48 : tcscan -i tmp/fifo -x pcm 2>/dev/null |
+03:07:49 : mplayer -really-quiet -aid 128 -af volume=11.2577 \
+     	 o pcm:file=tmp/fifo -vo null -vc dummy dolby-city.vob \
+     	 dev/null 2>&amp;1 &amp;
+03:07:49 : oggenc -s 123 -Q -b 96 -o tmp/audio.ogg tmp/fifo
+03:07:52 : mencoder -ovc frameno -oac pcm -aid 128 -o \
+	frameno.avi dolby-city.vob
+03:07:53 : ogginfo tmp/audio.ogg|
+03:07:53 : mencoder -ofps 23.976 \
+	-vf crop=704:480:8:0,detc,scale=528:400 \
+	-ovc x264 -oac copy \
+	-x264encopts bitrate=654:pass=1:subq=6:\
+	4x4mv:8x8dct:me=3:frameref=5:bframes=3:\
+	b_pyramid:weight_b \
+	-o /dev/null dolby-city.vob
+...
+</pre>Enjoy!
+<h2>6. Comparison with MPEG4</h2>
+Since the script allows you to select the codec used, try encoding your own
+videos around 0.125 bits per pixel with both MPEG4 and H.264. You won't be 
+needing any screenshots for proof - your eyes will tell you that there's
+only one obstacle for widespread H.264 adoption: encoding speed. Currently,
+it is 2-5 times slower than MPEG4 encoding (depending on video type and 
+CPU used). Let's hope x264 coders will improve the codec's speed over time.
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/x264.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

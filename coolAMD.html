@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/coolAMD.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<script type="text/javascript" src="//apis.google.com/js/plusone.js">
+    {lang:'en', parsetags:'explicit'}
+</script>
+<title>Software cooling an Athlon XP/1600 (on a Gigabyte 7VTXE+)</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Software cooling an Athlon XP/1600 (on a Gigabyte 7VTXE+)</div>
+        <div id="MainContent">
+            <div id="plusone-div" class="plusone"></div>
+            <script type="text/javascript">gapi.plusone.render('plusone-div',{"size": "small", "count": "false"});</script>
+            &nbsp;
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <em>(Written around 2002 and posted on alt.comp.periphs.mainboard.giga-byte)</em>
+<p>
+I have recently bought a GIGABYTE 7VTXE+ motherboard and
+an Athlon XP 1600+. This is the first system I ever had
+with a temperature high enough to make me worry. With
+a room temperature of 20C, my motherboard after a couple
+of hours was at 36C and my CPU at 53C. During the summer,
+my room temperature will go to 35C. Will my CPU melt?
+And this was in more or less idle conditions!
+<p>
+Fortunately, I can report that using free software-only
+methods, I am now operating at motherboard:27C and
+CPU:28C. This is of course, a difference big enough to
+justify this text. I hope some other soul will find
+this description helpful (GIGABYTE, put this in your
+web site!). I'm also very pleased to report that this
+works for Windows 2000, Windows 98 AND LINUX.
+
+<H2>Simple Minds</H2>
+Non-technical folk, just buy CpuIdle and make sure
+you check the 'Optimize CPU/Chipset' checkbox. Your
+temperature will immediately start to drop.
+<H2>ACPI</H2>
+Software cooling is not as simple as it used to be
+(an idle thread issuing HLT commands).
+Read the superb description inside VCool's help file
+(http://naggelgames.de/vcool/ or http://mpet.multiservers.com/VCool.html)
+To summarize, the simplest way to software (passive)
+cooling, is to have a system with ACPI, and inform
+the Northbridge to disconnect the bus before going
+to sleep (when a HLT command is executed). <P>So, before
+doing anything else, make sure that both your BIOS and
+your OS have ACPI enabled (for 7VTXE+ owners, the BIOS
+is fine).
+<ul>
+<li>Windows 98: Search (Google) for the string
+   "How to Enable ACPI Support in Windows 98". Follow
+   the instructions carefully, and it should work.
+<li>Windows 2000: During the installation blue screen,
+   press F6 (or is it F5?) and select ACPI from the
+   menu that appears. On an installed system, I'm not
+   sure, but there's a high chance that you could get
+   away with replacing 'ntoskrnl' with the ACPI-enabled
+   one. If you don't know how to do this, go to
+   www.osr.com's NT insider and read the article on
+   replacing HAL and NTOSKRNL with their checked
+   versions. Do the same thing in your system with the
+   ACPI versions.
+<li>Linux: Use one of the latest kernels (I used 2.4.18)
+   and select ACPI (not APM) during kernel configuration.
+   If it works, your next reboot will display ACPI
+   information during kernel startup.
+</ul>
+<H2>OK, I have ACPI, then what?</H2>
+Well, now you must tell your KT266 to "detect the HLT
+command". Read the VCool help file for more details.
+The summary is that inside the PCI Configuration space
+of your KT266, you must set the "HLT command detect" bit,
+in register 0x95. In pseudocode:
+<pre>
+Read byte 0x95 from the configuration space of
+        PCI device 1106:3099 (KT266)
+Set bit 1 (2nd from the right) to 1
+Write the new value to the same register in the
+        configuration space
+</pre>
+<H3>Windows:</H3>
+Well, Windows Users, it's time to download WPCREDIT.
+Search it in google, it will show up everywhere.
+After installing and running it, you select device
+1106:3099 (that is, your KT266) and modify register
+0x95. My system had a default value of 0x18, i.e.
+00011000. I changed it to 0x1A, i.e. 00011010,
+and presto, the temperature started to drop.
+When you verify that it works, download WPCRSET to
+make the change automatically when the system
+boots up.
+<H3>Linux:</H3>
+You 're in luck. I did all the hard work for you :&#x2011;)
+(actually Martin Peters did, I just climbed on his
+shoulders). Copy the following src, compile it with gcc,
+and run it as root. You can use lm_sensors to
+see your temperature drop in leaps. In case you don't
+know it, GA 7VTXE+ has an it87 sensor, so add to your
+rc.local something like this:
+<pre class="o">
+        /sbin/modprobe i2c-isa
+        /sbin/modprobe it87 temp_type=0x38
+        /usr/local/bin/sensors -s
+</pre>
+and run
+<pre class="o">
+        sensors
+</pre>
+to see your cooled CPUs temperature.
+<p>
+Hope these help your feverish 7VTXE+.
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">/********************************************************</span>
+<span class="comment">    begin      : Fri Jul  6 10:13:24 CEST 2001</span>
+<span class="comment">    copyright  : (C) 2001 by Martin Peters</span>
+<span class="comment">    email      : </span><span class="url">m...@bigfoot.de</span>
+<span class="comment">    URL        : </span><span class="url">http://mpet.freeservers.com/VCool.html</span>
+
+<span class="comment">    Mon Mar 18 2002:</span>
+<span class="comment">    Changes performed by Thanassis Tsiodras for GIGABYTE </span>
+<span class="comment">    7VTXE+ motherboards running under ACPI kernels.</span>
+<span class="comment"> ********************************************************/</span>
+<span class="comment">/********************************************************</span>
+<span class="comment">    This program is free software; you can redistribute</span>
+<span class="comment">    it and/or modify it under the terms of the GNU General</span>
+<span class="comment">    Public License as published by the Free Software</span>
+<span class="comment">    Foundation; either version 2 of the License, or</span>
+<span class="comment">    (at your option) any later version.</span>
+<span class="comment"> ********************************************************/</span>
+
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdlib.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;sys/io.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;unistd.h&gt;</span>
+<span class="preproc">#include</span><span class="normal"> </span><span class="string">&lt;stdio.h&gt;</span>
+
+<span class="preproc">#define</span><span class="normal"> DWORD </span><span class="type">unsigned</span><span class="normal"> </span><span class="type">long</span>
+
+<span class="type">int</span><span class="normal"> nb_b </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> nb_d </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> nb_f </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="usertype">DWORD</span><span class="normal"> </span><span class="function">PCIRead</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> reg</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> fn</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> dev</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> bus</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="usertype">DWORD</span><span class="normal"> r </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0x80000000</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">DWORD</span><span class="normal"> ret</span><span class="symbol">,</span><span class="normal"> org</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> port </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0xcf8</span><span class="symbol">;</span>
+
+<span class="normal">    r </span><span class="symbol">|=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">bus </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="number">0xff</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="number">16</span><span class="symbol">);</span>
+<span class="normal">    r </span><span class="symbol">|=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">dev </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="number">0x1f</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="number">11</span><span class="symbol">);</span>
+<span class="normal">    r </span><span class="symbol">|=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">fn </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="number">0x7</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="number">8</span><span class="symbol">);</span>
+<span class="normal">    r </span><span class="symbol">|=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">reg </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="number">0xfc</span><span class="symbol">));</span>
+<span class="normal">    org </span><span class="symbol">=</span><span class="normal"> </span><span class="function">inl</span><span class="symbol">(</span><span class="normal">port</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function">outl</span><span class="symbol">(</span><span class="normal">r</span><span class="symbol">,</span><span class="normal"> port</span><span class="symbol">);</span>
+<span class="normal">    ret </span><span class="symbol">=</span><span class="normal"> </span><span class="function">inl</span><span class="symbol">(</span><span class="normal">port </span><span class="symbol">+</span><span class="normal"> </span><span class="number">4</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function">outl</span><span class="symbol">(</span><span class="normal">org</span><span class="symbol">,</span><span class="normal"> port</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> ret</span><span class="symbol">;</span>
+
+<span class="cbracket">}</span>
+
+<span class="type">void</span><span class="normal"> </span><span class="function">PCIWrite</span><span class="symbol">(</span><span class="usertype">DWORD</span><span class="normal"> val</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> reg</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> fn</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> dev</span><span class="symbol">,</span><span class="normal"> </span><span class="type">int</span><span class="normal"> bus</span><span class="symbol">)</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="usertype">DWORD</span><span class="normal"> r </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0x80000000</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">DWORD</span><span class="normal"> org</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> port </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0xcf8</span><span class="symbol">;</span>
+
+<span class="normal">    r </span><span class="symbol">|=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">bus </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="number">0xff</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="number">16</span><span class="symbol">);</span>
+<span class="normal">    r </span><span class="symbol">|=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">dev </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="number">0x1f</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="number">11</span><span class="symbol">);</span>
+<span class="normal">    r </span><span class="symbol">|=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">fn </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="number">0x7</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;&lt;</span><span class="normal"> </span><span class="number">8</span><span class="symbol">);</span>
+<span class="normal">    r </span><span class="symbol">|=</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">reg </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="number">0xfc</span><span class="symbol">));</span>
+<span class="normal">    org </span><span class="symbol">=</span><span class="normal"> </span><span class="function">inl</span><span class="symbol">(</span><span class="normal">port</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function">outl</span><span class="symbol">(</span><span class="normal">r</span><span class="symbol">,</span><span class="normal"> port</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function">outl</span><span class="symbol">(</span><span class="normal">val</span><span class="symbol">,</span><span class="normal"> port </span><span class="symbol">+</span><span class="normal"> </span><span class="number">4</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function">outl</span><span class="symbol">(</span><span class="normal">org</span><span class="symbol">,</span><span class="normal"> port</span><span class="symbol">);</span>
+
+<span class="cbracket">}</span>
+
+<span class="type">void</span><span class="normal"> </span><span class="function">InitPCI</span><span class="symbol">()</span><span class="normal">                  </span><span class="comment">// Search for KT266 chipset</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="usertype">DWORD</span><span class="normal"> res</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> bus</span><span class="symbol">,</span><span class="normal"> dev</span><span class="symbol">,</span><span class="normal"> fun</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> found </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">bus </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> bus </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">255</span><span class="symbol">;</span><span class="normal"> bus</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">dev </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> dev </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">32</span><span class="symbol">;</span><span class="normal"> dev</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">fun </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal"> fun </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">7</span><span class="symbol">;</span><span class="normal"> fun</span><span class="symbol">++)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                res </span><span class="symbol">=</span><span class="normal"> </span><span class="function">PCIRead</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> fun</span><span class="symbol">,</span><span class="normal"> dev</span><span class="symbol">,</span><span class="normal"> bus</span><span class="symbol">);</span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">res </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0xffffffff</span><span class="symbol">)</span>
+<span class="normal">                    </span><span class="keyword">continue</span><span class="symbol">;</span>
+
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">res </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0x30991106</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                    nb_b </span><span class="symbol">=</span><span class="normal"> bus</span><span class="symbol">;</span>
+<span class="normal">                    nb_d </span><span class="symbol">=</span><span class="normal"> dev</span><span class="symbol">;</span>
+<span class="normal">                    nb_f </span><span class="symbol">=</span><span class="normal"> fun</span><span class="symbol">;</span>
+<span class="normal">                    found </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">                    </span><span class="keyword">goto</span><span class="normal"> adios</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="label">  adios:</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">found</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="function">perror</span><span class="symbol">(</span><span class="string">"KT266 Chipset not found"</span><span class="symbol">);</span>
+
+<span class="normal">    res </span><span class="symbol">=</span><span class="normal"> </span><span class="function">PCIRead</span><span class="symbol">(</span><span class="number">0x95</span><span class="symbol">,</span><span class="normal"> nb_f</span><span class="symbol">,</span><span class="normal"> nb_d</span><span class="symbol">,</span><span class="normal"> nb_b</span><span class="symbol">);</span>
+<span class="comment">//  printf("Old: %x\n", res);</span>
+<span class="normal">    res </span><span class="symbol">|=</span><span class="normal"> </span><span class="number">0x00000200</span><span class="symbol">;</span>
+<span class="comment">//  printf("New: %x\n", res);</span>
+<span class="normal">    </span><span class="function">printf</span><span class="symbol">(</span><span class="string">"Enabling HALT Command Detect on KT266</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function">PCIWrite</span><span class="symbol">(</span><span class="normal">res</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0x95</span><span class="symbol">,</span><span class="normal"> nb_f</span><span class="symbol">,</span><span class="normal"> nb_d</span><span class="symbol">,</span><span class="normal"> nb_b</span><span class="symbol">);</span>
+<span class="cbracket">}</span>
+
+<span class="type">int</span><span class="normal"> </span><span class="function">main</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> argc</span><span class="symbol">,</span><span class="normal"> </span><span class="type">char</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">argv</span><span class="symbol">[])</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">iopl</span><span class="symbol">(</span><span class="number">3</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="function">perror</span><span class="symbol">(</span><span class="string">"must run as root"</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="function">InitPCI</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> EXIT_SUCCESS</span><span class="symbol">;</span>
+<span class="cbracket">}</span>
+</tt></pre>
+
+</div>
+<H2>Caveat</H2>
+Some kind souls on the newsgroups were misinterpreting this work to
+be enough to forego on hardware cooling (fans, etc). Obviously, this
+is a VERY BAD idea. Software cooling helps (a lot) when the CPU is idle,
+but eventually you will put your CPU to work (play a game, encode a video,
+etc). You need hardware cooling no matter what; what I've described just 
+saves energy (and extends your CPU life) for those large periods of time
+during which you don't stress your CPU (e.g. when working with Word/Excel 
+documents, writing code with VI, etc).
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/coolAMD.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>
