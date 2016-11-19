@@ -159,7 +159,7 @@ Two weeks passed. And as you can probably guess, I wanted more. Again :)
 <p>
 It turned out, that the "bins" trick is not good enough. After all, a raytracer doesn't stop at the first intersection. It casts <a href="chessRaytraced.jpg" rel="lightbox" title="Reflections">reflected</a>, <a href="chessRefraction.jpg"  rel="lightbox" title="Refractions">refracted</a> and my favourite, <a href="ambientSponza.gif" rel="lightbox" title="Ambient occlusion">ambient occlusion rays</a>. Bins can't accomodate that. I needed a better data structure, a space partitioning scheme.
 <p>
-So I Googled again... and read about the <a href="http://en.wikipedia.org/wiki/Bounding_volume_hierarchy">Bounding Volume Hierarchy</a>, and how it can be used to accelerate any ray-intersection checking in world space. As I always do with a new graphics algorithm, I first coded it in my <a href="renderer.html">SW-only</a> version of the renderer. Furious coding ensued... and the results were beautiful, <a href="church.and.conference.gif" rel="lightbox" title="Ambient occlusion slideshow">beyond</a> <a href="ambientSponza.gif" rel="lightbox" title="Ambient occlusion slideshow">anything</a> my rasterizers ever did. Were these images really created by my renderer? I couldn't believe it.
+So I Googled again... and read about the <a href="http://en.wikipedia.org/wiki/Bounding_volume_hierarchy">Bounding Volume Hierarchy</a>, and how it can be used to accelerate any ray-intersection checking in world space. As I always do with a new graphics algorithm, I first coded it in my <a href="renderer.html">SW-only</a> version of the renderer. Furious coding ensued... and the results were beautiful, <a href="conference.jpg" rel="lightbox" title="Ambient occlusion slideshow">beyond</a> <a href="ambientSponza.gif" rel="lightbox" title="Ambient occlusion slideshow">anything</a> my rasterizers ever did. Were these images really created by my renderer? I couldn't believe it.
 <p>
 What I could believe, unfortunately, was the speed. Abysmal. The pure-C++ version gave me one frame per second on the train object (sigh).
 <p>
@@ -491,7 +491,7 @@ Keep them coming!
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:35:19 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Nov 19 10:10:45 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <script src="urchin.js" type="text/javascript"></script>
