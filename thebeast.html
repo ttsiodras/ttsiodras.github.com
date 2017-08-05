@@ -1,0 +1,424 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/thebeast.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<title>Tinkering with electronics</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Tinkering with electronics</div>
+        <div id="MainContent">
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(August 2017)</em></p>
+
+<h2>Tinkering with electronics</h2>
+
+<p><strong>TL; DR</strong> Hi, everyone! You'll find below some electronics-related projects that I hacked on
+during last year.</p>
+
+<p>Note that I am a SW guy by vocation - but I must confess that I have become sort of addicted to
+electronics-related tinkering! It's so easy <em>(and cheap)</em> to order components online... and then
+spend some quality time hacking with them... </p>
+
+<p>What better way is there to learn? :-)</p>
+
+<h3>1. Real-time 3D on an ATmega328P (aka "breadboard Arduino")</h3>
+
+<p>I configured <a href="https://www.youtube.com/watch?v=sNIMCdVOHOM">an ATmega328p on a breadboard</a>,
+and had it do <a href="https://www.youtube.com/watch?v=nsqmnkfZtSw">real-time 3D graphics on a SPI-controlled OLED</a>:</p>
+
+<p><center></p>
+
+<iframe id="ytplayer" type="text/html" width="640" height="360"
+  src="https://www.youtube.com/embed/nsqmnkfZtSw?autoplay=0&origin=https://www.thanassis.space"
+  allowfullscreen="allowfullscreen" mozallowfullscreen="mozallowfullscreen" msallowfullscreen="msallowfullscreen"
+  oallowfullscreen="oallowfullscreen" webkitallowfullscreen="webkitallowfullscreen"
+  frameborder="0">
+</iframe>
+
+<p><em>Real-time 3D on an ATmega328P on a SPI-controlled OLED</em>
+</center></p>
+
+<p><a href="https://github.com/ttsiodras/3D-on-an-ATmega328p">The code is on GitHub</a>:</p>
+
+<ul>
+<li>Fixed point calculations are used, for speed <em>(8 bits for the fractional part)</em>.</li>
+<li>The statue data are stored into and read from (at run-time) from the <em>.text</em> segment. The ATmega328P
+has 32KB of flash available to store the program code, but only 2K of RAM... So the flash had to be
+used to store not just the code, but also the constant <em>(read-only)</em> data of the X,Y and Z coordinates
+of the points.</li>
+<li>The "design" has a bonus distance indicator - a LED shining brightly when the statue gets close :-)</li>
+<li>The code conditionally outputs frames per second (FPS) information over the ATmega328P's serial port.</li>
+</ul>
+
+<p>This was the first time I used SPI - and in fact, in two places: (a) the ATmega328P drives the OLED
+via its SPI pins, and (b) additionally, the micro-controller itself is programmed via the same SPI pins
+through my Raspberry PI2's SPI interface pins. 
+Basically, my PI2 sits next to the breadboard, and I use <code>avrdude</code> to flash the code to the ATmega328P. 
+This of course means that the SPI pins are shared - either driven by the PI or by the ATmega <em>(but not
+at the same time)</em>.</p>
+
+<p>If you've never seen <a target="_blank" href="https://github.com/ttsiodras/3D-on-an-ATmega328p/blob/master/cube.ino#L83">fixed-point code before</a>,
+it's really quite easy. The values are simply multiplied by a power of two,
+depending on how many fractional bits we want to use for them. In my case, 8 fractional bits meant
+that the values had to be multiplied by 256 before being used in any computation; and appropriately adjusted
+down after every step. For example, if two such values are multiplied, the result must be divided by 256
+afterwards - which is easily done by a right shift 8 times.</p>
+
+<p>This is how we used to do things in the "good old days"... and honestly, it was quite fun to do this 
+kind of thing again. Admitedly, though, storing the 3D coordinates of the statue's points in ROM
+<em>(think: flash)</em> to make things fit... well, that was new;
+even my <a target="_blank"
+href="http://en.wikipedia.org/wiki/ZX_Spectrum#ZX_Spectrum_16K.2F48K">ZX Spectrum</a> back in 1986 had
+48K of RAM, instead of the ATmega328P's puny 2K!</p>
+
+<p>Then again, it's tiny 8MHz brain may in fact be a good match for the Z80 - I plan to pit them against each
+other when I revive my dead Speccy :-)</p>
+
+<h3>2. Building the Beast (TM)</h3>
+
+<p>I love my Raspberry PI2 - but when I saw an ad for an Orange PI Zero,
+I felt <em>I just had to</em> build my own ARM server from scratch - in terms of both SW and HW. What better
+way is there, to learn the ways of ARM?</p>
+
+<p>So here it is, my geeky brothers and sisters... in all it's <em>"magnificent splendor"</em> - The Beast (TM):</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="The.Beast.TM.jpg" width="640" height="360" alt="The Beast (TM)"><p>
+<em>The Beast (TM) - 4-core ARM, PI(D)-controlled FAN, I2C 1602, level-shifter, and more!</em>
+</div>
+
+<h4>First, make it work</h4>
+
+<p>The 'heart' of the contraption is an Orange PI zero board, carrying an H2+ SoC - which is a 4-core
+ARM Cortex A7. The SoC has Ethernet and USB ports - and can run the 4 cores from 240MHz up to
+1.2GHz. It also carries 512MB of RAM - all this for around 12Euros...</p>
+
+<p>SW-wise, I used <a href="https://www.armbian.com/">armbian</a>. To make sure 
+I remained in control of both the HW and the SW, I in fact compiled and created the armbian
+image myself, based on <a href="https://github.com/armbian/build">the excellent Docker-based automation work</a>
+done by the amazing people behind armbian. I wrote the image I built to a 4GB SD
+card, and booted to a perfectly-running Debian userland.</p>
+
+<p>Things seemed to work fine, originally - until doing some stress-testing
+with <a href="https://www.thanassis.space/renderer.html">my renderer</a>. At that point, I witnessed
+weird instabilities - and after monitoring the voltage levels on the 5V
+line, I quickly realized that the 5Euro power supply I was using - rated at "5V/3A" - would
+in fact dip down far below 5V at far less than a 3A draw...</p>
+
+<p>When I used my Raspberry's power supply, all the instabilities disappeared.</p>
+
+<p>I ordered a 2nd Raspberry PSU - and while waiting, I realized that the SoC's temperature
+would rise up to 80C during benchmarking! That was quite a difference to my Raspberry
+PI2's maximum of 58C. At that point, to avoid disasters, armbian would downclock the cores
+to 240MHz... and performance suffered.</p>
+
+<p>I've never played with fan control of my own making. Good! <em>(rubs hands :-)</em></p>
+
+<h4>Then, make it cool</h4>
+
+<p>I ordered a 5V fan and some dirt-cheap heatsinks. A few days later the goodies arrived;
+so I drilled a hole in the Orange PI Zero's enclosure, and attached the fan with zip-ties,
+blowing cool air directly over the <em>Now-with-Heatsink!</em> SoC:</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="zipties.jpg" width="640" height="360" alt="The Beauty"><p>
+<em>The Beauty - with a serial port PL2303HX for easy getty-access</em>
+</div>
+
+<p>The fan was powered by the 5V GPIO pin - which is in turn "fed" directly
+from the USB power jack <em>(the rest of the board runs at 3.3V)</em>.</p>
+
+<p>But the result... was not <em>quite</em> what I wanted.</p>
+
+<h4>Design a control circuit, Luke</h4>
+
+<p>For one, the temperature only got down by a meagre 10C. The enclosure was simply
+not designed for this - and the hot air was more or less "trapped" inside it,
+no matter how hard the tiny fan tried to push it out.</p>
+
+<p>In addition, the end result was also too noisy - the fan was on all the time,
+and even though it wasn't loud, just like all tiny fans it had a high pitch;
+the <em>designed-to-drive-you-mad</em> kind.</p>
+
+<p>There was only one way to handle the noise: I needed a control circuit to switch
+the fan on only when the temperature was high enough. And since the SoC runs
+at 3.3V, even though the fan had very low current draw, I couldn't just power it
+- being a 5V fan - directly from the 3.3V GPIO pins... </p>
+
+<p>Which meant it was time to read up on MOSFETs.</p>
+
+<p>I also decided to lose the enclosure, and setup a breadboard next to the SoC.
+The air flow would be significantly better - with preliminary tests indicating
+almost an additional 10 degrees worth of difference. With the breadboard close by,
+ I would also be able to hack the control circuitry very easily... not to mention
+enabling further electronics tinkering in the future.</p>
+
+<p>And how would I keep the whole setup together? Acrylic to the rescue!</p>
+
+<p>Which I've also never worked with before.</p>
+
+<p>Awesome! Let's order some :-)</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="Orange-PI-Zero-fan-controller.png" alt="the fan control circuit"><p>
+<em>The fan's control circuit</em>
+</div>
+
+<p>After a bit of reading on the Internet, I set up the breadboard with an
+N-channel MOSFET controlling the fan's connection to ground... and the FET's gate
+itself being controlled from a GPIO pin.</p>
+
+<p>I then wrote a small Python daemon that read the temperature (by reading 
+<code>/sys/class/thermal/thermal_zone0/temp</code>) and appropriately switched
+that GPIO pin on/off.</p>
+
+<p>That worked. </p>
+
+<p>I then went a bit further - <a href="https://en.wikipedia.org/wiki/PID_controller">I read about PID controllers</a>
+and created a <a href="fan.py">Supervisor-driven Python daemon</a> that used the SoC's
+PWM support to control the speed of the fan. This was quite a task; I based the work on
+a <a href="https://github.com/iboguslavsky/pwm-sunxi-opi0">kind gentleman's device driver</a>
+that exposes the OPIZero's PWM functionality <em>(basically, the serial connection's RX pin
+becomes a PWM pin)</em>. I had to re-program the FEX file of the SoC to disable the default serial
+pins <em>(since the RX one was used for the PWM signal)</em> and configure the serial to
+use two other GPIO pins. </p>
+
+<p>Yes, I can't live without my UART! Where would I run my <code>getty</code> otherwise!<br>
+SSH? Get off my lawn, kid!</p>
+
+<p><em>(Just kiddin. Sort of :-)</em></p>
+
+<h4>The 1602 screen and the shifter</h4>
+
+<p>I played with UARTs, I played with SPI...</p>
+
+<p>Time for I2C!</p>
+
+<p>Clearly, there was a pressing need that the Beast report "stuff" on a 1602 screen.
+I've seen these things everywhere, pretty much all my life... but never played
+with one; perfect opportunity to combine that desire with I2C tinkering.</p>
+
+<p>And in the meantime, the transparent acrylic sheets had arrived - together
+with the standoffs and the nuts-and-bolts-y things. I failed somewhat at cutting
+the acrylic properly - it broke at an angle - but managed to file it down
+to something acceptable. I then measured and drilled the holes, trying
+to make sure I could place the 1602 screen snugly inside.</p>
+
+<p>The end result:</p>
+
+<p><center></p>
+
+<iframe id="ytplayer" type="text/html" width="640" height="360"
+  src="https://www.youtube.com/embed/e7rA3GDg8qA?autoplay=0&origin=https://www.thanassis.space"
+  allowfullscreen="allowfullscreen" mozallowfullscreen="mozallowfullscreen" msallowfullscreen="msallowfullscreen"
+  oallowfullscreen="oallowfullscreen" webkitallowfullscreen="webkitallowfullscreen"
+  frameborder="0">
+</iframe>
+
+<p><em>PI(D) fan controller, I2C 1602 screen, power-off button</em>
+</center></p>
+
+<p>The I2C parts weren't without their own challenges. The screen was made
+to work for 5V - I <em>(foolishly!)</em> tried it as-is, and it seemed to work...
+But after <a href="https://electronics.stackexchange.com/questions/260611/how-to-use-a-logic-level-shifter-for-1602-lcd/314138#314138">looking around</a>.
+I realized I was just lucky - my poor PI could have gone up in smoke...
+(the scope showed that the GPIO pins were pulled up at 3.9V!)</p>
+
+<p>I quickly bought a 1-Euro level shifter from eBay. <a href="android.html#serialport">I've used one before</a>,
+when I "spoke" to my tablet's hidden serial port - so it was rather easy to
+setup on my breadboard... and the SDA and SCL levels dropped down to the
+proper 3.3V.</p>
+
+<p>The rest was simple - I used a nice port of the <code>Wire</code> and <code>Liquid_Crystal</code>
+Arduino libraries to control the screen; and <a href="https://github.com/ttsiodras/1602-LCD-Controller">output my disk usage, SoC 
+temperature, CPU load and fan speed</a>.</p>
+
+<p>Finally, I added a power-off button - which pulls up a GPIO pin, monitored
+by another Supervisor-controlled Python daemon, that detects the press and
+gracefully powers off the device.</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="fritzing.png" alt="The Beast circuitry"><p>
+<em>NOTE: No Orange PI Zero in Fritzing - this is just an</em><br>
+<em>approximate drawing based on the older Orange PI PC</em>
+</div>
+
+<p>Besides being my "experimental platform", the Beast also doubles as my file/movie
+server, and also my Borgbackup server. It <em>is</em> a UNIX server, after all.</p>
+
+<h3>3. VHDL and FPGAs</h3>
+
+<p>My other - and far more serious excursion into electronics, that I am nowhere
+near mastering - is that of FPGAs and VHDL coding.</p>
+
+<p>I started by watching the basics of VHDL <a href="https://www.youtube.com/watch?v=pDE2qenDXKQ">in 3 videos by Nick Williams</a>.
+I then gotten hold of a Spartan3 based FPGA, and used the free Xilinx WebPACK to
+<a href="https://github.com/ttsiodras/UART_in_VHDL">write my own control circuit for a serial port</a> 
+- that I myself exposed from the FPGA as a GPIO pin.</p>
+
+<p>I then communicated with my serial port via a PL2303HX adapter, attached to my
+FPGA's GPIO pins on one side, and to my laptop over USB on the other:</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<a target="_blank" href="https://github.com/ttsiodras/UART_in_VHDL">
+<img src="fpga.jpg" width="640" height="480" alt="A Spartan3, running my own VHDL serial code">
+</a><p>
+<em>A Spartan3, running my own VHDL serial code, speaks to a PL2303HX</em>
+</div>
+
+<p>Sending a serial signal was easy - but receiving, that was a different story...
+The need to <a href="https://github.com/ttsiodras/UART_in_VHDL/blob/master/Example2.vhd#L643">sync up to the incoming signal</a>
+made me deal for the first time with concurrently running VHDL state machines at different
+clocks.</p>
+
+<p>Lots of fun, debugging this :-) ... since there's no "debugging", really;
+at least not in the way we do it in SW.
+Mostly, you simulate your circuit and then look at the signals emitted
+by it - and compare them to the expected ones in the protocols/datasheets.</p>
+
+<p>And when even that fails, you order a 5 Euro logic analyzer from China... and desperately
+probe everything. Which, miraculously, worked :-) Many thanks to the excellent
+people behind <a href="http://sigrok.org/">Sigrok</a> - they made my cheap analyzer just
+as efficient as 20 times more expensive products.</p>
+
+<p>This - my FPGA programming attempts - deserves a blog post of its own <em>(for now,
+I have <a href="https://github.com/ttsiodras/UART_in_VHDL/blob/master/README.md">documented the experience in my repo's README</a> )</em>.
+This is truly a different world - and somehow, the fact that you express everything
+as declarations of, basically, pin assignment expressions, meshes in a very
+interesting way with <a href="score4.html">functional-style thinking</a> and declarative
+programming.</p>
+
+<h2>Push your limits - play with electronics!</h2>
+
+<p>All I can say to my fellow SW brethren, is... try tinkering with electronics! 
+IMHO, it's really worth it...</p>
+
+<p>I can vouch that it's good, solid fun - as far as hobbies go, you can do a lot worse.
+It definitely pushed this developer's limits quite beyond the safe and deterministic worlds of everyday
+computing...  And I can safely say that I've learned tons of things in the process - with hands-on
+experiences ranging from the tiny microcontroller world, to the immense power
+of reconfigurable hardware.</p>
+
+<p>More of that last one - I hope - in the future... with my own CPU core running 
+inside that FPGA :-)</p>
+
+<p>Have a nice holiday period, everyone!</p>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Aug 5 20:48:51 2017</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <script src="urchin.js" type="text/javascript"></script>
+            <script type="text/javascript">_uacct = "UA-746316-1";urchinTracker();</script>
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/thebeast.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>
