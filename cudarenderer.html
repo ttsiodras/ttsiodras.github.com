@@ -37,23 +37,10 @@
   </ul>
   The sources (latest version: 2.1h, April 2011) of this new raytracer are available <a href="https://github.com/ttsiodras/renderer-cuda/archive/v2.1k.tar.gz">from here</a>, and <a href="cudarenderer-2.x.latest-win32.7z">Win32 binaries</a> are also available (compressed <a href="http://www.7-zip.org/">with 7-zip</a>). I also included MSVC project files, to make builds under Win32 easier.
   <p>Enjoy!<br>&nbsp;<br>
-  <table summary="CUDA interactive raytracing" align="center">
-  <tr>
-  <td>
-<center>
-<!--object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/1o8HM11h8fc&hl=en_US&fs=1&rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/1o8HM11h8fc&hl=en_US&fs=1&rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object-->
-<!--object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="http://www.youtube.com/v/1o8HM11h8fc&amp;hl=en_US&amp;fs=1&amp;rel=0"><param name="movie" value="http://www.youtube.com/v/1o8HM11h8fc"><param name="allowFullScreen" value="true"></object-->
-<object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="https://www.youtube.com/v/1o8HM11h8fc&amp;hl=en_US&amp;fs=1&amp;rel=0">
-    <param name="movie" value="https://www.youtube.com/v/1o8HM11h8fc">
-    <param name="allowFullScreen" value="true">
-    <!-- Fallback content -->
-    <a href="https://www.youtube.com/watch?v=1o8HM11h8fc">
-    <img src="chess-iphone.jpg" width="480" height="360" alt="CUDA interactive raytracing">
-    </a>
-</object>
-</center>
-  </td></tr></table>
-
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/1o8HM11h8fc?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
   </td></tr>
   </table>
   &nbsp;<br>
@@ -73,23 +60,10 @@ After <a href="mandelSSE.html">testing the waters</a> with a simple Mandelbrot i
 I was eager to apply CUDA to my life-long obsession: <a href="renderer.html">my SW-only renderer</a>.
 <p>
 What happened then was interesting, so I decided to document it. And no, the text below is not about graphics. It is about taking a set of algorithms (that simply happen to be graphics algorithms) and trying to implement them in CUDA. Let me say this again: I know all about <a href="trimesh.html">OpenGL</a> and the shadow ARB extension, but this post is NOT about graphics. It is about a more generic question: "I have an algorithm. Will CUDA/OpenCL/DirectCompute help me execute my algorithm faster"?
-  <table summary="CUDA interactive raycasting" align="center">
-  <tr>
-  <td>
-<center>
-<!--object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/0F1A3npCe4A&hl=en_US&fs=1&rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/0F1A3npCe4A&hl=en_US&fs=1&rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object-->
-<!--object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="http://www.youtube.com/v/0F1A3npCe4A&amp;hl=en_US&amp;fs=1&amp;rel=0"><param name="movie" value="http://www.youtube.com/v/0F1A3npCe4A"><param name="allowFullScreen" value="true"></object-->
-<object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="https://www.youtube.com/v/Qzn0Ep4tvSI&amp;hl=en_US&amp;fs=1&amp;rel=0">
-    <param name="movie" value="https://www.youtube.com/v/Qzn0Ep4tvSI">
-    <param name="allowFullScreen" value="true">
-    <!-- Fallback content -->
-    <a href="https://www.youtube.com/watch?v=Qzn0Ep4tvSI">
-    <img src="train-iphone.png" width="480" height="360" alt="CUDA interactive raycasting">
-    </a>
-</object>
-</center>
-  </td></tr></table>
-<p>
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Qzn0Ep4tvSI?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
 My GT240 offers <a href="http://en.wikipedia.org/wiki/GeForce_200_Series#Technical_summary">hundreds of GFlops</a>, so things looked promising.
 <h2>First attempt - can I do rasterizing?</h2>
 Well, first things first. My SW-only renderer is optimized for CPUs: it renders via rasterizing, which roughly means
@@ -387,23 +361,13 @@ Yes - but there are some things you should know:
 <p>
 <em>Note 2: Yes, <a href="trimesh.html">I know about OpenGL</a> - custom HW can be used to solve anything. The post above is simply an objective report of what happened when I tried to apply CUDA to a set of algorithms I have experience with. It just so happens that these are also graphics algorithms. I didn't do it to create a commercial raycaster - this was just a weekend project. Note also that, to my knowledge, neither OpenGL nor DirectX have raycasting support - unless you intend to implement one in a fragment shader: using textures to store triangle data, etc... in which case, you are brave, may the Force be with you :&#x2011;)</em><p>
 <em>Note 3: After the posting to Reddit, one of the comments pointed to <a href="http://www.youtube.com/watch?v=4bITAdWvMXE">a presentation given by Brad Peebler of Luxology</a>, about CPU vs GPU rendering. They are of course using tremendously more complex algorithms, but their conclusions match mine: the more complex the algorithm, the more divergent, the harder it becomes to improve speed with a GPU implementation.</em>
-  <table summary="Rendering: C++ vs CUDA" align="center">
-  <tr>
-  <td>
-<center>
-<!--object width="480" height="385"><param name="movie" value="http://www.youtube.com/v/0F1A3npCe4A&hl=en_US&fs=1&rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/0F1A3npCe4A&hl=en_US&fs=1&rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="480" height="385"></embed></object-->
-<!--object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="http://www.youtube.com/v/0F1A3npCe4A&amp;hl=en_US&amp;fs=1&amp;rel=0"><param name="movie" value="http://www.youtube.com/v/0F1A3npCe4A"><param name="allowFullScreen" value="true"></object-->
-<object type="application/x-shockwave-flash" style="width:480px;height:385px;" data="https://www.youtube.com/v/0F1A3npCe4A&amp;hl=en_US&amp;fs=1&amp;rel=0">
-    <param name="movie" value="https://www.youtube.com/v/0F1A3npCe4A">
-    <param name="allowFullScreen" value="true">
-    <!-- Fallback content -->
-    <a href="https://www.youtube.com/watch?v=0F1A3npCe4A">
-    <img src="dragon-video.jpg" width="480" height="360" alt="C++ vs CUDA raycasting">
-    </a>
-</object>
-</center>
-  </td></tr>
-  <tr><td><center><em>A dragon... in C++ and in CUDA.</em></center></td></tr></table>
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/0F1A3npCe4A?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
+<div style="text-align: center">
+  <em>A dragon... in C++ and in CUDA.</em>
+</div>
 <h2>Downloads</h2>
 You can download my GPL code for:
 <ul>
@@ -504,7 +468,7 @@ You can navigate in realtime:
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:35:19 2016</em>&nbsp;(<a href="//validator.w3.org/check?uri=referer"><em>Valid HTML</em></a>)</td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Sat Feb 27 01:35:19 2016</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <script src="urchin.js" type="text/javascript"></script>
