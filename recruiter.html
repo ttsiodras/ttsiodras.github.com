@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="canonical" href="https://www.thanassis.space/OpenBSD.html">
+<link rel="canonical" href="https://www.thanassis.space/recruiter.html">
 <meta name="author" content="Thanassis Tsiodras">
 <meta name="author" content="Athanasios Tsiodras">
 <meta name="author" content="ttsiod">
@@ -14,127 +14,66 @@
 <script type="text/javascript" src="prototype.js"></script>
 <script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
 <script type="text/javascript" src="lightbox.js"></script>
-<title>Gateway building with OpenBSD</title>
+<title>Dear Recruiter</title>
 </head>
 <body>
     <div class="well" id="Page">
-        <div id="Banner">Gateway building with OpenBSD</div>
+        <div id="Banner">Dear Recruiter</div>
         <div id="MainContent">
             <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
-            <pre>
-I just completed the setup of ASSERT's gateway under OpenBSD.
+            <p>Dear Recruiter,</p>
 
-Things I had to do which are worth noting:
+<p>Thank you for contacting me. I appreciate your efforts in trying to match
+people with a specific skillset with the requirements of a position; a daunting
+task indeed.</p>
 
-- During OpenBSD installation, you must remove the 'a' partition (d a)
-  and create 'a' and 'b' (swap).
-- pkg_add http://..../bash_3.1.tgz
-- vi .bashrc (alias, exports)
-- vi .bash_login (. .bashrc)
-- mkdir .ssh ; cat &gt; .ssh/authorized_keys (id_dsa.pub)
-- vi /etc/ssh/sshd_config (PermitRoot, PubkeyAuthentication)
-- kill -1 "the pid of SSH"
-- vi /etc/rc.conf (httpd_flags="-u") (I can't work with chroot 
-  since the CGIs call python, perl, etc - which don't exist under
-  /var/www/ (the new ch(root))
+<p>And perhaps I am indeed a good match for what you have in mind.</p>
 
-- cat &gt; /usr/local/bin/dos2unix &lt;&lt;OEF
-#!/usr/local/bin/bash
-if [ $# -ne 1 ] ; then
-        echo Usage: $0 file
-        exit 1
-fi
-cat "$1" | tr -d '\r' &gt; /tmp/ole
-mv /tmp/ole "$1"
-OEF
+<p>But to avoid wasting your time as well as mine, I'll need you to provide answers
+to the following topics. If you can't, or don't have the time to, then there's
+no point in discussing any further; it means I am not the kind of candidate you
+want.</p>
 
-- vi /etc/rc (PATH= ... - add /usr/local/bin, since I put dos2unix
-  there, and the scripts need it!)
-- oh, also add /usr/lib/ccache to the PATH (in front) (and either
-  fetch or recompile ccache into 
-  three symlinks under /usr/lib/ccache/{gcc,cc,g++}
-- httpd runs under user www, who has no HOME. ccache needs
-  $HOME/.ccache, so change the asn2aadlPlus.py to invoke gcc
-  as "CCACHE_DIR=/tmp/.ccache gcc"
-- htpasswd -cm /etc/ASSERT-auth-file jerome
-- vi /var/www/conf/httpd.conf
+<ol>
+<li><p>What are the HW and SW targets of the position? If this is a position about
+embedded systems, an example would be "the target is an ARM Cortex-R
+platform running vxWorks, and we're looking into someone that can write the
+application SW for it in C++. We also need to communicate with the system at
+run-time via CAN bus and receive some data over UART links".</p></li>
+<li><p>Is the location of the position in the Netherlands? If not, is there a relocation package?</p></li>
+<li><p>How many years has the company been around? I've worked for both startups
+and big enterprises, and they each have their advantages. Point me to
+financial results if this is about a company with some history; point me to the
+capital behind it if its a startup.</p></li>
+<li><p>Prior to joining the European Space Agency, I've owned a startup for 12
+years. In that time, I've delivered my development services to a wide array
+of targets - ranging from low-level device drivers, to real-time optimization
+of space missions' algorithms, to parsing and code generation, to web
+interfaces accessing complex business logic...  In a very real sense, I've done
+a lot of things. Point your clients to my <a href="cv.pdf">CV</a> - is this variety an asset for the
+position or not? I fully understand that you may want to target the "cheap, young
+crowd" - in which case, I'd hate to waste your time.</p></li>
+<li><p>A very good filter is asking the company how they feel about me by looking
+at my free-time endeavours - <a href="https://www.thanassis.space">my site</a> has featured prominently in Slashdot, Hacker News,
+Reddit/programming, etc. Am I the kind of person they'd like to have? e.g. point
+them <a href="https://www.thanassis.space/android.html">to this article</a>,
+and ask them if having a person in their workforce that does these things 
+just for fun, is an asset or not.</p></li>
+<li><p>Given the country and the tax status of the position, what is the expected
+NET income from it, for a single male? In addition to what is said above, note
+that I am not married, have no kids, and have no problem working long hours.
+I dedicate all my efforts into my work - but expect to be well compensated for it.</p></li>
+</ol>
 
-Find the &lt;Directory "/var/www/htdocs"&gt;
-and remove Indexes from Options
-and add
+<p>Please answer as many of these questions as possible. The final question in particular 
+is mandatory; if you don't answer that one, there's no point in discussing any
+further.</p>
 
-  AuthType Basic
-  AuthName "ASSERT gateway"
-  AuthUserFile /etc/ASSERT-auth-file
-  Require valid-user
- 
-- chown  root.wheel /etc/ASSERT-auth-file
-- makeCertificates.sh (e.g. for 192.168.0.145)
+<p>Thanks again for your time, and your interest in me.</p>
 
-cat &gt; makeCertificates.sh &lt;&lt;OEF
-#!/bin/bash
-if [ $# -ne 1 ] ; then
-        echo Usage: $0 www.domain.com
-        exit 1
-fi
-# use this to encrypt your keys - but Apache2 (at startup) wants passphrase
-#openssl genrsa -des3 -out $1.key 1024
-openssl genrsa -out $1.key 1024
-echo GR
-echo Attiki
-echo Athens
-echo Semantix Information Technologies
-echo Software Development
-echo $1
-echo ttsiodras@semantix.gr
-openssl req -new -key $1.key -out $1.csr
-openssl x509 -req -days 3650 -in $1.csr -signkey $1.key -out $1.cert
-chmod 400 $1.key
-echo Now copy $1.key to /etc/ssl/private
-echo and $1.cert to /etc/ssl/certs
-OEF
-
-- cp 192.168.0.145.cert /etc/ssl/
-- cp 192.168.0.145.key /etc/ssl/private/
-- vi /var/www/conf/httpd.conf
-
-ServerName 192.168.0.145
-SSLCertificateFile    /etc/ssl/192.168.0.145.cert
-SSLCertificateKeyFile  /etc/ssl/private/192.168.0.145.key
-
-Edit /etc/rc.conf and set httpd_flags to "-u -DSSL"
-
-Make sure that CGIs permissions are -r-xr-xr-x
-and that the owner is root.bin (not www, so that even if someone
-hacks httpd he can't rewrite stuff...)
-In fact, if it is ELFs and not scripts, you can set to ---x--x--x
-
-Enjoy the security...
-</pre>
-<br>
-    <hr>
-    <div style='margin-top:1em'>
-        <div style='float:left'>
-            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
-                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
-            </a>
-        </div>
-        <div style='float:left; margin-left:1em'>
-            <a target="_blank" href="https://github.com/ttsiodras">
-                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
-            </a>
-        </div>
-        <!--div style='float:left; margin-left:1em'>
-            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
-                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
-            </a>
-        </div-->
-    </div>
-    <div style='clear:both; margin-bottom:0.5em'></div>
-
-<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Apr 26 16:16:55 2008</em></td></tr></table>
+<p>Kind regard,
+Thanassis.</p>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">
@@ -146,7 +85,7 @@ Enjoy the security...
             <script type="text/javascript">
                 /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
                 var disqus_shortname = 'ttsiodras';
-                var disqus_identifier = '../content/OpenBSD.content';
+                var disqus_identifier = '../content/recruiter.content';
 
                 (function() {
                     'use strict';

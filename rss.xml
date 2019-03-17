@@ -9,6 +9,24 @@
   <atom:link href="https://www.thanassis.space/rss.xml" rel="self" type="application/rss+xml" />
 
 <item>
+<title>I ported my own CPU in my FPGA board</title>
+<guid>https://github.com/ttsiodras/grlib-gpl/</guid>
+<link>https://github.com/ttsiodras/grlib-gpl/</link>
+<description>I can now proudly proclaim I "compiled" my own CPU :-)</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>17 March 2019 10:30:19 +0100</pubDate>
+</item>
+
+<item>
+<title>FPGA real-time Mandelbrot zoomer</title>
+<guid>https://github.com/ttsiodras/MandelbrotInVHDL/</guid>
+<link>https://github.com/ttsiodras/MandelbrotInVHDL/</link>
+<description>What better way is there, to learn VHDL, than to play with some fractals?</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>9 December 2018 10:00:19 +0100</pubDate>
+</item>
+
+<item>
 <title>Tinkering with electronics</title>
 <guid>https://www.thanassis.space/thebeast.html</guid>
 <link>https://www.thanassis.space/thebeast.html</link>

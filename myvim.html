@@ -26,10 +26,16 @@
   <em>(March 2012)</em>
 <h2>Why I use VIM</h2>
 <div class="tldr">
-<b>For the TL;DR crowd:</b> VIM is a great editor - and only programmable editors can truly be called "great". See <a href="http://vimeo.com/37875339" target="_blank">how I edit C or C++ with VIM</a>, and <a href="http://vimeo.com/37894593" target="_blank">how I edit Python code with VIM and incrementally test each function</a>. Then go <a href="https://github.com/ttsiodras/dotvim" target="_blank">check out my VIM settings</a> and read the installation instructions.</div>
+<b>For the TL;DR crowd:</b> VIM is a great editor - and only programmable editors can truly be called "great". See...
+<ul>
+<li><a href="http://vimeo.com/37875339" target="_blank">how I edit C or C++</a> with VIM.
+<li>how I edit Python code with VIM and <a href="http://vimeo.com/37894593" target="_blank">incrementally test each function</a>.
+<li>Then check out my VIM settings and <a href="https://github.com/ttsiodras/dotvim" target="_blank">read the installation instructions</a>.
+</ul>
+</div>
 I've been programming for a living, for the better part of the last two decades - and in my experience as a programmer, <b>the editor I used <em>really</em> mattered</b>. A large part of my life passes working inside it - and the more I "invest" in learning it, the faster I code.
 <p>
-In what follows, I will try to explain why learning VIM has proven very beneficial to me. You can also read <a href="http://www.viemu.com/a-why-vi-vim.html">this</a> and <a href="http://blog.superuser.com/2012/03/06/understanding-the-improved-in-vim/">this</a> to see why VI/VIM can vastly improve your efficiency in editing files.
+In what follows, I will try to explain why learning VIM has proven very beneficial to me. You can also read <a href="http://www.viemu.com/a-why-vi-vim.html">this</a> to see why VI/VIM can vastly improve your efficiency in editing files... or <a href="http://blog.superuser.com/2012/03/06/understanding-the-improved-in-vim/">this</a> post to see why <b>vim</b> is indeed an "improved" <b>vi</b>.
 <p>
 <em>(Caveat: I am not a VIM expert - even though I've worked with VIM for decades, I am only using a small part of its functionality, and only rarely do I write a function inside my <tt>.vimrc</tt>. Mostly I just <a href="http://www.vim.org/scripts/script_search_results.php?keywords=&amp;script_type=&amp;order_by=rating&amp;direction=descending&amp;search=search">stand on the shoulders of giants</a>. I only wrote this post because I keep seeing people "wow"-ed by the things I do within VIM - and wanted to share the marvelous things this gem of an editor can do. To any real VIM experts out there: I'd be grateful if you could review my <a href="https://github.com/ttsiodras/dotvim">setup</a> and tell me the things I am doing wrong...).</em>
 <h3>Working remotely</h3>
@@ -190,7 +196,7 @@ Cool, it works... How nice, to have an interpreter! You suddenly realize how eas
 <p>
 But... you miss your editor. You want to be able to write the code in it, using all the customized power you have gathered there over the years - and then somehow "magically" transport functions (not complete files!) across to the interpreter. How can you do that? How can you incrementally build your code base, testing each function as you go along?
 <p>
-You may be lucky enough, to be working with <a href="http://common-lisp.net/project/slime/">languages/tools</a> that already offer this<sup><a href="#emacs">[1]</a></sup>. Usually, however, this is not the case. You could ask the company that builds your favourite IDE for this feature, but the time and money it will take to implement prohibit it. Instead, you combine the power of the tools you already have, by being a programmer that is not limited to a single company's IDE - here's how:
+<a href="http://common-lisp.net/project/slime/">You may be lucky</a> enough, to be working with languages/tool that already offer this <a href="#emacs">[1]</a>. Usually, however, this is not the case. You could ask the company that builds your favourite IDE for this feature, but the time and money it will take to implement prohibit it. Instead, you combine the power of the tools you already have, by being a programmer that is not limited to a single company's IDE - here's how:
 <ul>
 <li>The <tt>screen</tt> tool allows one to create standalone command line sessions. It also allows creation of "windows" inside them, e.g. have VIM run in one window, and Python run in another.
 <li>More importantly, <tt>screen</tt> allows you to copy text <em>into</em> a screen session, via the "screen -S sessionName -p windowName -X stuff" command. You can therefore 'paste' anything you want inside a screen "window".
@@ -299,7 +305,7 @@ If you liked this article, you'll probably also appreciate <a href="regexp.html"
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a>&nbsp;&nbsp;<a href="https://plus.google.com/+ThanassisTsiodras/about">About me</a></td><td align="right"><em>Last update on: Fri Feb 26 22:19:01 2016</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Mar 16 08:45:21 2019</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">
