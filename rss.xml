@@ -9,6 +9,15 @@
   <atom:link href="https://www.thanassis.space/rss.xml" rel="self" type="application/rss+xml" />
 
 <item>
+<title>Atomic PI adventures</title>
+<guid>https://www.thanassis.space/atomicpi.html</guid>
+<link>https://www.thanassis.space/atomicpi.html</link>
+<description>How I configured and tested the HW parts of my Atomic PI</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>31 May 2019 23:59:19 +0100</pubDate>
+</item>
+
+<item>
 <title>I ported my own CPU in my FPGA board</title>
 <guid>https://github.com/ttsiodras/grlib-gpl/</guid>
 <link>https://github.com/ttsiodras/grlib-gpl/</link>

@@ -1,0 +1,396 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/atomicpi.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<title>Atomic PI</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Atomic PI</div>
+        <div id="MainContent">
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(May 2019)</em></p>
+
+<h1>Atomic PI</h1>
+
+<div class="tldr">
+<b>For the TL;DR crowd:</b>
+<p>
+A month ago, while browsing in <a href="https://www.cnx-software.com/">CNX software</a>,
+I stumbled on an article about an Intel-based Single Board Computer (SBC);
+that apparently cost only 35$. For that price, the specs were beyond impressive - 
+they were in the "so low, there must be something wrong" category.
+<p>
+But then again, it was sold from Amazon... Heck, I just had to try!
+<p>
+One week later, the "bare-bones" board arrived. And another two weeks later, this little
+machine has really <em>pushed my limits</em>.  I've never soldered on Intel HW before;
+an Intel machine somehow always created this kind of mental block in my head:
+<p>
+<em>"This is not a toy"!...</em>
+<p>
+But due to the price of the Atomic PI, the rational part of my brain could overcome the
+ridiculous mental block - and I was able to achieve the (very satisfying) results shown below.
+<p>
+Here it is, in all its splendor, my nerdy brothers and sisters... My new little UNIX server.
+</div>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<a href="front-on-hi.jpg" rel="lightbox" title="The New Beast (TM) - 4-core Atom, USB 3.0, and my custom power adapter"><img src="front-on-hi.jpg" width="640" height="480" alt="The New Beast (TM)"></a><p>
+<em>The New Beast (TM) - 4-core Atom, USB 3.0, and my custom power adapter</em>
+</div>
+
+<h2>Before Atomic PI</h2>
+
+<p>I love SBCs.
+<p>
+I started playing with them 3 years ago, beginning with a Raspberry PI2. A year later
+I "graduated" into a setup that was
+<a href="thebeast.html#thebeast">a bit more advanced</a>... A 12 Euro
+ARM-based board, that I assembled into an always-on file server, and
+<a href="https://www.borgbackup.org/">borgbackup</a> server; with an I2C
+attached LCD screen, a fan, and various other bells and whistles.</p>
+
+<p>I was pretty sure that for my needs, the price/performance ratio of this was unbeatable.
+In comparison, the Raspberry PI3 is three times as expensive, and at the same time offers substantially
+less I/O-performance (<em>since in RPIs everything has to pass through a single USB root hub</em>).</p>
+
+<p>Instead, the heart of the tiny Beast was a dirt-cheap Orange PI Zero - with 4 USB root-level hubs,
+it allowed me to connect an external female USB port to a different set of pins, and thus
+connect two external USB drives directly, on separate hubs. Data transfer between them 
+worked at the full USB2.0 speed - approximately 37 MBytes/sec <em>(try that with a Raspberry PI
+and you'll instantly see the difference...)</em></p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="The.Beast.TM.jpg" width="640" height="360" alt="The Old Beast (TM)"><p>
+<em>The Old Beast (TM) - 4-core ARM, PI(D)-controlled FAN, I2C 1602, level-shifter...</em>
+</div>
+
+<p>Simply put, I was able to have more than twice the speed, via a board that cost 1/3rd the price
+of an RPI3!</p>
+
+<p>SW-wise, I compiled the <a href="https://www.armbian.com/">ARMBIAN</a> image for my Beast
+myself - from sources - so I was fully in control of this tiny UNIX server. Borgbackup worked
+perfectly inside it over the last year - and it has already saved me a couple of times, by giving me the
+ability to have dozens of mountable backup snapshots; without paying
+storage-wise for anything beyond the compressed "deltas" between them. This includes huge Virtual
+machine images - try backing those up with anything except Borg and you'll see what I mean;
+a simple sector-worth of data inserted in the middle of a 10GB VMDK file causes most other backup SW to store
+an "extra" 10GB... Borg instead only stores a compressed version of the changed sector.</p>
+
+<h2>"No, that's impossible..."</h2>
+
+<p>But then, a month ago, while browsing in <a href="https://www.cnx-software.com/">CNX software</a>,
+I stumbled on an article about an Intel-based Single Board Computer (SBC);
+<strong>that apparently cost only 35$</strong>, while being equipped with a 4 core Atom processor,
+2GB of RAM, and 16GB of EMMC. And this being an Intel machine, it came with USB3.0;
+and also Gigabit Ethernet; and Wi-Fi.</p>
+
+<p>If you know anything about HW, your reaction to this is probably the same as mine was:
+<p>
+<em>What the... That's impossible!<br>&nbsp;<br></em>
+The pieces alone cost a lot more than 35$, never mind putting all this together!
+<p>
+I just had to try this out... So I took a leap of faith <em>(betting that it's not some fraudulent scheme)</em>,
+and ordered this from Amazon. </p>
+
+<p>It arrived to the Netherlands in 5 days. And I immediately realized that
+something weird was up - this board had no "mainstream" way to power it on.
+It needed 5V/3A to be fed over an unusual female pin header - and had no 5.5x2.1mm,
+5.5x2.5mm, or any kind of a USB power plug, </p>
+
+<p>Hmm...</p>
+
+<h2>I like challenges - let's MacGyver this.</h2>
+
+<p>I already had an Excelway configurable-voltage power supply that could provide
+the required amps at 5V; so I ordered a female 5.5x2.5mm jack that I could use to drive
+the power to the Atomic PI.</p>
+
+<p>But while waiting for this to arrive, I just <em>had</em> to see if the board worked.</p>
+
+<p>So I took my Arduino board - which had such a jack (one that the Excelway
+plug worked with) and soldered two wires on it, driving the output directly
+to the Atomic PI's pin 3 (5V) and pin 6 (GND).</p>
+
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/JSh3ww7J6-4?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
+
+<div style="text-align: center">
+  <em>First step: "stealing" power from an Arduino</em>
+</div>
+
+<p>It worked!</p>
+
+<p>I booted the machine, found that it had a Debian-based distro pre-installed in the EMMC,
+and enjoyed compiling and running my <a href="renderer.html">renderer</a>.
+I was not disappointed - this CPU was at least
+3 times faster than my Orange PI Zero; and more importantly, the huge heatsink kept it cool,
+without making any noise... With the 4 cores fully busy rendering the statue, temperature
+rose to about 50C. Much better than the Orange PI zero <em>(whose puny heatsink I had attached
+myself)</em> that instantly rose to above 60C, downthrottled, and forced me to deal with setting up a fan
+<em>(and write a PI(D) controller in SW to control it)</em>.</p>
+
+<p>I then launched Firefox, went to Youtube and watched in full screen a 4K 60fps video.
+It worked like a charm - with no hiccups of any kind. And this being an Intel GPU,
+it also meant that I had nothing to worry about, in terms of maintenance...
+The curse of most ARM-based SBCs in terms of video support
+is that you'll either be stuck at an ancient kernel <em>(because the makers of the board only care
+about Android - i.e. kernels of series 3.x)</em> - or you can compile a kernel from the mainline,
+and have a barely functioning framebuffer-based, non-accelerated X11 experience.</p>
+
+<p>What about storage?</p>
+
+<p>Well, a simple <code>dd</code> test showed that the EMMC <em>(read sequentially)</em> was delivering data
+at 170MBytes/sec. Another insane speed difference, compared to any SD card inside a Raspberry
+or an Orange PI... Which mind you, you'd have to buy extra anyway - whereas the EMMC
+in the Atomic PI is already there, covered in the 35$ you paid to get the board.</p>
+
+<h2>Power measurements</h2>
+
+<p>The adapter arrived a few days later. I quickly desoldered the wires from the Arduino,
+and put my adjustable buck PSU in the loop, so I could measure power:</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<a href="atomic_pi_PSU.jpg" rel="lightbox" title="Idle power measurements on Atomic PI: 5V x 0.7A = 3.5W"><img src="atomic_pi_PSU.jpg" alt="Power measurements on Atomic PI"></a>
+<p>
+<em>Idle power measurements on Atomic PI: 5V x 0.7A = 3.5W</em>
+</div>
+
+<ul>
+<li>During boot, the Atomic PI peaked up to 1A (so, 5W)</li>
+<li>After that, it stabilized to about 700mA (see picture above - 3.5W).</li>
+<li>Running my renderer, and occupying all 4 cores at 100%, current jumped to 1.25A (6.25W)</li>
+<li>Watching a 4K 60fps video from Youtube in Firefox full screen, ate 0.95A (~5W)</li>
+<li>Doing a "dd" from a LUKS-encrypted partition (so, both reading from the USB drive and decoding the data) used 34% of one of the 4 cores, and the current was at about 1A.</li>
+</ul>
+
+<p>Those were, of course, higher numbers than my two ARM-based SBCs - but not <em>insanely</em> so.
+Moreover, when I installed a spartan version of Debian Stretch <em>(with nothing X related,
+and a minimal amount of services that I need for my file/backup headless needs)</em>,
+I found that the idle power went even lower, to 2.5W (0.5A).</p>
+
+<h2>Old-school: the serial port</h2>
+
+<p>Even though it's nice to have accelerated X11 and video decoding, the purpose
+I had in mind for my Atomic PI was replacing my file/backup server with it... i.e with
+a headless, much more powerful machine. This would allow me to do things
+like offline ffmpeg-based video transcoding, while taking advantage of the huge 
+optimizations done over the years in these tools (for Intel-based CPUs).</p>
+
+<p>That meant no monitor attached to the HDMI port. And even though I could just use
+the machine over SSH with a static IP address, I still prefer to have
+a fallback of a serial port - just as I did for my ARM SBCs.</p>
+
+<p>As it turned out, that also worked fine! Connector CN10 of the board has the
+required 3 pins: TX, RX and GND. Connected to a PL2303HX USB/TTL,
+I could see my machine boot up over minicom...</p>
+
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/8paRaO61OpY?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
+
+<div style="text-align: center">
+  <em>Monitoring a boot over a serial port</em>
+</div>
+
+<p>...and in fact, I could enter the BIOS and change settings over it!</p>
+
+<p>That was a surprise... I never expected to be able to do this on a PC.
+It means that I can use a 2Euro ESP8266 board to "remote-serial" this machine;
+connect to the ESP8266 over WiFi, and via its serial port, access the Atomic PI
+and change BIOS settings, install different distros (or OpenBSD), etc -
+<strong>without being physically present next to it</strong>.</p>
+
+<p>Awesome.</p>
+
+<h2>Final solution to power - and an extra USB port.</h2>
+
+<p>But the female 5.5x2.5mm jack still annoyed me. It was a brittle setup;
+I didn't like it. I wanted a better, more sturdy solution.</p>
+
+<p>So I ordered a few ingredients for a much better "soup": an adapter I
+made that uses male pin headers to give life to the Atomic PI, getting power
+from a normal 5.5x2.5mm plug. It also has a switch and a power LED.</p>
+
+<p>And since I did all this and no magic smoke came out, I did one final
+augmentation: I soldered a female USB breakout on the "webcam" connector,
+since I saw in the schematics that this was in fact a USB 2.0 port:</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<a href="top-side-of-adapter-hi.jpg" rel="lightbox" title="Adapter from 5.5x2.5mm jack, with switch and LED"><img src="top-side-of-adapter-hi.jpg" alt="Adapter from 5.5x2.5mm jack, with switch and LED"></a>
+<p>
+<em>Adapter from 5.5x2.5mm jack, with switch and LED</em>
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<a href="bottom-side-of-adapter-hi.jpg" rel="lightbox" title="Bottom-side of adapter"><img src="bottom-side-of-adapter-hi.jpg" alt="Bottom-side of adapter"></a>
+<p>
+<em>Bottom-side of adapter</em>
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<a href="front-off-hi.jpg" rel="lightbox" title="Final form - before turning it on. My power adapter plugs in the female header."><img src="front-off-hi.jpg" alt="Final form - before turning it on. My power adapter plugs in the female header."></a>
+<p>
+<em>Final form - before turning it on. My power adapter plugs in the female pin header of the PI.</em>
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<a href="front-on-hi.jpg" rel="lightbox" title="Final form - switched on. The cable in the back is the serial cable."><img src="front-on-hi.jpg" alt="Final form - switched on. The cable in the back is the serial cable."></a>
+<p>
+<em>Final form - switched on. The cable in the back is the serial cable.</em>
+</div>
+
+<p>Yep, there's some hot glue used as well :-) To stabilize, isolate and provide some
+strength to the soldered USB port wires.</p>
+
+<p>In fact, that's the thing I am most grateful to Digital Loggers for;
+by selling such a cheap Intel-based machine, they allowed me to
+break through the "mental block" associated with any Intel HW:</p>
+
+<p><em>"It's not a toy, don't solder anything on it!"</em></p>
+
+<p>Well, I've soldered stuff on Intel-equipped motherboards now.<br>
+Guess I've crossed another threshold :-)</p>
+
+<h2>Conclusion</h2>
+
+<p>I've shared some of the material above on the Atomic PI subreddit ; but I've decided
+that it's far better to write it all down in my blog as well. At the very least
+this may help people - by addressing some of their questions, and also showing
+them what is possible with the Atomic PI.</p>
+
+<p>Overall, this is a fantastic little machine - and probably the best bargain I've ever
+seen, anywhere, in terms of computing power. No other SBC comes close to this
+price/performance ratio - if you don't believe me, Google for 
+the prices of Intel motherboards equipped with the same processor, then add 2GB of RAM,
+and 16GB of EMMC - and compare the result to 35$.</p>
+
+<p>As for how this incredible price was achieved, some rumours indicate the boards
+came out from a failed robotics company. In my mind, that makes it even better:
+I have here in front of me, the heart of a robot. And though it's a bit sad that 
+it didn't amount to what it was meant to... well, at least it will serve me - and 
+it will serve me well.</p>
+
+<p>My new Beast smiles at me from across the room, with his green LED indicating that life is good.</p>
+
+<p>I love it :-)</p>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jun 1 10:18:39 2019</em></td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/atomicpi.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>
