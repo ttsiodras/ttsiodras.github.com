@@ -283,18 +283,22 @@ calculate the ratio of ambient light at that point.
 <a name="downloads"></a>
   <h2>Download, compile and run</h2>
   <div class="redBox">
-  <b>Warning about hyper-threading</b><p>
-  If your CPU uses hyper-threading, your "virtual" cores may help or may <b>destroy</b>
-  your performance. On an Atom 330 (2 real cores, each one appearing as two "virtual"), 
-  the "virtual" cores help a lot: running with four threads, the raytracer is 1.3x faster
-  than running with two. On an dual-CPU, Intel Xeon W5580 however (total of 8 real cores, 
+  <b>Warning about hyper-threading and many cores in general</b><p>
+  If your CPU uses hyper-threading and/or has *many* cores, performance at some point may
+  go down instead of going up. You can control the number of threads used during 
+  rendering via the OMP_NUM_THREADS environment variable; and you may well have to,
+  to avoid your performance going down because of memory bandwidth saturation.
+  <p>
+  As an example from both sides of the spectrum, on an Atom 330 (2 real cores, each one
+  appearing as two "virtual"), the "virtual" cores help a lot: running with four threads,
+  the raytracer is 1.3x faster than running with two.
+  But on an dual-CPU, Intel Xeon W5580 (total of 8 real cores, 
   appearing as 16 "virtual"), the speed increases almost linearly as we increase threads, 
   until we reach 8 - <em>and then the speed nose-dives, with the 16 thread version being 
   <b>63 times slower (!)</b></em>.
   <p>
-  If your CPU has hyper-threading enabled, make sure you check the runtime performance of the
-  renderer by exercising direct control over the number of threads: use the OMP_NUM_THREADS 
-  environment variable to control how many threads OpenMP uses.
+  So make sure you check the runtime performance of the renderer by exercising direct control
+  over the number of threads (via OMP_NUM_THREADS).
   </div>
   The code is under the GPL, and lives in <a href="https://github.com/ttsiodras/renderer">GitHub</a>. Here's <a href="https://github.com/ttsiodras/renderer/archive/v2.3b.tar.gz">a tarball with the latest source code</a> (last update: 2.3b, Dec 2017).
   <a href="renderer-2.x.latest-mingw32.7z">Windows binaries</a> are also available (compiled with TDM/MinGW and Pthread-W32, and compressed with <a href="http://www.7-zip.org/">7-zip</a>).
@@ -562,7 +566,7 @@ using dynamic thread scheduling.
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Nov 17 12:55:22 2018</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Mon Jun 10 10:37:29 2019</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

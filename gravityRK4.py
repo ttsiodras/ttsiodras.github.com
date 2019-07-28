@@ -27,8 +27,8 @@ showing/hiding the orbits trace.
 
 Blog post at:
 
-    http://users.softlab.ntua.gr/~ttsiod/gravity.html
-    http://ttsiodras.github.com/gravity.html
+    https://www.thanassis.space/gravity.html
+    https://ttsiodras.github.io/gravity.html
 
 Thanassis Tsiodras
 ttsiodras@gmail.com

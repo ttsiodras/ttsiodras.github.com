@@ -12,7 +12,7 @@ from xml.sax.saxutils import unescape
 # mplayer's bmovl filter is currently (2012/03) borked;
 # you need to apply a patch from here:
 #
-#   http://users.softlab.ntua.gr/~ttsiod/patch.bmovl.gz
+#   https://www.thanassis.space/patch.bmovl.gz
 #
 # (see discussion about MPlayer bug here:
 #  http://lists.mplayerhq.hu/pipermail/mplayer-users/2012-March/084300.html)

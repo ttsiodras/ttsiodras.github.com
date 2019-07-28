@@ -9,6 +9,15 @@
   <atom:link href="https://www.thanassis.space/rss.xml" rel="self" type="application/rss+xml" />
 
 <item>
+<title>Remote power control via ESP8266</title>
+<guid>https://www.thanassis.space/remotepower.html</guid>
+<link>https://www.thanassis.space/remotepower.html</link>
+<description>Preparing for a remote serial port by making a remote on/off switch :-)</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>28 July 2019 11:46:19 +0100</pubDate>
+</item>
+
+<item>
 <title>Atomic PI adventures</title>
 <guid>https://www.thanassis.space/atomicpi.html</guid>
 <link>https://www.thanassis.space/atomicpi.html</link>

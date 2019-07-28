@@ -73,9 +73,13 @@ function qplot(x, y, color) {
     if (y<0 || x<0 || y>=g_height-1 || x>=g_width)
         return;
     var ofs = Math.floor(y)*g_width*4 + Math.floor(x)*4;
+    g_imageData[ofs + 0] = 0;
     g_imageData[ofs + 1] = color;
+    g_imageData[ofs + 2] = 0;
     g_imageData[ofs + 3] = 255;
+    g_imageData[ofs + 4*g_width + 0] = 0;
     g_imageData[ofs + 4*g_width + 1] = color;
+    g_imageData[ofs + 4*g_width + 2] = 0;
     g_imageData[ofs + 4*g_width + 3] = 255;
 }
 
@@ -248,6 +252,8 @@ function simulate2d() {
             // Scale between 0 and 255...
             var color = (127.0+127.0*0.99999*val);
             // R G [B] [A] - water is blue, no?
+            image.data[4*(lineOffset+j) + 0] = 0;
+            image.data[4*(lineOffset+j) + 1] = 0;
             image.data[4*(lineOffset+j) + 2] = color;
             image.data[4*(lineOffset+j) + 3] = 255;
         }

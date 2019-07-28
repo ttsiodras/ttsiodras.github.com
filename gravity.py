@@ -2,7 +2,7 @@
 """
 A naive simulator of gravity, in only 200 commented lines of Python code.
 Coded by Thanassis Tsiodras, during a 2010 summer night...
-(http://users.softlab.ntua.gr/~ttsiod, http://ttsiodras.github.com)
+Blog post: https://www.thanassis.space/gravity.html
 
 Well, I've always been fascinated by space - ever since I read 'The Family of
 the Sun', when I was young. And I always wanted to simulate what I've read
