@@ -250,8 +250,20 @@ the steps are relatively simple:
 <p>That's all. Whatever happens on the SBC's serial port will then be shown in your terminal.
 On the Atomic PI in particular, it will allow you to enter and modify your BIOS settings.</p>
 
-<p>If you are wondering about the <code>stty</code> commands, they allow sending control characters - e.g. Ctrl-C is sent across to the remote, not to the local nc. This means you can use the connection to perform logins, etc. And when you want to disconnect, just <code>killall nc</code> <em>(assuming this is your only use of <code>netcat</code>:-)&nbsp;</em>
-</div></p>
+<p>If you are wondering about the <code>stty</code> commands, they allow sending control characters - e.g. Ctrl-C is sent across to the remote, not to the local nc. This means you can use the connection to perform logins, etc. And when you want to disconnect, just <code>killall nc</code> <em>(assuming this is your only use of <code>netcat</code>:-)&nbsp;</em></p>
+
+<p>The end result, including <a href="remotepower.html">remote-controlled poweron/poweroff functionality</a>:</p>
+
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/kPj1apA3Yo0?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
+
+<div style="text-align: center">
+  <em>Remote serial port</em>
+</div>
+
+<p></div></p>
 
 <h2>Final solution to power - and an extra USB port.</h2>
 
@@ -261,10 +273,6 @@ I didn't like it. I wanted a better, more sturdy solution.</p>
 <p>So I ordered a few ingredients for a much better "soup": an adapter I
 made that uses male pin headers to give life to the Atomic PI, getting power
 from a normal 5.5x2.5mm plug. It also has a switch and a power LED.</p>
-
-<p>And since I did all this and no magic smoke came out, I did one final
-augmentation: I soldered a female USB breakout on the "webcam" connector,
-since I saw in the schematics that this was in fact a USB 2.0 port:</p>
 
 <div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
 <a href="top-side-of-adapter-hi.jpg" rel="lightbox" title="Adapter from 5.5x2.5mm jack, with switch and LED"><img src="top-side-of-adapter-hi.jpg" alt="Adapter from 5.5x2.5mm jack, with switch and LED"></a>
@@ -277,6 +285,10 @@ since I saw in the schematics that this was in fact a USB 2.0 port:</p>
 <p>
 <em>Bottom-side of adapter</em>
 </div>
+
+<p>Surprisingly, no magic smoke came out of all these hacks... So I did one final
+augmentation: I soldered a female USB breakout on the "webcam" connector,
+since I saw in the schematics that this was in fact a USB 2.0 port:</p>
 
 <div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
 <a href="front-off-hi.jpg" rel="lightbox" title="Final form - before turning it on. My power adapter plugs in the female header."><img src="front-off-hi.jpg" alt="Final form - before turning it on. My power adapter plugs in the female header."></a>
@@ -324,7 +336,31 @@ it will serve me well.</p>
 
 <p>I love it :-)</p>
 
-<p><strong>UPDATE</strong>: I added <a href="remotepower.html">remote-controlled poweron/poweroff functionality</a>, via an ESP8266.</p>
+<p><strong>UPDATE</strong>: I added <a href="remotepower.html">remote-controlled poweron/poweroff and remote serial port functionality</a>, via an ESP8266.
+<br>Here's a couple of videos demonstrating both features - for details,
+check out the blog post.</p>
+
+<div>
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/6m-Zd31SrOE?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
+
+<div style="text-align: center">
+  <em>My custom-programmed ESP-01 controls a relay,<br>
+and allows me to remotely poweron/poweroff my AtomicPI</em>
+</div>
+
+<p>&nbsp;<br></p>
+
+<div class="video-container">
+<iframe width="720" height="720" src="https://www.youtube.com/embed/kPj1apA3Yo0?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
+
+<div style="text-align: center">
+  <em>It also allows me to connect remotely to the Atomic PI's serial port.</em>
+</div>
 
 <p><p>&nbsp;<br>
 <a href="https://www.reddit.com/r/Atomic_Pi/comments/bvevev/everything_ive_done_on_my_atomic_pi_including_a/">Discuss on Reddit</a></p>
@@ -351,7 +387,7 @@ it will serve me well.</p>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Jul 28 12:02:51 2019</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Sep 28 18:59:48 2019</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

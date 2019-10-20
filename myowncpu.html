@@ -1,0 +1,1656 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/myowncpu.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<title>Compiling a CPU, in a cheap FPGA board</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Compiling a CPU, in a cheap FPGA board</div>
+        <div id="MainContent">
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(October 2019)</em></p>
+
+<h1>Compiling a CPU, in a cheap FPGA board</h1>
+
+<div class="tldr">
+<b>For the TL;DR crowd:</b><p>
+I am developing a strange habit - I keep "twisting" products 
+from failed companies... into nice toys.
+<p>
+For science! :-)
+<p>
+After completing my <a target="_blank" href="atomicpi.html">AtomicPI saga</a>,
+something else caught my attention - a very cheap FPGA board, that came out
+of yet another failed company - the
+<a target="_blank" href="https://github.com/tomverbeure/panologic-g2">Pano Logic G2</a>,
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="pano.gif" width="600" height="450" alt="Let's make a CPU!"></a><p>
+</div>
+
+<p>Why not compile an <b>open-source</b> CPU inside this FPGA?
+<br>
+And in fact, since this FPGA is quite big, why not make it a multi-core one?
+<p>
+And then compile and run programs inside it - with an <b>open-source</b> cross-compiler</a>,
+that uses an <b>open-source</b> real-time OS? The same OS that most European satellites and their instruments are using?
+<p>
+Why not, indeed!<em>
+<p>
+&nbsp;&nbsp;&nbsp;&nbsp;(he said, a month ago - and dove into the abyss</em>).
+<p>
+How fast could it go? And since the Pano Logic was meant to be a thin client,
+and comes with VGA, USB, Ethernet... it's packing all the pieces
+necessary to create a standalone computer! Could it be that this can be
+made into <b>a fully open-source computer</b>?
+<p>
+Keep reading - I believe you'll learn a thing or two.
+<p>
+<em>P.S.  The material is heavily technical and long, so I'll try to lighten it up here and
+there, with the occasional rant / funny picture. Also, please remember <a href="noidea-dog.jpg" rel="lightbox" title="I have no idea what I am doing!">that I am a software developer, not a HW one</a>; I simply enjoy fooling around with technology like this, so take everything said in this blog post - and in the referenced repos -  with <a href="https://en.wikipedia.org/wiki/Grain_of_salt">a grain of salt</a>.</em>
+</div></p>
+
+<h2>First step: the hardware</h2>
+
+<p>This adventure begun a few months ago, when I read a
+<a target="_blank" href="https://tomverbeure.github.io/rtl/2018/11/26/Racing-the-Beam-Ray-Tracer.html">magnificent article</a>
+from Tom Verbeure - a principal hardware engineer at NVIDIA.
+Tom built a real-time ray tracer on a dirt-cheap FPGA board;
+and "dirt-cheap" is not an exaggeration, since even now, you find 
+ads like this on e-Bay:</p>
+
+<blockquote>
+  <p><em>Lot of 25 Pano Logic Thin / Zero Desktop Client Black w/ Power Supply
+Buy now: US $170.00</em></p>
+</blockquote>
+
+<p>I'll just quote Tom here, so you can understand the "why" and "how" behind this:</p>
+
+<p><em></p>
+
+<blockquote>
+  <p>Pano Logic was a Bay Area startup that wanted to get rid of PCs
+in large organizations by replacing them with tiny, CPU-less thin clients;
+connected to a central server. Think of them as VNC replacements.
+No CPU? No software upgrades! No viruses!</p>
+
+<p>...The thin clients had a wired Ethernet interface, a couple of USB ports,
+an audio port and a video port. And all this was glued together with an FPGA</p>
+
+<p>...The company has been defunct since 2013 and the clients are not supported
+by anything. But they are amazing for hobby purposes and can be bought
+dirt cheap on eBay.
+</em></p>
+</blockquote>
+
+<p>So I got my hands on a Pano Logic - in particular, a G2 model; with the Spartan6
+LX100 FPGA inside it. This is a rather large FPGA, promising far more power than
+any hobbyist has a right to - but since Pano Logic (the company) failed,
+the product itself is of no use to anyone but hackers and tinkerers; and it's
+therefore sold at amazing bargain prices.</p>
+
+<p>I followed
+<a href="https://github.com/tomverbeure/panologic-g2" target="_blank">Tom's instructions</a> -
+first dismantling the box, and then soldering wires to the JTAG connector:</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<a href="pano-1,jpg" rel="lightbox" title="Soldering JTAG wires">
+<img src="pano-1.jpg" width="600" height="800" alt="Soldering JTAG wires"></a><p>
+<em>Soldering JTAG wires</em>
+</div>
+
+<p>On the other end, I soldered 6 pins from pin header strips - and used a small
+piece of perfboard, to create an "adapter" of sorts. This allowed me to "plug"
+the 6 cables into the JTAG connector of a Xilinx programmer. Note that these
+programmers can be found for cheap on eBay <em>(see Tom's article linked above for
+details)</em>.</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<a href="pano-2,jpg" rel="lightbox" title="Blu-Tack is sometimes better than helping hands">
+<img src="pano-2.jpg" width="600" height="800" alt="Blu-Tack is sometimes better than helping hands"></a><p>
+<em>When soldering, Blu-Tack is sometimes better than helping hands</em>
+</div>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<a href="pano-3.jpg" rel="lightbox" title="The end result - FPGA visible in IMPACT">
+<img src="pano-3.jpg" width="800" height="600" alt="The end result - FPGA visible in IMPACT"></a><p>
+<em>The end result - FPGA visible in IMPACT</em>
+</div>
+
+<p>The last picture you see above, shows the IMPACT tool - made by Xilinx,
+the company that created these FPGAs - being able to see the chip.</p>
+
+<h2>Intermission - on open source, and the abyss</h2>
+
+<p>Just like many other engineers, I learned over the years to hate
+non-determinism; in all its forms, and all its manifestations.
+This means that I gravitate towards open-source operating systems; where I 
+can use my engineering skills to fully trace <em>what</em> happened, and <em>why</em>;
+and fully control the OS's behavior.</p>
+
+<p>I don't want my computer to decide to upgrade while I am giving a presentation.
+I don't want some fancy antivirus decide that it must "scan" every .c and .cpp file
+read by my compiler during a build, because it performs <em>"on-access scans"</em>.</p>
+
+<p>I want <a href="android.html" target="_blank">myself</a> - not some 
+mega-corporation - <b>to be in control of my own hardware</b>.  And to automate
+all the workflows and processes that I need; like installing my developing
+environments on new machines by running a few simple one-liners...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ sudo apt install gcc-</span><span class="number">8</span><span class="normal"> vim git make cscope exuberant-ctags tmux</span>
+<span class="normal">bash$ git clone https</span><span class="symbol">:</span><span class="normal">//github</span><span class="symbol">.</span><span class="normal">com/ttsiodras/dotfiles</span>
+<span class="normal">bash$ git clone https</span><span class="symbol">:</span><span class="normal">//github</span><span class="symbol">.</span><span class="normal">com/ttsiodras/dotvim </span><span class="symbol">.</span><span class="normal">vim</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>...and seeing all the myriads of complex dependencies being perfectly resolved 
+under my Debian (or in a similar way, under my Arch)...</p>
+
+<p>...or orchestrating the creation of a complex open-source cross-compiler; allowing
+ me to deterministically build applications with <a href="https://www.rtems.org">a real-time, freely-accessible OS</a>
+<em>(that happens to fly on many European satellites)</em>...</p>
+
+<p>...or installing a company's HW synthesis tools - via...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ sudo apt install spartan6-xilinx-synthesis</span>
+</tt></pre>
+</div>
+
+<p>Actually.... <br>
+That last one was a lie.</p>
+
+<div class="cyanBox">
+<b>NEVER GONNA HAPPEN.</b> EVER. Abandon all hope on that front, kids.
+
+Think about it - the way commercial companies operate, it makes ZERO financial sense for them
+to break down 15+ GB installs <strike>of-monstrous hodge-podges of kitchen-sinks</strike>
+into a proper dependency graph of packages using each other - and allow you 
+to `apt install` only the parts you need.
+<p>
+HW is cheap - throw money at the problem! Yes?
+</div>
+
+<p>But what does that mean for our endeavour with the Pano Logic G2?</p>
+
+<p>Well, the last version of the Xilinx synthesis tools that was supporting the Spartan family
+under Linux, was the freely available ISE 14.7 WebPACK. I have installed this in
+my machine, and it does - thankfully - allow me to synthesize for an older Spartan3 board I have.</p>
+
+<p>It's also miniscule. So tiny!</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ du -s -h Xilinx</span><span class="symbol">/</span><span class="number">14.7</span><span class="symbol">/</span>
+<span class="normal">15G     Xilinx</span><span class="symbol">/</span><span class="number">14.7</span><span class="symbol">/</span>
+</tt></pre>
+</div>
+
+<p>But I digress - and forgot that... <strong>the final Linux version of WebPACK doesn't support Spartan6 LX100 chips</strong>.</p>
+
+<p>Let me repeat that - in case you didn't catch it - in a way that will make it clear:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ sudo apt install gcc-</span><span class="number">8</span>
+
+<span class="normal">We are sorry</span><span class="symbol">,</span><span class="normal"> but we detected a </span><span class="number">9</span><span class="normal"> year old CPU that is not supported</span>
+<span class="normal">by the freely available version of our compiler</span><span class="symbol">.</span>
+
+<span class="normal">Please buy our BRAND NEW CPU - WITH BONUS NSA MANAGEMENT EXTENSIONS</span><span class="symbol">!</span>
+<span class="normal">Or sell your left kidney and buy our BRAND NEW COMPILER TOOLCHAIN</span>
+<span class="normal">that supports everything</span><span class="symbol">!</span>
+</tt></pre>
+</div>
+
+<p><em>(sigh)</em></p>
+
+<p>Searching the Xilinx site some more, we see that there is a free version of the ISE WebPACK that targets Spartan6 devices - but only for Windows.</p>
+
+<p>After downloading and unzipping this package... what do you know!
+That setup actually installs a Virtual Machine, containing...</p>
+
+<p>...a Linux distribution!</p>
+
+<div class="cyanBox">
+Now <b>that</b> would be a nice example of something <em>actually</em> "ironic" - if one were inclined to, erm, tell <a href="https://en.wikipedia.org/wiki/Ironic_(song)">Alanis Morissette</a> about the true meaning of the word.
+</div>
+
+<p>But let's continue our investigation - and have a look at this <code>.ova</code> file:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ cd Xilinx_ISE_S6_Win10_14</span><span class="symbol">.</span><span class="normal">7_ISE/ova</span>
+<span class="normal">$ tar tvf ISE_S6_VM</span><span class="symbol">.</span><span class="normal">ova</span>
+<span class="normal">-rw-r----- vboxovf10/vbox_v5</span><span class="symbol">.</span><span class="number">2</span><span class="symbol">.</span><span class="normal">VBOX_VERSION_PATCHr11 </span><span class="number">12425</span><span class="normal"> </span><span class="number">2018</span><span class="normal">-</span><span class="number">02</span><span class="normal">-</span><span class="number">03</span><span class="normal"> </span><span class="number">00</span><span class="symbol">:</span><span class="number">39</span><span class="normal"> ISE_S6_VM</span><span class="symbol">.</span><span class="normal">ovf</span>
+<span class="normal">-rw-rw---- vboxovf10/vbox_v5</span><span class="symbol">.</span><span class="number">2</span><span class="symbol">.</span><span class="normal">VBOX_VERSION_PATCHr11 </span><span class="number">7253232128</span><span class="normal"> </span><span class="number">2018</span><span class="normal">-</span><span class="number">02</span><span class="normal">-</span><span class="number">03</span><span class="normal"> </span><span class="number">00</span><span class="symbol">:</span><span class="number">39</span><span class="normal"> ISE_S6_VM-disk</span><span class="number">001</span><span class="symbol">.</span><span class="normal">vmdk</span>
+</tt></pre>
+</div>
+
+<p>The <code>.vmdk</code> file contained inside is a virtual drive. After extracting it from the <code>.ova</code> with <code>tar</code>,
+we discover that this is a dynamic volume; so it can't be mounted as-is with <code>qemu-nbd</code>.</p>
+
+<p>It must first be converted to a "normal" VMDK - and then, we can mount it:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ qemu-img convert ISE_S6_VM-disk</span><span class="number">001</span><span class="symbol">.</span><span class="normal">vmdk -O vmdk plain</span><span class="symbol">.</span><span class="normal">vmdk</span>
+<span class="normal">$ qemu-nbd -r -c /dev/nbd</span><span class="number">0</span><span class="normal"> plain</span><span class="symbol">.</span><span class="normal">vmdk</span>
+<span class="normal">$ mount /dev/nbd0p1 /iso</span><span class="number">4</span><span class="symbol">/</span>
+<span class="normal">$ ls -l /iso</span><span class="number">4</span><span class="normal">/opt/Xilinx</span>
+<span class="normal">drwxrwxr-x</span><span class="symbol">.</span><span class="normal"> </span><span class="number">3</span><span class="normal"> </span><span class="number">500</span><span class="normal"> </span><span class="number">500</span><span class="normal"> </span><span class="number">4096</span><span class="normal"> Dec  </span><span class="number">8</span><span class="normal">  </span><span class="number">2016</span><span class="normal"> </span><span class="number">14.7</span>
+</tt></pre>
+</div>
+
+<p>...and of course, there the Xilinx toolchain is - right where we'd expect it to be...
+In the same folder as the "Spartan3-supporting" version!</p>
+
+<p>Maybe we don't have to boot this thing at all - we'll just copy the entire tree of <code>ISE_DS</code>, 
+to create two folders - one with the normal (2013-era) WebPACK ISE that we used for
+<a href="https://github.com/ttsiodras/MandelbrotInVHDL" target="_blank">ZestSC1/Spartan3 Mandelbrot experiments</a>,
+and this new one (2016-era) for the upcoming Pano Logic ones.</p>
+
+<p>A symlink will point to one or the other:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ ls -l</span>
+<span class="normal">drwxr-xr-x  </span><span class="number">4</span><span class="normal"> ttsiod users </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">12</span><span class="normal"> </span><span class="number">21</span><span class="symbol">:</span><span class="number">14</span><span class="normal"> </span><span class="symbol">./</span>
+<span class="normal">drwxr-xr-x </span><span class="number">11</span><span class="normal"> ttsiod users </span><span class="number">4096</span><span class="normal"> Oct </span><span class="number">12</span><span class="normal"> </span><span class="number">20</span><span class="symbol">:</span><span class="number">59</span><span class="normal"> </span><span class="symbol">../</span>
+<span class="normal">lrwxrwxrwx  </span><span class="number">1</span><span class="normal"> root   root    </span><span class="number">15</span><span class="normal"> Oct </span><span class="number">12</span><span class="normal"> </span><span class="number">20</span><span class="symbol">:</span><span class="number">46</span><span class="normal"> ISE_DS -</span><span class="symbol">&gt;</span><span class="normal"> ISE_DS</span><span class="symbol">.</span><span class="normal">Spartan6</span><span class="symbol">/</span>
+<span class="normal">drwxr-xr-x  </span><span class="number">7</span><span class="normal"> ttsiod users </span><span class="number">4096</span><span class="normal"> Mar  </span><span class="number">4</span><span class="normal">  </span><span class="number">2018</span><span class="normal"> ISE_DS</span><span class="symbol">.</span><span class="normal">Spartan3</span><span class="symbol">/</span>
+<span class="normal">drwxrwxr-x  </span><span class="number">6</span><span class="normal"> ttsiod users </span><span class="number">4096</span><span class="normal"> Dec  </span><span class="number">8</span><span class="normal">  </span><span class="number">2016</span><span class="normal"> ISE_DS</span><span class="symbol">.</span><span class="normal">Spartan6</span><span class="symbol">/</span>
+</tt></pre>
+</div>
+
+<p>...and since Xilinx tools depend on license files, a script will switch everything
+from one form to the other - depending upon what we want to do:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/bin/bash</span>
+
+<span class="function">check_symlink()</span>
+<span class="normal">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">[</span><span class="normal"> </span><span class="symbol">!</span><span class="normal"> -h </span><span class="string">"$1"</span><span class="normal"> </span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">;</span><span class="normal"> </span><span class="keyword">then</span>
+<span class="normal">        echo </span><span class="string">"$1 was not a symlink! Aborting..."</span>
+<span class="normal">        </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    </span><span class="keyword">fi</span>
+<span class="normal">}</span>
+
+<span class="keyword">if</span><span class="normal"> </span><span class="symbol">[</span><span class="normal"> </span><span class="variable">$#</span><span class="normal"> -eq </span><span class="number">0</span><span class="normal"> </span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">;</span><span class="normal"> </span><span class="keyword">then</span>
+<span class="normal">    cd </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    ls -l </span><span class="symbol">.</span><span class="normal">Xilinx/Xilinx</span><span class="symbol">.</span><span class="normal">lic Xilinx/Xilinx</span><span class="symbol">.</span><span class="normal">lic Xilinx</span><span class="symbol">/</span><span class="number">14.7</span><span class="normal">/ISE_DS</span>
+<span class="normal">    echo </span>
+<span class="normal">    echo Use xilinx</span><span class="symbol">.</span><span class="normal">sh </span><span class="number">3</span><span class="normal"> or xilinx</span><span class="symbol">.</span><span class="normal">sh </span><span class="number">6</span>
+<span class="normal">    echo</span>
+<span class="keyword">else</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">[</span><span class="normal"> </span><span class="string">"$1"</span><span class="normal"> -ne </span><span class="number">3</span><span class="normal"> -a </span><span class="string">"$1"</span><span class="normal"> -ne </span><span class="number">6</span><span class="normal"> </span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">;</span><span class="normal"> </span><span class="keyword">then</span>
+<span class="normal">        echo Use xilinx</span><span class="symbol">.</span><span class="normal">sh </span><span class="number">3</span><span class="normal"> or xilinx</span><span class="symbol">.</span><span class="normal">sh </span><span class="number">6</span>
+<span class="normal">        </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    </span><span class="keyword">fi</span>
+<span class="normal">    </span><span class="variable">XIL</span><span class="symbol">=</span><span class="string">"$1"</span>
+<span class="normal">    cd </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    cd </span><span class="symbol">.</span><span class="normal">Xilinx </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    check_symlink Xilinx</span><span class="symbol">.</span><span class="normal">lic</span>
+<span class="normal">    rm Xilinx</span><span class="symbol">.</span><span class="normal">lic </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    ln -s Xilinx</span><span class="symbol">.</span><span class="normal">lic</span><span class="symbol">.</span><span class="normal">spartan</span><span class="variable">${XIL}</span><span class="normal"> Xilinx</span><span class="symbol">.</span><span class="normal">lic </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    cd </span><span class="symbol">..</span><span class="normal">/Xilinx</span><span class="symbol">/</span><span class="number">14.7</span><span class="symbol">/</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    check_symlink ISE_DS</span>
+<span class="normal">    rm ISE_DS </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    ln  -s ISE_DS</span><span class="symbol">.</span><span class="normal">Spartan</span><span class="variable">${XIL}</span><span class="normal"> ISE_DS </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    cd </span><span class="symbol">..</span><span class="normal"> </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    check_symlink Xilinx</span><span class="symbol">.</span><span class="normal">lic</span>
+<span class="normal">    rm Xilinx</span><span class="symbol">.</span><span class="normal">lic </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    ln -s Xilinx</span><span class="symbol">.</span><span class="normal">lic</span><span class="symbol">.</span><span class="normal">spartan</span><span class="variable">${XIL}</span><span class="normal"> Xilinx</span><span class="symbol">.</span><span class="normal">lic </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    cd </span><span class="symbol">||</span><span class="normal"> </span><span class="keyword">exit</span><span class="normal"> </span><span class="number">1</span>
+<span class="normal">    ls -l </span><span class="symbol">.</span><span class="normal">Xilinx/Xilinx</span><span class="symbol">.</span><span class="normal">lic Xilinx/Xilinx</span><span class="symbol">.</span><span class="normal">lic Xilinx</span><span class="symbol">/</span><span class="number">14.7</span><span class="normal">/ISE_DS</span>
+<span class="normal">    echo</span>
+<span class="normal">    echo Now go run this</span><span class="symbol">:</span>
+<span class="normal">    echo </span><span class="string">"    cd ~/Xilinx/14.7/ISE_DS"</span>
+<span class="normal">    echo </span><span class="string">"    . settings64.sh"</span>
+<span class="keyword">fi</span>
+</tt></pre>
+</div>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ xilinx</span><span class="symbol">.</span><span class="normal">sh </span><span class="number">6</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> ttsiod users </span><span class="number">15</span><span class="normal"> Oct </span><span class="number">19</span><span class="normal"> </span><span class="number">16</span><span class="symbol">:</span><span class="number">10</span><span class="normal"> Xilinx</span><span class="symbol">/</span><span class="number">14.7</span><span class="normal">/ISE_DS -</span><span class="symbol">&gt;</span><span class="normal"> ISE_DS</span><span class="symbol">.</span><span class="normal">Spartan6</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> ttsiod users </span><span class="number">19</span><span class="normal"> Oct </span><span class="number">19</span><span class="normal"> </span><span class="number">16</span><span class="symbol">:</span><span class="number">10</span><span class="normal"> </span><span class="symbol">.</span><span class="normal">Xilinx/Xilinx</span><span class="symbol">.</span><span class="normal">lic -</span><span class="symbol">&gt;</span><span class="normal"> Xilinx</span><span class="symbol">.</span><span class="normal">lic</span><span class="symbol">.</span><span class="normal">spartan6</span>
+<span class="normal">lrwxrwxrwx </span><span class="number">1</span><span class="normal"> ttsiod users </span><span class="number">19</span><span class="normal"> Oct </span><span class="number">19</span><span class="normal"> </span><span class="number">16</span><span class="symbol">:</span><span class="number">10</span><span class="normal"> Xilinx/Xilinx</span><span class="symbol">.</span><span class="normal">lic -</span><span class="symbol">&gt;</span><span class="normal"> Xilinx</span><span class="symbol">.</span><span class="normal">lic</span><span class="symbol">.</span><span class="normal">spartan6</span>
+
+<span class="normal">Now go run this</span><span class="symbol">:</span>
+<span class="normal">    cd </span><span class="symbol">~</span><span class="normal">/Xilinx</span><span class="symbol">/</span><span class="number">14.7</span><span class="normal">/ISE_DS</span>
+<span class="normal">    </span><span class="symbol">.</span><span class="normal"> settings64</span><span class="symbol">.</span><span class="normal">sh</span>
+
+<span class="normal">$ </span>
+</tt></pre>
+</div>
+
+<p>Additionally, to avoid wasting a metric ton of hard drive storage, we use <code>rdfind</code>;
+to identify the files that are identical between these two subtrees - and
+form hard links so they only occupy space <strong>once</strong>:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ rdfind -makehardlinks </span><span class="keyword">true</span><span class="normal"> ISE_DS</span><span class="symbol">.</span><span class="normal">Spartan{</span><span class="number">3</span><span class="symbol">,</span><span class="number">6</span><span class="normal">}</span><span class="symbol">/</span>
+</tt></pre>
+</div>
+
+<p>After this finished, it became clear that the two trees shared almost EVERYTHING.
+In fact, the total storage cost went <strong>BELOW</strong> the original storage cost used 
+<em>for just the single ISE for the Spartan3!...</em></p>
+
+<p>In the absence of miracles, this can only mean one thing: that apparently there's
+plenty of copies of files spread all over - <strong>even within the same folder subtree</strong>.</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="cry.jpg" width="481" height="315" alt="How do we live like this"></a><p>
+</div>
+
+<p>So... can we now, finally, launch the thing ?</p>
+
+<p>Err... no.</p>
+
+<div class="cyanBox">
+The *free* WebPACK version, put inside a Linux Virtual machine, and made by its makers
+to specifically target Spartan6 targets...  will first check that the MAC address
+of the `eth0` Ethernet adapter *has a specific value*.
+</div>
+
+<p>I don't know what else to say.  I believe the situation is describing itself,
+very eloquently - about the <em>merits</em> of closed-source software.</p>
+
+<p>Let's check the <code>.ovf</code> file in the original package:</p>
+
+<pre><code>$ grep MAC  ISE_S6_VM.ovf | head -1
+&lt;Adapter slot="0" enabled="true" MACAddress="08002768C935"...
+</code></pre>
+
+<p>We see here that the Virtual Machine is equipped with an "eth0" Ethernet adapter,
+with <b>a specific MAC address</b>. Since my laptop only has a "wlan0" interface,
+I added a dummy one - making it the way Xilinx apparently expects it:</p>
+
+<pre><code>$ cd /etc/systemd/network
+$ cat 25-dummy.netdev
+[Match]
+
+[NetDev]
+Name=eth0
+Kind=dummy
+MACAddress=08:00:27:68:C9:35
+
+$ sudo systemctl restart systemd-networkd
+$ sudo ifconfig eth0 up
+$ sudo ifconfig eth0 | grep ether
+    ether 08:00:27:68:c9:35  txqueuelen 1000  (Ethernet)
+</code></pre>
+
+<p>So does it work now?</p>
+
+<p>Nope.</p>
+
+<p>First, you have to <strong>disable your wlan0 adapter (!)</strong> - otherwise the detected
+<code>lmhostid</code> by the Xilinx tools, is the MAC address of the <code>wlan0</code> adapter!</p>
+
+<p>Clearly, Xilinx doesn't check whether there's an <code>eth0</code> with the MAC they want...
+No, they look up which network adapter internet traffic goes through - and check
+that adapter's MAC.</p>
+
+<p>Maybe.</p>
+
+<p>Or maybe they stop at the first network adapter they find during enumeration.</p>
+
+<p>Or maybe they draw lottery tickets from <code>/dev/urandom</code> - and perform
+an <code>rm -rf /usr</code> Russian roulette once in a blue moon.</p>
+
+<p>Remember, we are talking about the free version of WebPACK here - that is officially
+distributed for people who somehow payed the company to get Xilinx Spartan6
+chips, and want to program them.</p>
+
+<p>And, yet, the free version distributed, has to perform checks like these - because,
+erm, it has to... IT JUST HAS TO.</p>
+
+<p><em>(facepalm)</em></p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<a href="dude,jpg" rel="lightbox" title="The heaven of closed-source">
+<img src="dude.jpg" width="475" height="481" alt="The heaven of closed-source"></a><p>
+</div>
+
+<div class="cyanBox">
+The next time you wonder about the impact of Linus Torvalds, and Richard Stallman,
+and Fabrice Bellard, and all the other magnificent fellows of the open-source SW world...
+<b>JUST PAY A VISIT TO ANY OF THE GRAVEYARDS OF CLOSED SOURCE "HEAVENS".</b>
+<p>
+And you'll then remember how the world was... before these giants decided to rescue us.
+</div>
+
+<h2>Back to "compiling" our CPU</h2>
+
+<p>Now that we <strike>have sacrificed our firstborns and </strike> are
+able to run the synthesis toolchain for our target - and see our FPGA
+being detected in IMPACT - we can finally move to "compiling" our CPU.</p>
+
+<p>Over the last 4 years, I've been working as a real-time embedded SW engineer in the
+European Space Agency. In a very large percentage of our missions,
+our SW runs on one form or another of an open-source CPU design - <strong>specifically,
+on a <a href="https://en.wikipedia.org/wiki/SPARC" target="_blank">SPARC</a>
+derivative called <a href="https://en.wikipedia.org/wiki/LEON" target="_blank">LEON</a></strong>.</p>
+
+<p>So when I begun fooling around with CPU synthesis and FPGAs,
+<a href="https://github.com/jirgais/grlib-gpl">I forked this repository</a>;
+that contains a mirror of the open-source version of GRLIB,
+the home of LEONs. My own <a href="https://github.com/ttsiodras/grlib-gpl">copy is here</a>;
+please remember
+<a href="noidea-dog.jpg" rel="lightbox" title="I have no idea what I am doing!">that
+I am a software developer, not a HW one</a>; I just enjoy playing around
+with technology. What you are reading is just one of my hobbies - don't
+go and bet the family farm on my repository's code quality :-)</p>
+
+<p>Also, don't expect this post to start from a 'hello, VHDL world' and end 
+with a working LEON3. That would require a book, not a blog post.
+Instead, we will follow along the traditional paths of engineering;
+we will base our efforts on pre-existing designs, and tweak them
+to match our own target. This is in fact one of the roles served by
+the <code>designs</code> folder in the original repository.</p>
+
+<h2>Programming languagues - living in the HW and SW worlds</h2>
+
+<p>As one might expect, writing code for programmable HW shares similarities
+with the SW development workflows. You have stages of processing your inputs 
+in both worlds - instead of compiling
+compilation units into object files and then linking them, the FPGA
+tools perform synthesis, followed by placement-and-routing. You run your 
+unit and integration tests prior to deploying your SW in production - just as you
+run your VHDL testbenches in your simulator prior to deploying your circuit to
+your FPGA.</p>
+
+<p>And you edit your VHDL or Verilog code with your <a href="myvim.html">Vim</a>, 
+or perhaps your Emacs - NOTHING ELSE, INFIDEL - just like you would
+for your traditional SW programming languages.</p>
+
+<div class="cyanBox">
+I am <b>utterly</b> lying here, of course; the truth is that most of the HW designers
+I know are editing inside their Vendor-provided IDEs. Remember, these are
+walled gardens - with the designers pretty much "trapped" inside them.
+<p>
+Some of my friends have literally invested their lives in
+learning the peculiarities of specific toolchains - heck, even of specific versions
+of the toolchains!
+<p>
+Think about it - what else can you do, when you don't have the source code of a tool?
+All you can do, is "learn", over decades, the things to avoid... So that the black-box
+you build your designs with, doesn't go... banana.
+</div>
+
+<p>But there are significant differences, too.</p>
+
+<p>For example, HW tools have far more issues with re-using previous work.
+If you touch a single <code>.c</code> file in a codebase containing thousands of source files,
+only that one will be recompiled when you <code>make</code> - you'll pay the small price
+for a quick compilation of a single file, and a re-link. Fast build-compile-test
+cycles. </p>
+
+<p>But in the HW world, that doesn't seem to the case. There is no edit-compile-run
+cycle; there's edit-compile-GoForAtripToTheAlpsAndStayForAweek-then-run cycle.</p>
+
+<p>Another crazy difference I experienced was that <strong>builds are NOT deterministic</strong>;
+in the sense that in a design that utilises almost all resources of your
+FPGA, you may try rebuilding your code after just adding a comment - only
+to see it fail to satisfy the timing constraints it did in the previous build!</p>
+
+<p>I am NOT joking. The placement and routing stages, in particular, are apparently
+very "tough" (algorithmically speaking). Heuristics are applied,
+in the cost functions that are used to estimate routing and timing
+performance... These in turn "feed" the gradient descents and simulated annealings
+that try to find <a href="ladders.html">the best location in the search space</a>.
+In the end, this translates to, potentially, your "compilation" ending up trapped
+in a different, worse, "local minimum" than the one it found in your previous build.</p>
+
+<p>Which is why you see HW designers COMMITING the bitfiles they generated,
+after they see them actually work on the chip.</p>
+
+<p>Put simply:</p>
+
+<p>A SW developer commiting an executable in his source repository, is an idiot.<br>
+A HW developer doing the same, is a wise man. </p>
+
+<p>Apparently.</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="randomEinstein.jpg" width="486" height="301" alt="Randomness in synthesis"></a><p>
+</div>
+
+<div class="cyanBox">
+I am told this has improved in newer versions of HW toolchains;
+that they now allow you to "seed" the random processes driving the search space,
+so that they at least behave deterministically. 
+<p>
+Which is nice.
+</div>
+
+<p><strong>Executive Summary</strong>: HW design is a strange land. It is, after all, a land full of clocks!</p>
+
+<h2>Tweaking, and then simulating with GHDL</h2>
+
+<p>As we said above, we will now base our efforts on pre-existing designs,
+and tweak them to match our own target.</p>
+
+<p>After cloning <a href="https://github.com/ttsiodras/grlib-gpl">my repository</a>, navigate to <code>designs</code>; and copy
+the folder of my previous <em>(<a href="https://youtu.be/Ylixb0AWAkQ">unexpectedly successful</a>!)</em>
+attempt to bootstrap a LEON3 inside my Spartan3 board:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ cp -a leon3-zestsc</span><span class="number">1</span><span class="normal">-xc3s1000 lets-make-a-cpu</span>
+</tt></pre>
+</div>
+
+<p>First of all, the master configuration file - <code>config.vhd</code> - defines a number
+of things that are FPGA specific. We are targeting a Spartan6 now, not a 
+Spartan3 - so...</p>
+
+<style type="text/css">
+.ef0,.f0 { color: #000000; } .eb0,.b0 { background-color: #000000; }
+.ef1,.f1 { color: #AA0000; } .eb1,.b1 { background-color: #AA0000; }
+.ef2,.f2 { color: #00AA00; } .eb2,.b2 { background-color: #00AA00; }
+.ef3,.f3 { color: #AA5500; } .eb3,.b3 { background-color: #AA5500; }
+.ef4,.f4 { color: #0000AA; } .eb4,.b4 { background-color: #0000AA; }
+.ef5,.f5 { color: #AA00AA; } .eb5,.b5 { background-color: #AA00AA; }
+.ef6,.f6 { color: #00AAAA; } .eb6,.b6 { background-color: #00AAAA; }
+.ef7,.f7 { color: #AAAAAA; } .eb7,.b7 { background-color: #AAAAAA; }
+.ef8, .f0 > .bold,.bold > .f0 { color: #555555; font-weight: normal; }
+.ef9, .f1 > .bold,.bold > .f1 { color: #FF5555; font-weight: normal; }
+.ef10,.f2 > .bold,.bold > .f2 { color: #55FF55; font-weight: normal; }
+.ef11,.f3 > .bold,.bold > .f3 { color: #FFFF55; font-weight: normal; }
+.ef12,.f4 > .bold,.bold > .f4 { color: #5555FF; font-weight: normal; }
+.ef13,.f5 > .bold,.bold > .f5 { color: #FF55FF; font-weight: normal; }
+.ef14,.f6 > .bold,.bold > .f6 { color: #55FFFF; font-weight: normal; }
+.ef15,.f7 > .bold,.bold > .f7 { color: #FFFFFF; font-weight: normal; }
+.eb8  { background-color: #555555; }
+.eb9  { background-color: #FF5555; }
+.eb10 { background-color: #55FF55; }
+.eb11 { background-color: #FFFF55; }
+.eb12 { background-color: #5555FF; }
+.eb13 { background-color: #FF55FF; }
+.eb14 { background-color: #55FFFF; }
+.eb15 { background-color: #FFFFFF; }
+.ef16 { color: #000000; } .eb16 { background-color: #000000; }
+.ef17 { color: #00005f; } .eb17 { background-color: #00005f; }
+.ef18 { color: #000087; } .eb18 { background-color: #000087; }
+.ef19 { color: #0000af; } .eb19 { background-color: #0000af; }
+.ef20 { color: #0000d7; } .eb20 { background-color: #0000d7; }
+.ef21 { color: #0000ff; } .eb21 { background-color: #0000ff; }
+.ef22 { color: #005f00; } .eb22 { background-color: #005f00; }
+.ef23 { color: #005f5f; } .eb23 { background-color: #005f5f; }
+.ef24 { color: #005f87; } .eb24 { background-color: #005f87; }
+.ef25 { color: #005faf; } .eb25 { background-color: #005faf; }
+.ef26 { color: #005fd7; } .eb26 { background-color: #005fd7; }
+.ef27 { color: #005fff; } .eb27 { background-color: #005fff; }
+.ef28 { color: #008700; } .eb28 { background-color: #008700; }
+.ef29 { color: #00875f; } .eb29 { background-color: #00875f; }
+.ef30 { color: #008787; } .eb30 { background-color: #008787; }
+.ef31 { color: #0087af; } .eb31 { background-color: #0087af; }
+.ef32 { color: #0087d7; } .eb32 { background-color: #0087d7; }
+.ef33 { color: #0087ff; } .eb33 { background-color: #0087ff; }
+.ef34 { color: #00af00; } .eb34 { background-color: #00af00; }
+.ef35 { color: #00af5f; } .eb35 { background-color: #00af5f; }
+.ef36 { color: #00af87; } .eb36 { background-color: #00af87; }
+.ef37 { color: #00afaf; } .eb37 { background-color: #00afaf; }
+.ef38 { color: #00afd7; } .eb38 { background-color: #00afd7; }
+.ef39 { color: #00afff; } .eb39 { background-color: #00afff; }
+.ef40 { color: #00d700; } .eb40 { background-color: #00d700; }
+.ef41 { color: #00d75f; } .eb41 { background-color: #00d75f; }
+.ef42 { color: #00d787; } .eb42 { background-color: #00d787; }
+.ef43 { color: #00d7af; } .eb43 { background-color: #00d7af; }
+.ef44 { color: #00d7d7; } .eb44 { background-color: #00d7d7; }
+.ef45 { color: #00d7ff; } .eb45 { background-color: #00d7ff; }
+.ef46 { color: #00ff00; } .eb46 { background-color: #00ff00; }
+.ef47 { color: #00ff5f; } .eb47 { background-color: #00ff5f; }
+.ef48 { color: #00ff87; } .eb48 { background-color: #00ff87; }
+.ef49 { color: #00ffaf; } .eb49 { background-color: #00ffaf; }
+.ef50 { color: #00ffd7; } .eb50 { background-color: #00ffd7; }
+.ef51 { color: #00ffff; } .eb51 { background-color: #00ffff; }
+.ef52 { color: #5f0000; } .eb52 { background-color: #5f0000; }
+.ef53 { color: #5f005f; } .eb53 { background-color: #5f005f; }
+.ef54 { color: #5f0087; } .eb54 { background-color: #5f0087; }
+.ef55 { color: #5f00af; } .eb55 { background-color: #5f00af; }
+.ef56 { color: #5f00d7; } .eb56 { background-color: #5f00d7; }
+.ef57 { color: #5f00ff; } .eb57 { background-color: #5f00ff; }
+.ef58 { color: #5f5f00; } .eb58 { background-color: #5f5f00; }
+.ef59 { color: #5f5f5f; } .eb59 { background-color: #5f5f5f; }
+.ef60 { color: #5f5f87; } .eb60 { background-color: #5f5f87; }
+.ef61 { color: #5f5faf; } .eb61 { background-color: #5f5faf; }
+.ef62 { color: #5f5fd7; } .eb62 { background-color: #5f5fd7; }
+.ef63 { color: #5f5fff; } .eb63 { background-color: #5f5fff; }
+.ef64 { color: #5f8700; } .eb64 { background-color: #5f8700; }
+.ef65 { color: #5f875f; } .eb65 { background-color: #5f875f; }
+.ef66 { color: #5f8787; } .eb66 { background-color: #5f8787; }
+.ef67 { color: #5f87af; } .eb67 { background-color: #5f87af; }
+.ef68 { color: #5f87d7; } .eb68 { background-color: #5f87d7; }
+.ef69 { color: #5f87ff; } .eb69 { background-color: #5f87ff; }
+.ef70 { color: #5faf00; } .eb70 { background-color: #5faf00; }
+.ef71 { color: #5faf5f; } .eb71 { background-color: #5faf5f; }
+.ef72 { color: #5faf87; } .eb72 { background-color: #5faf87; }
+.ef73 { color: #5fafaf; } .eb73 { background-color: #5fafaf; }
+.ef74 { color: #5fafd7; } .eb74 { background-color: #5fafd7; }
+.ef75 { color: #5fafff; } .eb75 { background-color: #5fafff; }
+.ef76 { color: #5fd700; } .eb76 { background-color: #5fd700; }
+.ef77 { color: #5fd75f; } .eb77 { background-color: #5fd75f; }
+.ef78 { color: #5fd787; } .eb78 { background-color: #5fd787; }
+.ef79 { color: #5fd7af; } .eb79 { background-color: #5fd7af; }
+.ef80 { color: #5fd7d7; } .eb80 { background-color: #5fd7d7; }
+.ef81 { color: #5fd7ff; } .eb81 { background-color: #5fd7ff; }
+.ef82 { color: #5fff00; } .eb82 { background-color: #5fff00; }
+.ef83 { color: #5fff5f; } .eb83 { background-color: #5fff5f; }
+.ef84 { color: #5fff87; } .eb84 { background-color: #5fff87; }
+.ef85 { color: #5fffaf; } .eb85 { background-color: #5fffaf; }
+.ef86 { color: #5fffd7; } .eb86 { background-color: #5fffd7; }
+.ef87 { color: #5fffff; } .eb87 { background-color: #5fffff; }
+.ef88 { color: #870000; } .eb88 { background-color: #870000; }
+.ef89 { color: #87005f; } .eb89 { background-color: #87005f; }
+.ef90 { color: #870087; } .eb90 { background-color: #870087; }
+.ef91 { color: #8700af; } .eb91 { background-color: #8700af; }
+.ef92 { color: #8700d7; } .eb92 { background-color: #8700d7; }
+.ef93 { color: #8700ff; } .eb93 { background-color: #8700ff; }
+.ef94 { color: #875f00; } .eb94 { background-color: #875f00; }
+.ef95 { color: #875f5f; } .eb95 { background-color: #875f5f; }
+.ef96 { color: #875f87; } .eb96 { background-color: #875f87; }
+.ef97 { color: #875faf; } .eb97 { background-color: #875faf; }
+.ef98 { color: #875fd7; } .eb98 { background-color: #875fd7; }
+.ef99 { color: #875fff; } .eb99 { background-color: #875fff; }
+.ef100 { color: #878700; } .eb100 { background-color: #878700; }
+.ef101 { color: #87875f; } .eb101 { background-color: #87875f; }
+.ef102 { color: #878787; } .eb102 { background-color: #878787; }
+.ef103 { color: #8787af; } .eb103 { background-color: #8787af; }
+.ef104 { color: #8787d7; } .eb104 { background-color: #8787d7; }
+.ef105 { color: #8787ff; } .eb105 { background-color: #8787ff; }
+.ef106 { color: #87af00; } .eb106 { background-color: #87af00; }
+.ef107 { color: #87af5f; } .eb107 { background-color: #87af5f; }
+.ef108 { color: #87af87; } .eb108 { background-color: #87af87; }
+.ef109 { color: #87afaf; } .eb109 { background-color: #87afaf; }
+.ef110 { color: #87afd7; } .eb110 { background-color: #87afd7; }
+.ef111 { color: #87afff; } .eb111 { background-color: #87afff; }
+.ef112 { color: #87d700; } .eb112 { background-color: #87d700; }
+.ef113 { color: #87d75f; } .eb113 { background-color: #87d75f; }
+.ef114 { color: #87d787; } .eb114 { background-color: #87d787; }
+.ef115 { color: #87d7af; } .eb115 { background-color: #87d7af; }
+.ef116 { color: #87d7d7; } .eb116 { background-color: #87d7d7; }
+.ef117 { color: #87d7ff; } .eb117 { background-color: #87d7ff; }
+.ef118 { color: #87ff00; } .eb118 { background-color: #87ff00; }
+.ef119 { color: #87ff5f; } .eb119 { background-color: #87ff5f; }
+.ef120 { color: #87ff87; } .eb120 { background-color: #87ff87; }
+.ef121 { color: #87ffaf; } .eb121 { background-color: #87ffaf; }
+.ef122 { color: #87ffd7; } .eb122 { background-color: #87ffd7; }
+.ef123 { color: #87ffff; } .eb123 { background-color: #87ffff; }
+.ef124 { color: #af0000; } .eb124 { background-color: #af0000; }
+.ef125 { color: #af005f; } .eb125 { background-color: #af005f; }
+.ef126 { color: #af0087; } .eb126 { background-color: #af0087; }
+.ef127 { color: #af00af; } .eb127 { background-color: #af00af; }
+.ef128 { color: #af00d7; } .eb128 { background-color: #af00d7; }
+.ef129 { color: #af00ff; } .eb129 { background-color: #af00ff; }
+.ef130 { color: #af5f00; } .eb130 { background-color: #af5f00; }
+.ef131 { color: #af5f5f; } .eb131 { background-color: #af5f5f; }
+.ef132 { color: #af5f87; } .eb132 { background-color: #af5f87; }
+.ef133 { color: #af5faf; } .eb133 { background-color: #af5faf; }
+.ef134 { color: #af5fd7; } .eb134 { background-color: #af5fd7; }
+.ef135 { color: #af5fff; } .eb135 { background-color: #af5fff; }
+.ef136 { color: #af8700; } .eb136 { background-color: #af8700; }
+.ef137 { color: #af875f; } .eb137 { background-color: #af875f; }
+.ef138 { color: #af8787; } .eb138 { background-color: #af8787; }
+.ef139 { color: #af87af; } .eb139 { background-color: #af87af; }
+.ef140 { color: #af87d7; } .eb140 { background-color: #af87d7; }
+.ef141 { color: #af87ff; } .eb141 { background-color: #af87ff; }
+.ef142 { color: #afaf00; } .eb142 { background-color: #afaf00; }
+.ef143 { color: #afaf5f; } .eb143 { background-color: #afaf5f; }
+.ef144 { color: #afaf87; } .eb144 { background-color: #afaf87; }
+.ef145 { color: #afafaf; } .eb145 { background-color: #afafaf; }
+.ef146 { color: #afafd7; } .eb146 { background-color: #afafd7; }
+.ef147 { color: #afafff; } .eb147 { background-color: #afafff; }
+.ef148 { color: #afd700; } .eb148 { background-color: #afd700; }
+.ef149 { color: #afd75f; } .eb149 { background-color: #afd75f; }
+.ef150 { color: #afd787; } .eb150 { background-color: #afd787; }
+.ef151 { color: #afd7af; } .eb151 { background-color: #afd7af; }
+.ef152 { color: #afd7d7; } .eb152 { background-color: #afd7d7; }
+.ef153 { color: #afd7ff; } .eb153 { background-color: #afd7ff; }
+.ef154 { color: #afff00; } .eb154 { background-color: #afff00; }
+.ef155 { color: #afff5f; } .eb155 { background-color: #afff5f; }
+.ef156 { color: #afff87; } .eb156 { background-color: #afff87; }
+.ef157 { color: #afffaf; } .eb157 { background-color: #afffaf; }
+.ef158 { color: #afffd7; } .eb158 { background-color: #afffd7; }
+.ef159 { color: #afffff; } .eb159 { background-color: #afffff; }
+.ef160 { color: #d70000; } .eb160 { background-color: #d70000; }
+.ef161 { color: #d7005f; } .eb161 { background-color: #d7005f; }
+.ef162 { color: #d70087; } .eb162 { background-color: #d70087; }
+.ef163 { color: #d700af; } .eb163 { background-color: #d700af; }
+.ef164 { color: #d700d7; } .eb164 { background-color: #d700d7; }
+.ef165 { color: #d700ff; } .eb165 { background-color: #d700ff; }
+.ef166 { color: #d75f00; } .eb166 { background-color: #d75f00; }
+.ef167 { color: #d75f5f; } .eb167 { background-color: #d75f5f; }
+.ef168 { color: #d75f87; } .eb168 { background-color: #d75f87; }
+.ef169 { color: #d75faf; } .eb169 { background-color: #d75faf; }
+.ef170 { color: #d75fd7; } .eb170 { background-color: #d75fd7; }
+.ef171 { color: #d75fff; } .eb171 { background-color: #d75fff; }
+.ef172 { color: #d78700; } .eb172 { background-color: #d78700; }
+.ef173 { color: #d7875f; } .eb173 { background-color: #d7875f; }
+.ef174 { color: #d78787; } .eb174 { background-color: #d78787; }
+.ef175 { color: #d787af; } .eb175 { background-color: #d787af; }
+.ef176 { color: #d787d7; } .eb176 { background-color: #d787d7; }
+.ef177 { color: #d787ff; } .eb177 { background-color: #d787ff; }
+.ef178 { color: #d7af00; } .eb178 { background-color: #d7af00; }
+.ef179 { color: #d7af5f; } .eb179 { background-color: #d7af5f; }
+.ef180 { color: #d7af87; } .eb180 { background-color: #d7af87; }
+.ef181 { color: #d7afaf; } .eb181 { background-color: #d7afaf; }
+.ef182 { color: #d7afd7; } .eb182 { background-color: #d7afd7; }
+.ef183 { color: #d7afff; } .eb183 { background-color: #d7afff; }
+.ef184 { color: #d7d700; } .eb184 { background-color: #d7d700; }
+.ef185 { color: #d7d75f; } .eb185 { background-color: #d7d75f; }
+.ef186 { color: #d7d787; } .eb186 { background-color: #d7d787; }
+.ef187 { color: #d7d7af; } .eb187 { background-color: #d7d7af; }
+.ef188 { color: #d7d7d7; } .eb188 { background-color: #d7d7d7; }
+.ef189 { color: #d7d7ff; } .eb189 { background-color: #d7d7ff; }
+.ef190 { color: #d7ff00; } .eb190 { background-color: #d7ff00; }
+.ef191 { color: #d7ff5f; } .eb191 { background-color: #d7ff5f; }
+.ef192 { color: #d7ff87; } .eb192 { background-color: #d7ff87; }
+.ef193 { color: #d7ffaf; } .eb193 { background-color: #d7ffaf; }
+.ef194 { color: #d7ffd7; } .eb194 { background-color: #d7ffd7; }
+.ef195 { color: #d7ffff; } .eb195 { background-color: #d7ffff; }
+.ef196 { color: #ff0000; } .eb196 { background-color: #ff0000; }
+.ef197 { color: #ff005f; } .eb197 { background-color: #ff005f; }
+.ef198 { color: #ff0087; } .eb198 { background-color: #ff0087; }
+.ef199 { color: #ff00af; } .eb199 { background-color: #ff00af; }
+.ef200 { color: #ff00d7; } .eb200 { background-color: #ff00d7; }
+.ef201 { color: #ff00ff; } .eb201 { background-color: #ff00ff; }
+.ef202 { color: #ff5f00; } .eb202 { background-color: #ff5f00; }
+.ef203 { color: #ff5f5f; } .eb203 { background-color: #ff5f5f; }
+.ef204 { color: #ff5f87; } .eb204 { background-color: #ff5f87; }
+.ef205 { color: #ff5faf; } .eb205 { background-color: #ff5faf; }
+.ef206 { color: #ff5fd7; } .eb206 { background-color: #ff5fd7; }
+.ef207 { color: #ff5fff; } .eb207 { background-color: #ff5fff; }
+.ef208 { color: #ff8700; } .eb208 { background-color: #ff8700; }
+.ef209 { color: #ff875f; } .eb209 { background-color: #ff875f; }
+.ef210 { color: #ff8787; } .eb210 { background-color: #ff8787; }
+.ef211 { color: #ff87af; } .eb211 { background-color: #ff87af; }
+.ef212 { color: #ff87d7; } .eb212 { background-color: #ff87d7; }
+.ef213 { color: #ff87ff; } .eb213 { background-color: #ff87ff; }
+.ef214 { color: #ffaf00; } .eb214 { background-color: #ffaf00; }
+.ef215 { color: #ffaf5f; } .eb215 { background-color: #ffaf5f; }
+.ef216 { color: #ffaf87; } .eb216 { background-color: #ffaf87; }
+.ef217 { color: #ffafaf; } .eb217 { background-color: #ffafaf; }
+.ef218 { color: #ffafd7; } .eb218 { background-color: #ffafd7; }
+.ef219 { color: #ffafff; } .eb219 { background-color: #ffafff; }
+.ef220 { color: #ffd700; } .eb220 { background-color: #ffd700; }
+.ef221 { color: #ffd75f; } .eb221 { background-color: #ffd75f; }
+.ef222 { color: #ffd787; } .eb222 { background-color: #ffd787; }
+.ef223 { color: #ffd7af; } .eb223 { background-color: #ffd7af; }
+.ef224 { color: #ffd7d7; } .eb224 { background-color: #ffd7d7; }
+.ef225 { color: #ffd7ff; } .eb225 { background-color: #ffd7ff; }
+.ef226 { color: #ffff00; } .eb226 { background-color: #ffff00; }
+.ef227 { color: #ffff5f; } .eb227 { background-color: #ffff5f; }
+.ef228 { color: #ffff87; } .eb228 { background-color: #ffff87; }
+.ef229 { color: #ffffaf; } .eb229 { background-color: #ffffaf; }
+.ef230 { color: #ffffd7; } .eb230 { background-color: #ffffd7; }
+.ef231 { color: #ffffff; } .eb231 { background-color: #ffffff; }
+.ef232 { color: #080808; } .eb232 { background-color: #080808; }
+.ef233 { color: #121212; } .eb233 { background-color: #121212; }
+.ef234 { color: #1c1c1c; } .eb234 { background-color: #1c1c1c; }
+.ef235 { color: #262626; } .eb235 { background-color: #262626; }
+.ef236 { color: #303030; } .eb236 { background-color: #303030; }
+.ef237 { color: #3a3a3a; } .eb237 { background-color: #3a3a3a; }
+.ef238 { color: #444444; } .eb238 { background-color: #444444; }
+.ef239 { color: #4e4e4e; } .eb239 { background-color: #4e4e4e; }
+.ef240 { color: #585858; } .eb240 { background-color: #585858; }
+.ef241 { color: #626262; } .eb241 { background-color: #626262; }
+.ef242 { color: #6c6c6c; } .eb242 { background-color: #6c6c6c; }
+.ef243 { color: #767676; } .eb243 { background-color: #767676; }
+.ef244 { color: #808080; } .eb244 { background-color: #808080; }
+.ef245 { color: #8a8a8a; } .eb245 { background-color: #8a8a8a; }
+.ef246 { color: #949494; } .eb246 { background-color: #949494; }
+.ef247 { color: #9e9e9e; } .eb247 { background-color: #9e9e9e; }
+.ef248 { color: #a8a8a8; } .eb248 { background-color: #a8a8a8; }
+.ef249 { color: #b2b2b2; } .eb249 { background-color: #b2b2b2; }
+.ef250 { color: #bcbcbc; } .eb250 { background-color: #bcbcbc; }
+.ef251 { color: #c6c6c6; } .eb251 { background-color: #c6c6c6; }
+.ef252 { color: #d0d0d0; } .eb252 { background-color: #d0d0d0; }
+.ef253 { color: #dadada; } .eb253 { background-color: #dadada; }
+.ef254 { color: #e4e4e4; } .eb254 { background-color: #e4e4e4; }
+.ef255 { color: #eeeeee; } .eb255 { background-color: #eeeeee; }
+
+.f9 { color: #000000; }
+.b9 { background-color: #FFFFFF; }
+.f9 > .bold,.bold > .f9, body.f9 > pre > .bold {
+  /* Bold is heavy black on white, or bright white
+     depending on the default background */
+  color: #000000;
+  font-weight: bold;
+}
+.reverse {
+  /* CSS does not support swapping fg and bg colours unfortunately,
+     so just hardcode something that will look OK on all backgrounds. */
+  color: #000000; background-color: #AAAAAA;
+}
+.underline { text-decoration: underline; }
+.line-through { text-decoration: line-through; }
+.blink { text-decoration: blink; }
+
+/* Avoid pixels between adjacent span elements.  */
+span { display: inline-block; }
+</style>
+
+<pre>
+<span class="bold">--- ../leon3-zestsc1-xc3s1000/config.vhd	2019-03-17 09:37:11.151623486 +0100</span>
+<span class="bold">+++ config.vhd	2019-10-19 09:21:21.950877962 +0200</span>
+<span class="f6">@@ -1,7 +1,7 @@</span>
+ 
+ 
+ -----------------------------------------------------------------------------
+<span class="f1">--- My customizations for my ZestSC1 board - based on the original design</span>
+<span class="f2">+-- My customizations for my PanoLogic G2 board - based on the original design</span>
+ -- for the leon3-digilent-xc3s1000.
+ --
+ -- Original Copyright:
+<span class="f6">@@ -15,22 +15,22 @@</span>
+ 
+ package config is
+ -- Technology and synthesis options
+<span class="f1">-  constant CFG_FABTECH : integer := spartan3;</span>
+<span class="f1">-  constant CFG_MEMTECH : integer := spartan3;</span>
+<span class="f1">-  constant CFG_PADTECH : integer := spartan3;</span>
+<span class="f2">+  constant CFG_FABTECH : integer := spartan6;</span>
+<span class="f2">+  constant CFG_MEMTECH : integer := spartan6;</span>
+<span class="f2">+  constant CFG_PADTECH : integer := spartan6;</span>
+   constant CFG_TRANSTECH : integer := TT_XGTP0;
+   constant CFG_NOASYNC : integer := 0;
+   constant CFG_SCAN : integer := 0;
+ 
+ -- Clock generator
+<span class="f1">-  constant CFG_CLKTECH : integer := spartan3;</span>
+<span class="f2">+  constant CFG_CLKTECH : integer := spartan6;</span>
+ 
+</pre>
+
+<ul>
+<li><p>We change all references of spartan3 to spartan6</p></li>
+<li><p>We set <code>CFG_CLKMUL</code> and <code>CFG_CLKDIV</code> to the same value - e.g. 5 - for now,
+the LEON will be running at the same speed as the board's clock (25MHz).
+After we've done our first successful synthesis/placement/routing,
+we'll see the maximum frequency our circuit can be run - and we will
+bump up the clock accordingly.</p></li>
+<li><p>In the <code>Makefile.inc</code>, we change to using the proper HW parts:</p></li>
+</ul>
+
+<pre>
+<span class="bold">--- ../leon3-zestsc1-xc3s1000/Makefile.inc	2019-02-28 20:55:35.143510266 +0100
++++ Makefile.inc	2019-10-19 08:55:49.590853311 +0200
+</span>
+<span class="f6">@@ -1,12 +1,12 @@</span>
+<span class="f1">-TECHNOLOGY=Spartan3</span>
+<span class="f1">-PART=xc3s1000</span>
+<span class="f1">-PACKAGE=ft256</span>
+<span class="f1">-SPEED=-5</span>
+<span class="f2">+TECHNOLOGY=Spartan6</span>
+<span class="f2">+PART=xc6slx100</span>
+<span class="f2">+PACKAGE=fgg484</span>
+<span class="f2">+SPEED=-2</span>
+ SYNFREQ=48
+ 
+ # PROMGENPAR=-x xcf04s -u 0 $(TOP).bit -p mcs -w -o digilent-xc3s1000
+ MANUFACTURER=Xilinx
+<span class="f1">-MGCPART=3s1000$(PACKAGE)</span>
+<span class="f2">+MGCPART=6slx100$(PACKAGE)</span>
+ MGCTECHNOLOGY=$(TECHNOLOGY)
+ MGCPACKAGE=$(PACKAGE)
+ 
+</pre>
+
+<ul>
+<li>In the ZestSC1 experiments, we used a USB/TTL dongle, that we connected
+to a couple of GPIO pins - and through that, we obtained access to the LEON3
+Debug Support Unit. But we are using a (much faster!) JTAG interface
+now - so we adapt the configuration to disable the former and
+enable the latter:</li>
+</ul>
+
+<pre>
+   constant CFG_AHB_MONWAR : integer := 0;
+   constant CFG_AHB_DTRACE : integer := 0;
+ -- DSU UART
+<span class="f1">-  constant CFG_AHB_UART : integer := 1;</span>
+<span class="f2">+  constant CFG_AHB_UART : integer := 0;</span>
+ -- JTAG based DSU interface
+<span class="f1">-  constant CFG_AHB_JTAG : integer := 0;</span>
+<span class="f2">+  constant CFG_AHB_JTAG : integer := 1;</span>
+</pre>
+
+<ul>
+<li>Finally, since this FPGA is a monster compared to the Spartan3 XC3S1000,
+we can bump up the amount of BlockRAM (used to create the "memory"
+of the LEON cores) by 16 times! <a href="#note2">[2]</a></li>
+</ul>
+
+<pre>
+ -- LEON2 memory controller
+   constant CFG_MCTRL_LEON2 : integer := 1;
+   constant CFG_MCTRL_RAM8BIT : integer := 0;
+<span class="f6">@@ -132,7 +133,7 @@</span>
+   constant CFG_ROMMASK : integer := 16#E00# + 16#100#;
+ -- AHB RAM
+   constant CFG_AHBRAMEN : integer := 1;
+<span class="f1">-  constant CFG_AHBRSZ : integer := 16;</span>
+<span class="f2">+  constant CFG_AHBRSZ : integer := 256;</span>
+   constant CFG_AHBRADDR : integer := 16#400#;
+   constant CFG_AHBRPIPE : integer := 0;
+ -- UART 1
+</pre>
+
+<p>And for now, that's it - LEON configuration wise.</p>
+
+<p>Now, there are many ways to use LEONs in one's design. To make things easier,
+for this 1st test, I will be using the <a href="https://www.gaisler.com/index.php/downloads/debug-tools">freely available evaluation version of
+GRMON</a>.  GRMON is a
+debugging monitor/control tool specifically made to assist development with
+LEONs. For later stages in particular, where we will be loading the software we
+compiled inside our CPU, GRMON offers a GDB server; allowing us to debug things
+over good old GDB.  <em>Very</em> convenient.</p>
+
+<div class="cyanBox">
+GRMON is not open-source, sadly - but at least the developers behind it
+know what they are doing. You don't download 15GB of kitchen sinks, 
+you download 5 MB of a properly made, platform-specific command-line tool;
+that does one thing, and does it well.
+<p>
+One might even call this a 
+<a target="_blank" href="https://en.wikipedia.org/wiki/Unix_philosophy">philosophy</a>.
+</div>
+
+<p>Speaking of small, nice tools, you better download <code>xc3sprog</code> as well.
+It can be compiled from source - it's fully open; and then, instead of
+launching IMPACT to program our XC6LX100, we will be able
+to spawn a tiny 300KB executable - and do all the work via a simple
+incantation in our Makefile:</p>
+
+<pre><code>xc3sprog -c xpc -v YourBitfileGoesHere
+</code></pre>
+
+<p>But enough about tooling, let's get back to the code.</p>
+
+<p>What about <code>leon3mp.vhd</code> - the VHDL file that describes our LEON3 core?</p>
+
+<pre>
+<span class="bold">--- ../leon3-zestsc1-xc3s1000/leon3mp.vhd	2019-03-17 09:36:24.901622577 +0100</span>
+<span class="bold">+++ leon3mp.vhd	2019-10-19 08:45:55.520843754 +0200</span>
+<span class="f6">@@ -60,15 +60,14 @@</span>
+     use_ahbram_sim          : integer := 0
+   );
+   port (
+<span class="f1">-    resetn   : in  std_ulogic;</span>
+<span class="f1">-    clk	     : in  std_ulogic;</span>
+<span class="f1">-    iu_error : out std_ulogic;</span>
+<span class="f1">-    dsuact   : out std_ulogic;</span>
+<span class="f1">-    dsu_rx   : out std_ulogic;</span>
+<span class="f1">-    dsu_tx   : in  std_ulogic;</span>
+<span class="f1">-    rx       : out std_ulogic;</span>
+<span class="f1">-    tx       : in  std_ulogic;</span>
+<span class="f1">-    IO : inout std_logic_vector(46 downto 0)</span>
+<span class="f2">+    resetn        : in  std_ulogic;</span>
+<span class="f2">+    clk           : in  std_ulogic;</span>
+<span class="f2">+    iu_error      : out std_ulogic;</span>
+<span class="f2">+    dsuact        : out std_ulogic;</span>
+<span class="f2">+    rx            : out std_ulogic;</span>
+<span class="f2">+    tx            : in  std_ulogic</span>
+   );
+ end;
+ 
+<span class="f6">@@ -76,7 +75,7 @@</span>
+ 
+    constant blength : integer := 12;
+    constant fifodepth : integer := 8;
+<span class="f1">-   constant maxahbm : integer := CFG_NCPU+CFG_AHB_UART; -- A truly &quot;Spartan&quot; set of AHB masters :-)
+</span>
+<span class="f2">+   constant maxahbm : integer := CFG_NCPU+CFG_AHB_JTAG; -- A truly &quot;Spartan&quot; set of AHB masters :-)
+</span>    
+</pre>
+
+<ul>
+<li><p>Compared to the previous ZestSC1/Spartan3 design, GRMON won't be controlling
+the LEON's Debug Support Unit (DSU) via special serial data; we will be using JTAG
+instead (spawning <code>grmon -u -xilusb</code> - or, if you are using a Digilent
+HS2-compatible device, <code>grmon -u -digilent</code>). We therefore need to drop
+these DSU-serial signals (<code>dsu_rx</code>, <code>dsu_tx</code>).</p></li>
+<li><p>The Pano UCF file also has no <code>IO</code>. It contains many signals towards other
+parts that look like a lot of fun, though - VGA signals, for instance... :-)
+Looking forward to hooking my HW
+<a href="https://github.com/ttsiodras/MandelbrotInVHDL" target="_blank">Mandelbrot</a>,
+directly on a monitor :-)</p></li>
+</ul>
+
+<pre>
+    -- my ZestSC1 board's frequency in KHz
+<span class="f1">-   constant BOARD_FREQ : integer := 48000;</span>
+<span class="f1">-   -- cpu frequency in KHz will be 34000 - as per my S/P/R results,</span>
+<span class="f2">+   constant BOARD_FREQ : integer := 25000;</span>
+<span class="f2">+   -- cpu frequency in KHz will be 25000 - as per my S/P/R results,</span>
+    -- my design can easily reach this speed.
+    constant CPU_FREQ : integer := BOARD_FREQ * CFG_CLKMUL / CFG_CLKDIV;
+    constant IOAEN : integer := 0;
+<span class="f6">@@ -126,13 +123,9 @@</span>
+    attribute syn_keep : boolean;
+    attribute syn_preserve : boolean;
+    
+<span class="f1">-  -- RS232 APB Uart</span>
+<span class="f1">-  signal rxd1 : std_logic;</span>
+<span class="f1">-  signal txd1 : std_logic;</span>
+<span class="f1">-</span>
+   -- A &quot;heartbeat&quot; LED for the DSU - I used it to make sure the
+<span class="f1">-  -- locally instantiated clock here beats indeed at 34MHz</span>
+<span class="f1">-  -- (search below for 34000000 to see the logic)</span>
+<span class="f2">+  -- locally instantiated clock here beats indeed at 25MHz</span>
+</pre>
+
+<ul>
+<li><p>The clock in the Pano runs at 25MHz, not 48MHz.</p></li>
+<li><p>We also need to instantiate the JTAG controller - and remove the DSU-controlling UART:</p></li>
+</ul>
+
+
+<pre>
+<span class="f6">@@ -199,35 +192,28 @@</span>
+     dsuo.tstop &lt;= '0'; dsuo.active &lt;= '0';
+   end generate;
+ 
+<span class="f2">+  ahbjtaggen0 :if CFG_AHB_JTAG = 1 generate</span>
+<span class="f2">+    ahbjtag0 : ahbjtag generic map(tech =&gt; fabtech, hindex =&gt; CFG_NCPU)</span>
+<span class="f2">+      port map(rstn, clkm, tck, tms, tdi, tdo, ahbmi, ahbmo(CFG_NCPU),</span>
+<span class="f2">+               open, open, open, open, open, open, open, gnd(0));</span>
+<span class="f2">+  end generate;</span>
+<span class="f2">+</span>
+   -- To verify that the clock shenanigans actually work on my board,
+   -- I hooked this up to LED6 (i.e. the 2nd from the right) and
+   -- confirmed that the clock driving the LEON3 and the DSU and all
+<span class="f1">-  -- the rest is indeed a 34MHz clock.</span>
+<span class="f2">+  -- the rest is indeed a 25MHz clock.</span>
+   process(clkm)
+   begin
+       if rising_edge(clkm) then
+         counter_dsu &lt;= counter_dsu + 1;
+<span class="f1">-        if counter_dsu = 34000000 then</span>
+<span class="f2">+        if counter_dsu = 25000000 then</span>
+             counter_dsu &lt;= 0;
+             heartbeat_led_dsu &lt;= not heartbeat_led_dsu;
+         end if;
+       end if;
+   end process;
+ 
+<span class="f1">-  -- Debug UART</span>
+<span class="f1">-  dcomgen : if CFG_AHB_UART = 1 generate</span>
+<span class="f1">-    dcom0 : ahbuart</span>
+<span class="f1">-      generic map (hindex =&gt; CFG_NCPU, pindex =&gt; 4, paddr =&gt; 7)</span>
+<span class="f1">-      port map (rstn, clkm, dui, duo, apbi, apbo(4), ahbmi, ahbmo(CFG_NCPU));</span>
+<span class="f1">-    dui.rxd &lt;= rxd1;</span>
+<span class="f1">-  end generate;</span>
+<span class="f1">-  nouah : if CFG_AHB_UART = 0 generate apbo(4) &lt;= apb_none; end generate;</span>
+<span class="f1">-</span>
+<span class="f1">-  urx_pad : inpad generic map (tech  =&gt; padtech) port map (dsu_tx, rxd1);</span>
+<span class="f1">-  utx_pad : outpad generic map (tech =&gt; padtech) port map (dsu_rx, txd1);</span>
+<span class="f1">-  txd1 &lt;= duo.txd;</span>
+<span class="f1">-  </span>
+ ----------------------------------------------------------------------
+ ---  APB Bridge and various periherals -------------------------------
+</pre>
+
+<div class="cyanBox">
+All of these components that we are using - the AHBUART we just removed, the AHBJTAG
+we just added - they are coming from the open-source contents of the GRLIB.
+And this relates to an important concern about the HW world vs the SW one:
+the ecosystem of pre-made "library IP blocks" that one needs to make a system operational.
+<p>
+Now, I am not the only one stating that - when compared to their SW counterparts -
+the HW synthesis toolchains are in an abysmal state.
+There is a movement underway to implement open-source alternatives
+(e.g. see <a href="http://www.clifford.at/yosys/">Yosys</a>,
+<a href="https://github.com/YosysHQ/arachne-pnr">arachne-pnr</a>, etc). But for these
+efforts to succeed, an ecosystem of open library IPs needs to be developed
+around them.
+<p>
+I know the current "DNA" of HW engineers is very much of a proprietary
+nature - but IMHO, <b>the HW design community needs to evolve beyond this</b>.
+Become open-source mutants, like us SW people!
+<p>
+I am pretty sure some truly spectacular super-powers would come out
+of such a mutation.
+</div>
+
+<p>Finally, let's update our testbench to comply with all the changes we did to our LEON3
+design: </p>
+
+<ul>
+<li>Adapt to new interfaces (remove DSU TX/RX, etc)</li>
+<li>Remove the big test sending serial data over TX to control the DSU</li>
+<li>And just reset the LEON for a little while.</li>
+</ul>
+
+<pre>
+<span class="bold">--- ../leon3-zestsc1-xc3s1000/testbench.vhd	2019-03-08 17:41:44.770716858 +0100
++++ testbench.vhd	2019-10-20 08:58:26.754650548 +0200</span>
+<span class="f6">@@ -31,6 +31,7 @@</span>
+ library gaisler;
+ use gaisler.libdcom.all;
+ use gaisler.sim.all;
+ library techmap;
+ use techmap.gencomp.all;
+ use std.textio.all;
+<span class="f6">@@ -56,8 +57,9 @@</span>
+   signal rstn : std_ulogic := '1';
+   signal iu_error : std_ulogic;
+   signal dsuact : std_ulogic;
+<span class="f1">-  signal dsu_tx : std_logic;</span>
+<span class="f1">-  signal dsu_rx : std_logic;</span>
+ 
+   component leon3mp
+     port (
+<span class="f6">@@ -65,8 +67,8 @@</span>
+       resetn : in  std_ulogic;
+       iu_error : out std_ulogic;
+       dsuact : out std_ulogic;
+<span class="f1">-      dsu_rx : out std_ulogic; -- UART1 tx data</span>
+<span class="f1">-      dsu_tx : in  std_ulogic  -- UART1 rx data</span>
+   );
+   end component;
+ 
+<span class="f6">@@ -75,12 +77,12 @@</span>
+ begin
+   d3 : leon3mp
+     port map (
+<span class="f1">-        clk =&gt; CLK,</span>
+         resetn =&gt; rstn,
+<span class="f2">+        clk =&gt; CLK,</span>
+         iu_error =&gt; iu_error,
+         dsuact =&gt; dsuact,
+<span class="f1">-        dsu_rx =&gt; dsu_rx,</span>
+<span class="f1">-        dsu_tx =&gt; dsu_tx</span>
+     );
+ 
+   clk &lt;= not clk after CLK_PERIOD/2;
+<span class="f6">@@ -94,79 +96,21 @@</span>
+       severity failure;  
+   end process;
+ 
+<span class="f1">-  dsucom : process</span>
+<span class="f1">-    procedure dsucfg(signal dsutx : out std_ulogic; signal dsurx : in std_ulogic) is
+-      variable w32 : std_logic_vector(31 downto 0);</span>
+<span class="f1">-      variable c8  : std_logic_vector(7 downto 0);</span>
+<span class="f1">-      constant txp : time := 320 * 1 ns;</span>
+<span class="f1">-      variable l : line;</span>
+<span class="f1">-    begin</span>
+<span class="f1">-      dsutx &lt;= '1';</span>
+<span class="f1">-      write(l, String'(&quot;Resetting for 40 cycles&quot;));</span>
+<span class="f1">-      writeline(output, l);</span>
+<span class="f1">-      rstn &lt;= '1';</span>
+<span class="f1">-      wait for 40*CLK_PERIOD;</span>
+<span class="f1">-      rstn &lt;= '0';</span>
+<span class="f1">-      wait for 10*CLK_PERIOD;</span>
+<span class="f1">-</span>
+<span class="f1">-      wait for 5000 ns;</span>
+<span class="f1">-</span>
+<span class="f1">-      -- Send exactly what grmon3 sends.</span>
+<span class="f1">-      txc(dsutx, 16#55#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#55#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#55#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#55#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#80#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#ff#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#ff#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#ff#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#f0#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#80#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#ff#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#ff#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#ff#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#f0#, txp);</span>
+<span class="f1">-      txc(dsutx, 16#ff#, txp);</span>
+<span class="f1">-</span>
+<span class="f1">-      -- and look at the magnificent output from our design;</span>
+<span class="f1">-      -- the DSU replies with 00 00 10 70 ; the proper response!</span>
+<span class="f1">-</span>
+<span class="f1">-      -- This test can also be used - it is the original</span>
+<span class="f1">-      -- scenario taken from digilent-xc3s1000.</span>
+<span class="f1">-</span>
+<span class="f1">-      -- txc(dsutx, 16#55#, txp);		-- sync uart</span>
+<span class="f1">-</span>
+<span class="f1">-      -- txc(dsutx, 16#c0#, txp);</span>
+<span class="f1">-      -- txa(dsutx, 16#90#, 16#00#, 16#00#, 16#00#, txp);</span>
+<span class="f1">-      -- txa(dsutx, 16#00#, 16#00#, 16#20#, 16#2e#, txp);</span>
+<span class="f1">-</span>
+<span class="f1">-      -- wait for 25000 ns;</span>
+<span class="f1">-      -- txc(dsutx, 16#c0#, txp);</span>
+<span class="f1">-      -- txa(dsutx, 16#90#, 16#00#, 16#00#, 16#20#, txp);</span>
+<span class="f1">-      -- txa(dsutx, 16#00#, 16#00#, 16#00#, 16#01#, txp);</span>
+<span class="f1">-</span>
+<span class="f1">-      -- txc(dsutx, 16#c0#, txp);</span>
+<span class="f1">-      -- txa(dsutx, 16#90#, 16#40#, 16#00#, 16#24#, txp);</span>
+<span class="f1">-      -- txa(dsutx, 16#00#, 16#00#, 16#00#, 16#0D#, txp);</span>
+<span class="f1">-</span>
+<span class="f1">-      -- txc(dsutx, 16#c0#, txp);</span>
+<span class="f1">-      -- txa(dsutx, 16#90#, 16#70#, 16#11#, 16#78#, txp);</span>
+<span class="f1">-      -- txa(dsutx, 16#91#, 16#00#, 16#00#, 16#0D#, txp);</span>
+<span class="f1">-</span>
+<span class="f1">-      -- txa(dsutx, 16#90#, 16#40#, 16#00#, 16#44#, txp);</span>
+<span class="f1">-      -- txa(dsutx, 16#00#, 16#00#, 16#20#, 16#00#, txp);</span>
+<span class="f1">-</span>
+<span class="f1">-      -- txc(dsutx, 16#80#, txp);</span>
+<span class="f1">-      -- txa(dsutx, 16#90#, 16#40#, 16#00#, 16#44#, txp);</span>
+<span class="f1">-</span>
+<span class="f1">-      -- Look! The DSUACT signal goes high! All good.</span>
+<span class="f1">-      wait for 50000 ns;</span>
+<span class="f1">-</span>
+<span class="f1">-      write(l, String'(&quot;Test completed.&quot;));</span>
+<span class="f1">-      writeline(output, l);</span>
+<span class="f1">-    end procedure;</span>
+<span class="f2">+  jtagproc : process</span>
+<span class="f2">+    variable l : line;</span>
+   begin
+<span class="f1">-    dsucfg(dsu_tx, dsu_rx);</span>
+<span class="f1">-    wait;</span>
+<span class="f1">-  end process;</span>
+<span class="f2">+    write(l, String'(&quot;Resetting for 40 cycles&quot;));</span>
+<span class="f2">+    writeline(output, l);</span>
+<span class="f2">+    rstn &lt;= '1';</span>
+<span class="f2">+    wait for 40*CLK_PERIOD;</span>
+<span class="f2">+    rstn &lt;= '0';</span>
+<span class="f2">+    wait for 10*CLK_PERIOD;</span>
+<span class="f2">+</span>
+<span class="f2">+    wait for 5000 ns;</span>
+<span class="f2">+</span>
+<span class="f2">+    write(l, String'(&quot;Looks like we are booting.&quot;));</span>
+<span class="f2">+    writeline(output, l);</span>
+<span class="f2">+    assert false report &quot;Reached end of test&quot; severity failure;</span>
+<span class="f2">+   end process;</span>
+<span class="f2">+</span>
+ end;
+</pre>
+
+<p>Time to launch GHDL to simulate this circuit - GHDL being a magnificent
+open-source simulator that you can compile from source <em>(or install via
+your Linux distribution's repositories)</em>:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bash$ make simulation-setup</span>
+<span class="symbol">...</span>
+
+<span class="normal">bash$ make simulation</span>
+<span class="symbol">...</span>
+<span class="normal">Resetting </span><span class="keyword">for</span><span class="normal"> </span><span class="number">40</span><span class="normal"> cycles</span>
+<span class="normal">Panologic G2 LX100 Demonstration design</span>
+<span class="normal">GRLIB Version </span><span class="number">2017.3</span><span class="symbol">.</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> build </span><span class="number">4208</span>
+<span class="normal">Target technology</span><span class="symbol">:</span><span class="normal"> spartan6  </span><span class="symbol">,</span><span class="normal"> memory library</span><span class="symbol">:</span><span class="normal"> spartan6  </span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal"> AHB arbiter/multiplexer rev </span><span class="number">1</span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal"> Common I/O area disabled</span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal"> AHB masters</span><span class="symbol">:</span><span class="normal"> </span><span class="number">2</span><span class="symbol">,</span><span class="normal"> AHB slaves</span><span class="symbol">:</span><span class="normal"> </span><span class="number">8</span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal"> Configuration area at </span><span class="number">0xfffff000</span><span class="symbol">,</span><span class="normal"> </span><span class="number">4</span><span class="normal"> kbyte</span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal"> mst0</span><span class="symbol">:</span><span class="normal"> Cobham Gaisler          LEON3 SPARC V8 Processor       </span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal"> mst1</span><span class="symbol">:</span><span class="normal"> Cobham Gaisler          JTAG Debug Link                </span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal"> slv1</span><span class="symbol">:</span><span class="normal"> Cobham Gaisler          AHB/APB Bridge                 </span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal">       memory at </span><span class="number">0x80000000</span><span class="symbol">,</span><span class="normal"> size </span><span class="number">1</span><span class="normal"> Mbyte</span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal"> slv2</span><span class="symbol">:</span><span class="normal"> Cobham Gaisler          LEON3 Debug Support Unit       </span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal">       memory at </span><span class="number">0x90000000</span><span class="symbol">,</span><span class="normal"> size </span><span class="number">256</span><span class="normal"> Mbyte</span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal"> slv3</span><span class="symbol">:</span><span class="normal"> Cobham Gaisler          Single-port AHB SRAM module    </span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal">       memory at </span><span class="number">0x40000000</span><span class="symbol">,</span><span class="normal"> size </span><span class="number">1</span><span class="normal"> Mbyte</span><span class="symbol">,</span><span class="normal"> cacheable</span><span class="symbol">,</span><span class="normal"> prefetch</span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal"> slv4</span><span class="symbol">:</span><span class="normal"> Cobham Gaisler          Test report module             </span>
+<span class="normal">ahbctrl</span><span class="symbol">:</span><span class="normal">       memory at </span><span class="number">0x20000000</span><span class="symbol">,</span><span class="normal"> size </span><span class="number">1</span><span class="normal"> Mbyte</span>
+<span class="normal">apbctrl</span><span class="symbol">:</span><span class="normal"> APB Bridge at </span><span class="number">0x80000000</span><span class="normal"> rev </span><span class="number">1</span>
+<span class="normal">apbctrl</span><span class="symbol">:</span><span class="normal"> slv1</span><span class="symbol">:</span><span class="normal"> Cobham Gaisler          Generic UART                   </span>
+<span class="normal">apbctrl</span><span class="symbol">:</span><span class="normal">       I/O ports at </span><span class="number">0x80000100</span><span class="symbol">,</span><span class="normal"> size </span><span class="number">256</span><span class="normal"> byte </span>
+<span class="normal">apbctrl</span><span class="symbol">:</span><span class="normal"> slv2</span><span class="symbol">:</span><span class="normal"> Cobham Gaisler          Multi-processor Interrupt Ctrl</span><span class="symbol">.</span>
+<span class="normal">apbctrl</span><span class="symbol">:</span><span class="normal">       I/O ports at </span><span class="number">0x80000200</span><span class="symbol">,</span><span class="normal"> size </span><span class="number">256</span><span class="normal"> byte </span>
+<span class="normal">apbctrl</span><span class="symbol">:</span><span class="normal"> slv3</span><span class="symbol">:</span><span class="normal"> Cobham Gaisler          Modular Timer Unit             </span>
+<span class="normal">apbctrl</span><span class="symbol">:</span><span class="normal">       I/O ports at </span><span class="number">0x80000300</span><span class="symbol">,</span><span class="normal"> size </span><span class="number">256</span><span class="normal"> byte </span>
+<span class="normal">testmod4</span><span class="symbol">:</span><span class="normal"> Test report module</span>
+<span class="normal">ahbram3</span><span class="symbol">:</span><span class="normal"> AHB SRAM Module rev </span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="number">256</span><span class="normal"> kbytes</span>
+<span class="normal">gptimer3</span><span class="symbol">:</span><span class="normal"> Timer Unit rev </span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="number">8</span><span class="normal">-bit scaler</span><span class="symbol">,</span><span class="normal"> </span><span class="number">2</span><span class="normal"> </span><span class="number">32</span><span class="normal">-bit timers</span><span class="symbol">,</span><span class="normal"> irq </span><span class="number">8</span>
+<span class="normal">irqmp</span><span class="symbol">:</span><span class="normal"> Multi-processor Interrupt Controller rev </span><span class="number">4</span><span class="symbol">,</span><span class="normal"> </span><span class="comment">#cpu 1, eirq 0</span>
+<span class="normal">apbuart1</span><span class="symbol">:</span><span class="normal"> Generic UART rev </span><span class="number">1</span><span class="symbol">,</span><span class="normal"> fifo </span><span class="number">4</span><span class="symbol">,</span><span class="normal"> irq </span><span class="number">2</span><span class="symbol">,</span><span class="normal"> scaler bits </span><span class="number">12</span>
+<span class="normal">ahbjtag AHB Debug JTAG rev </span><span class="number">2</span>
+<span class="normal">dsu3_2</span><span class="symbol">:</span><span class="normal"> LEON3 Debug support unit </span><span class="symbol">+</span><span class="normal"> AHB Trace Buffer</span><span class="symbol">,</span><span class="normal"> </span><span class="number">2</span><span class="normal"> kbytes</span>
+<span class="normal">leon3_0</span><span class="symbol">:</span><span class="normal"> LEON3 SPARC V8 processor rev </span><span class="number">3</span><span class="symbol">:</span><span class="normal"> iuft</span><span class="symbol">:</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> fpft</span><span class="symbol">:</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> cacheft</span><span class="symbol">:</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">leon3_0</span><span class="symbol">:</span><span class="normal"> icache </span><span class="number">1</span><span class="symbol">*</span><span class="number">8</span><span class="normal"> kbyte</span><span class="symbol">,</span><span class="normal"> dcache </span><span class="number">1</span><span class="symbol">*</span><span class="number">8</span><span class="normal"> kbyte</span>
+<span class="normal">clkgen_spartan3e</span><span class="symbol">:</span><span class="normal"> spartan3/e sdram/pci clock generator</span><span class="symbol">,</span><span class="normal"> version </span><span class="number">1</span>
+<span class="normal">clkgen_spartan3e</span><span class="symbol">:</span><span class="normal"> Frequency </span><span class="number">25000</span><span class="normal"> KHz</span><span class="symbol">,</span><span class="normal"> DCM divisor </span><span class="number">5</span><span class="symbol">/</span><span class="number">5</span>
+<span class="normal">        </span><span class="number">1750</span><span class="normal"> ns </span><span class="symbol">:</span><span class="normal"> cpu0</span><span class="symbol">:</span><span class="normal"> </span><span class="number">0x00000000</span><span class="normal">    unimp  </span><span class="symbol">(</span><span class="normal">trapped</span><span class="symbol">)</span>
+<span class="normal">Looks like we are booting</span><span class="symbol">.</span>
+<span class="normal">testbench</span><span class="symbol">.</span><span class="normal">vhd</span><span class="symbol">:</span><span class="number">113</span><span class="symbol">:</span><span class="number">5</span><span class="symbol">:</span><span class="normal">@6us</span><span class="symbol">:(</span><span class="normal">assertion failure</span><span class="symbol">):</span><span class="normal"> Reached end of </span><span class="keyword">test</span>
+<span class="normal">ghdl</span><span class="symbol">:</span><span class="normal">error</span><span class="symbol">:</span><span class="normal"> assertion failed</span>
+<span class="normal">  from</span><span class="symbol">:</span><span class="normal"> process work</span><span class="symbol">.</span><span class="normal">testbench</span><span class="symbol">(</span><span class="normal">behav</span><span class="symbol">).</span><span class="normal">jtagproc at testbench</span><span class="symbol">.</span><span class="normal">vhd</span><span class="symbol">:</span><span class="number">113</span>
+<span class="normal">ghdl</span><span class="symbol">:</span><span class="normal">error</span><span class="symbol">:</span><span class="normal"> simulation failed</span>
+<span class="normal">make</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">***</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">Makefile</span><span class="symbol">:</span><span class="number">38</span><span class="symbol">:</span><span class="normal"> simulation</span><span class="symbol">]</span><span class="normal"> Error </span><span class="number">1</span>
+</tt></pre>
+</div>
+
+<p>All good! The LEON3 traps after 1.75 microseconds, since it reads 
+a nice 32-bit zero from our "ram" - which is not valid code for a SPARC.</p>
+
+<p>The "assertion failure" is normal, since that's how the testbench ends:</p>
+
+<pre><code>assert false report "Reached end of test" severity failure;
+</code></pre>
+
+<h2>Run Forrest, Run</h2>
+
+<p>Now, there's plenty more things we can do here - like configuring the simulated
+RAM to have a binary we compile ourselves.</p>
+
+<p><strong>But we are insane SW people here, playing with forces we don't comprehend.</strong></p>
+
+<p>Let's launch the thing in the real HW!</p>
+
+<pre><code>$ make ise
+...
+... laptop fans wake up - sounds like an airplane here...
+... 5 minutes pass... 
+... there's no edit-compile-run cycle... there's...
+... edit-compile-GoForAtripToTheAlpsAndStayForAweek-then-maybe-run cycle...
+...
+FLEXnet Licensing error:-5,357
+For further information, refer to the FLEXnet Licensing documentation,
+available at "www.flexerasoftware.com".
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR:Map:258 - A problem was encountered attempting to get the license for this
+   architecture.
+</code></pre>
+
+<p>Ah yes, I forgot!</p>
+
+<pre><code>$ # No wireless lan interface tolerated by Xilinx ;
+$ # temporarily remove the driver for wlan0 from the kernel
+$ sudo rmmod wl
+
+$ # Must also have 'eth0' - with the magic MAC address set,
+$ # so process my /etc/systemd/network/25-dummy.netdev
+$ sudo systemctl restart systemd-networkd
+$ sudo ifconfig eth0 up
+</code></pre>
+
+<p>I refuse to memorize idiocy - so I just add these commands in the <em>Makefile</em> ;
+the network will be automatically made the way Xilinx wants it,
+every time the build takes place - and will then be automatically set back to normal
+<em>(<code>modprobe wl ; dhclient wlan0</code>)</em>.</p>
+
+<div class="cyanBox">
+At least in the UNIX way of doing things, you can easily cope - and automatically handle - even insane requirements.
+<p>
+Come to think of it, perhaps I should investigate making synthesis happen inside a Docker container;
+and setup this insane network inside the container. Hmm.
+<p>
+Oh well, postponed for later investigation.
+</div>
+
+<p>For now, take 2:</p>
+
+<pre><code>$ make ise
+...
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+INFO:Security:56 - Part 'xc6slx100' is not a WebPack part.
+WARNING:Security:42 - Your software subscription period has lapsed. Your current
+version of Xilinx tools will continue to function, but you no longer qualify for
+Xilinx software updates or new releases.
+----------------------------------------------------------------------
+...
+(panic attack at first - but thankfully, synthesis continues fine regardless)
+</code></pre>
+
+<p><em>(shakes head)</em></p>
+
+<p>You poor, poor HW people...</p>
+
+<pre><code>...
+All constraints were met.
+...   
+Generating Pad Report.
+
+All signals are completely routed.
+
+Design statistics:
+   Minimum period:  ........ (Maximum frequency:  83.081MHz)
+
+...
+Creating bit map...
+Saving bit stream in "TheBigLeonski.bit".
+Creating bit mask...
+Saving mask bit stream in "TheBigLeonski.msk".
+Bitstream generation is complete.
+</code></pre>
+
+<p>Woohoo! We're good. Way beyond good, in fact - we can bump up our LEON's clock
+way above our current setting of 25MHz.</p>
+
+<p>But before we do that, let's bump the number of cores - 
+In fact, this FPGA is such a monster, it can easily accommodate 2, even 4 LEONs.
+The utilization report - showing percentage of utilised resources - is far
+from maximised, in everything (except BlockRAMs [2]).</p>
+
+<p>So we bump up the number of cores:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">-- 2 LEON cores, please!</span>
+<span class="keyword">constant</span><span class="normal"> CFG_NCPU </span><span class="symbol">:</span><span class="normal"> </span><span class="type">integer</span><span class="normal"> </span><span class="symbol">:=</span><span class="normal"> </span><span class="symbol">(</span><span class="number">2</span><span class="symbol">);</span>
+</tt></pre>
+</div>
+
+<p>...and we bump up the clock, to a very safe 50MHz:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">-- 10/5 = 2, so 2x25MHz = 50MHz</span>
+<span class="keyword">constant</span><span class="normal"> CFG_CLKMUL </span><span class="symbol">:</span><span class="normal"> </span><span class="type">integer</span><span class="normal"> </span><span class="symbol">:=</span><span class="normal"> </span><span class="symbol">(</span><span class="number">10</span><span class="symbol">);</span>
+<span class="keyword">constant</span><span class="normal"> CFG_CLKDIV </span><span class="symbol">:</span><span class="normal"> </span><span class="type">integer</span><span class="normal"> </span><span class="symbol">:=</span><span class="normal"> </span><span class="symbol">(</span><span class="number">5</span><span class="symbol">);</span>
+</tt></pre>
+</div>
+
+<p>This is the part that should make you stand and notice - here we are, casually
+specifying, in code, <b>that we want 2 cores in our CPU</b>. FPGAs are amazing.</p>
+
+<p>We run our synthesis again, and a few minutes later...</p>
+
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/4HuM7ZUGPsI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+<p>That's it - GRMON sees both our cores, running at 50MHz:</p>
+
+<pre><code>JTAG chain (1): xc6slx100 
+GRLIB build version: 4208
+Detected frequency:  50.0 MHz
+
+Component                            Vendor
+LEON3 SPARC V8 Processor             Cobham Gaisler
+LEON3 SPARC V8 Processor             Cobham Gaisler
+JTAG Debug Link                      Cobham Gaisler
+AHB/APB Bridge                       Cobham Gaisler
+LEON3 Debug Support Unit             Cobham Gaisler
+Single-port AHB SRAM module          Cobham Gaisler
+Generic UART                         Cobham Gaisler
+Multi-processor Interrupt Ctrl.      Cobham Gaisler
+Modular Timer Unit                   Cobham Gaisler
+</code></pre>
+
+<p>Time to compile some SW and run it inside this!</p>
+
+<h2>The cross-compiler</h2>
+
+<p>One can compile a cross compiler for this target from source <em>(and in fact I frequently do, as part of my duties in the Agency)</em> . But to avoid making this gigantic blog post even heavier, let's just use the precompiled open-source toolchain of BCC2 - <a href="https://www.gaisler.com/anonftp/bcc2/bin/bcc-2.0.8-gcc-linux64.tar.xz">from here</a>. We un-tar under <code>/opt</code>; and build our hello world:</p>
+
+<pre><code>$ cat hello.c
+#include &lt;stdio.h&gt;
+int main() { puts("Hello, Big Leonski!"); }
+
+$ /opt/bcc-2.0.8-gcc/bin/sparc-gaisler-elf-gcc -mcpu=leon3 \
+    -o hello hello.c
+
+$ /opt/grmon-eval-3.1.0/linux/bin64/grmon -u -xilusb
+...
+grmon3&gt; load hello                      
+40000000 .text       25.2kB /  25.2kB   [===============&gt;] 100%
+40006500 .rodata      128B              [===============&gt;] 100%
+40006580 .data        1.2kB /   1.2kB   [===============&gt;] 100%
+Total size: 26.53kB (1.18Mbit/s)
+Entry point 0x40000000
+Image /var/tmp/hello loaded
+
+grmon3&gt; run
+Hello, Big Leonski!
+
+  CPU 0:  Program exited normally.
+  CPU 1:  Power down mode
+</code></pre>
+
+<p>And that's it - we have ourselves a multi-core CPU, built <strong>from our own source code</strong>, 
+running binaries built <strong>from our own source code</strong>, with a cross-compiler that 
+can also be built <strong>from openly accessible source code</strong>.</p>
+
+<h2>What's next?</h2>
+
+<p>Ideally, one would want to support the remaining pieces of this board;
+It has two USB slots, Ethernet, and most importantly 128MB of DDR2 SDRAM.
+These last two pieces in particular, would elevate it to something like the first
+"serious" machine I worked with, back when I was a student:
+<a href="https://en.wikipedia.org/wiki/SPARCstation">a SPARCStation</a>. I'd love that;
+and if the HW controllers involved are supported by Linux, 
+bootstrapping the undisputed king of OSes inside this would be a breeze.</p>
+
+<p>Alas, I am told by my friends that DDR controllers are no joke; they are
+not the playground of bored SW engineers.</p>
+
+<p>Sigh :-)</p>
+
+<p>Still, I hope you found this (very long) read an interesting one.<br>
+Cheers!</p>
+
+<hr>
+
+<p><p>&nbsp;<br>
+<a href="https://hardware.slashdot.org/story/19/10/20/1745203/how-i-compiled-my-own-sparc-cpu-in-a-cheap-fpga-board">Discuss on Slashdot</a>
+<p>
+<a href="https://news.ycombinator.com/item?id=21303446">Discuss on Hacker News</a>
+<p>
+<a href="https://old.reddit.com/r/linux/comments/dkihws/compiling_my_own_sparccompatible_cpu_and_the/">Discuss on Reddit/Linux</a>&nbsp;&nbsp;&nbsp;
+<a href="https://old.reddit.com/r/FPGA/comments/dkid7o/compiling_a_sparccompatible_cpu_in_a_salvaged/">Discuss on Reddit/FPGA</a></p>
+
+<h2>Notes</h2>
+
+<ol>
+<li><p><a name="note1"></a>To HW designers reading this - please remember who is the intended audience of this blog post. 
+Come to think of it, remember this is written by a SW developer;
+<a href="noidea-dog.jpg" rel="lightbox" title="I have no idea what I am doing!">cue appropriate meme.</a></p></li>
+<li><p><a name="note2"</a> Until an actual HW wizard makes the Pano Logic DDR2 SDRAM work! Which will gives us 
+an insane 128MB of space... At that point, I will boot Linux in this thing.</p></li>
+</ol>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Oct 20 22:43:38 2019</em></td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/myowncpu.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

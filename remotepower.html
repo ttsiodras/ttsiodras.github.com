@@ -14,25 +14,29 @@
 <script type="text/javascript" src="prototype.js"></script>
 <script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
 <script type="text/javascript" src="lightbox.js"></script>
-<title>Remote poweron/poweroff via ESP8266</title>
+<title>Remote power on/off and remote serial via ESP8266</title>
 </head>
 <body>
     <div class="well" id="Page">
-        <div id="Banner">Remote poweron/poweroff via ESP8266</div>
+        <div id="Banner">Remote power on/off and remote serial via ESP8266</div>
         <div id="MainContent">
             <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
-            <p><em>(May 2019)</em></p>
+            <p><em>(July 2019)</em></p>
 
-<h1>Remote poweron/poweroff via ESP8266</h1>
+<p><a href="https://github.com/ttsiodras/RemotePowerViaESP8266">
+<img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub">
+</a></p>
+
+<h1>Remote power on/off and remote serial via ESP8266</h1>
 
 <div class="tldr">
-<b>TL;DR: I used a dirt-cheap ESP01/relay module to remotely poweron/poweroff my AtomicPI.</b>
+<b>TL;DR: I used a dirt-cheap ESP01/relay module to remotely power on/off my AtomicPI and interact with its serial port.</b>
 <p>For two reasons:
 <br>
 <ul>
 <li>By far the most important: <em>because I enjoyed doing it :-)</em><br>
-<li>But also, I could not find Wake-on-LAN functionality in the BIOS settings
+<li>It allows me to fully administrate the machine remotely (BIOS settings, power, etc)
 </ul>
 <div class="video-container">
 <iframe width="560" height="315" src="https://www.youtube.com/embed/6m-Zd31SrOE?rel=0" frame border="0" allowfullscreen>
@@ -44,12 +48,23 @@
 and allows me to remotely poweron/poweroff my AtomicPI</em>
 </div>
 
+<p>&nbsp;<br></p>
+
+<div class="video-container">
+<iframe width="720" height="720" src="https://www.youtube.com/embed/kPj1apA3Yo0?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
+
+<div style="text-align: center">
+  <em>It also allows me to connect remotely to the Atomic PI's serial port.</em>
+</div>
+
 <p></div></p>
 
 <h1>What is this about?</h1>
 
-<p>It's about a single-board computer (SBC) that I wanted to remotely poweron/poweroff - my Atomic PI.
-<a href="atomicpi.html" target="_blank">I wrote about it a month ago</a> - it's an unbelievably cheap (35$) Intel-based computer,
+<p>It's about a single-board computer (SBC) that I wanted to control remotely - my Atomic PI.
+<a href="atomicpi.html" target="_blank">I wrote about this SBC a month ago</a> - it's an unbelievably cheap (35$) Intel-based computer,
 with many features. Amongst them: 2GB of RAM, 16GB of EMMC storage and a 4-core Atom CPU.</p>
 
 <p>The AtomicPI needs to be powered by a good, solid 5V power supply - and since
@@ -64,7 +79,7 @@ with many features. Amongst them: 2GB of RAM, 16GB of EMMC storage and a 4-core 
 <em>Splicing power from the Raspberry PI power supply</em>
 </div>
 
-<p>&nbsp;<br>...the power supply was ready - and I could connect it to my little power module:<br>&nbsp;<br></p>
+<p>&nbsp;<br>...the power supply was ready - and I could connect it to an ESP8266-based power module:<br>&nbsp;<br></p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
 <a href="remotePowerModule.jpg" rel="lightbox" title="Stealing 80mA, but giving a remotely-controlled 5V supply."><img src="remotePowerModule.jpg" width="640" height="480" alt="Stealing 80mA, but giving a remotely-controlled 5V supply."></a><p>
@@ -72,7 +87,7 @@ with many features. Amongst them: 2GB of RAM, 16GB of EMMC storage and a 4-core 
 </div>
 
 <p>&nbsp;<br>
-The ESP8266 module <em>(more specifically, ESP01/relay module)</em> is a dirt-cheap one <em>(1.8 Euros as of July 2019)</em> that <a href="https://www.aliexpress.com/item/32821697306.html" target="_blank">I bought from AliExpress</a>.</p>
+The ESP8266 board <em>(more specifically, ESP01/relay module)</em> is a dirt-cheap one <em>(1.8 Euros as of July 2019)</em> that <a href="https://www.aliexpress.com/item/32821697306.html" target="_blank">I bought from AliExpress</a>.</p>
 
 <p>What I didn't know when I bought it, is that the PCB design had two flaws:</p>
 
@@ -91,7 +106,7 @@ Are you serious? :-)</p>
 
 <h1>A bit of coding</h1>
 
-<p>There are tons of examples on the Web, demonstrating how to boot up a simple Web server on the ESP8266 - <a target="_blank" href="https://github.com/ttsiodras/RemotePowerViaESP8266/blob/master/PowerOnOff.ino">I did a very simple implementation</a> that controls the GPIO0 pin <em>(since that's the one that the PCB routes to the relay control)</em>:</p>
+<p>There are tons of examples on the Web, demonstrating how to boot up a simple Web server on the ESP8266 - <a target="_blank" href="https://github.com/ttsiodras/RemotePowerViaESP8266/blob/master/RemotePowerAndSerial.ino">I did a very simple implementation</a> that controls the GPIO0 pin <em>(since that's the one that the PCB routes to the relay control)</em>:</p>
 
 <div class='codegenWrapper'>
 <pre><tt><span class="symbol">...</span>
@@ -144,7 +159,7 @@ to what one writes in higher-level languages - passing lambdas that do the work,
 <p>Not too shabby :-) <br>
 In case it's not clear, the IP address is not accessible from the outside; this is a static IP allocated to the ESP behind the firewall.</p>
 
-<p>I also added a mainpage, offering direct links that I can just click on - from any browser.</p>
+<p>I also added a mainpage, offering direct links that I can just click on - from any browser (e.g. from my phone).</p>
 
 <p><strong>Executive summary</strong>: Here's a video with the whole thing in action.</p>
 
@@ -153,9 +168,57 @@ In case it's not clear, the IP address is not accessible from the outside; this 
 </iframe>
 </div>
 
-<div style="text-align: center">
-  <em>Next step: connecting the TX/RX pins of the AtomicPI to the ESP's serial (remote serial port)</em>
+<p><a name="remoteserial"></a></p>
+
+<p><strong>UPDATE - the following weekend...</strong></p>
+
+<p>I used a small piece of perfboard, to get access to - and connect - the TX/RX/GND pins of the ESP8266 to the corresponding ones on the AtomicPI (i.e. the CN10 connector):</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<a href="remoteSerial1.jpg" rel="lightbox" title="The ESP01 now plugs in my perfboard - which plugs in the module."><img src="remoteSerial1.jpg" width="640" height="480" alt="The ESP01 now plugs in my perfboard - which plugs in the module."></a><p>
+<em>The ESP01 now plugs in my perfboard - which plugs in the module.</em>
 </div>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<a href="remoteSerial2.jpg" rel="lightbox" title="The perfboard from a different angle."><img src="remoteSerial2.jpg" width="640" height="480" alt="The perfboard from a different angle."></a><p>
+<em>The perfboard from a different angle.</em>
+</div>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<a href="remoteSerial3.jpg" rel="lightbox" title="The TX/RX/GND signals from the ESP end up on the CN10 connector of the Atomic PI."><img src="remoteSerial3.jpg" width="640" height="480" alt="The TX/RX/GND signals from the ESP end up on the CN10 connector of the Atomic PI."></a><p>
+<em>The TX/RX/GND signals from the ESP end up on the CN10 connector of the Atomic PI.</em>
+</div>
+
+<p>This allowed me to enjoy a remote serial port!<br> And be able to fully control the booting process and the BIOS:</p>
+
+<div class="video-container">
+<iframe width="720" height="720" src="https://www.youtube.com/embed/kPj1apA3Yo0?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
+
+<p>...which in turn allowed me to perform an OpenBSD installation over this remote serial!</p>
+
+<p>I just needed to type this in the <code>boot</code> menu:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">stty com0 </span><span class="number">115200</span>
+<span class="keyword">set</span><span class="normal"> tty com0</span>
+</tt></pre>
+</div>
+
+<p>Half an hour later, I concluded <strong>an installation of a UNIX OS over a remote serial port</strong>.</p>
+
+<p>That was a new experience :-)</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<a href="neofetch-OpenBSD-serial.jpg" rel="lightbox" title="An OS for true Spartans :-)"><img src="neofetch-OpenBSD-serial.jpg" width="640" height="440" alt="An OS for true Spartans :-)"></a><p>
+<em>An OS for true Spartans :-)</em>
+</div>
+
+<p>Overall, this was a very fun and educational process - highly recommended!<br>
+And for anyone else that is interested in reproducing this, the code I hacked to run inside the ESP8266 is <a target="_blank" href="https://github.com/ttsiodras/RemotePowerViaESP8266">here</a>.</p>
+
+<p><em>P.S. Obligatory trolling - who needs Intel's Management Engine? :-)</em></p>
 
 <br>
     <hr>
@@ -179,7 +242,7 @@ In case it's not clear, the IP address is not accessible from the outside; this 
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Jul 28 11:57:56 2019</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Aug 4 13:20:54 2019</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

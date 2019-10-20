@@ -9,6 +9,24 @@
   <atom:link href="https://www.thanassis.space/rss.xml" rel="self" type="application/rss+xml" />
 
 <item>
+<title>Compiling a CPU, in a cheap FPGA board</title>
+<guid>https://www.thanassis.space/myowncpu.html</guid>
+<link>https://www.thanassis.space/myowncpu.html</link>
+<description>Compiling a SPARC-compatible CPU, inside a cheap FPGA board</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>20 October 2019 13:35:09 +0100</pubDate>
+</item>
+
+<item>
+<title>Remote serial port via ESP8266</title>
+<guid>https://www.thanassis.space/remoteserial.html#remoteserial</guid>
+<link>https://www.thanassis.space/remoteserial.html#remoteserial</link>
+<description>Remote serial port fully operational! Already used it to install OpenBSD on a stick :-)</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>3 August 2019 13:05:09 +0100</pubDate>
+</item>
+
+<item>
 <title>Remote power control via ESP8266</title>
 <guid>https://www.thanassis.space/remotepower.html</guid>
 <link>https://www.thanassis.space/remotepower.html</link>
