@@ -82,7 +82,7 @@ Even since I can remember, I've always been fascinated with puzzles. This fascin
 <span class="comment">// The tile "bodies" information - filled by DetectTileBodies()</span>
 <span class="comment">// via heuristics on the center pixel of the tile</span>
 <span class="comment">//</span>
-<span class="keyword">enum</span><span class="normal"> TileKind </span><span class="cbracket">{</span>
+<span class="keyword">enum</span><span class="normal"> </span><span class="classname">TileKind</span><span class="normal"> </span><span class="cbracket">{</span>
 <span class="normal">    empty    </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span>
 <span class="normal">    block    </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">,</span>
 <span class="normal">    prisoner </span><span class="symbol">=</span><span class="normal"> </span><span class="number">2</span>
@@ -93,7 +93,7 @@ Even since I can remember, I've always been fascinated with puzzles. This fascin
 <span class="comment">// (hence the 2x in the vertical direction)</span>
 <span class="comment">// filled by DetectTopAndBottomTileBorders()</span>
 <span class="comment">//</span>
-<span class="keyword">enum</span><span class="normal"> BorderKind </span><span class="cbracket">{</span>
+<span class="keyword">enum</span><span class="normal"> </span><span class="classname">BorderKind</span><span class="normal"> </span><span class="cbracket">{</span>
 <span class="normal">    notBorder </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span>
 <span class="normal">    white     </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">,</span>
 <span class="normal">    black     </span><span class="symbol">=</span><span class="normal"> </span><span class="number">2</span>
@@ -272,7 +272,7 @@ I also added a <tt>set&lt;Board&gt;</tt> that was checked upon SolveBoard entry,
 <span class="comment">// "Move" stores what block moved and to what direction</span>
 <span class="keyword">struct</span><span class="normal"> </span><span class="classname">Move</span><span class="normal"> </span><span class="cbracket">{</span>
 <span class="normal">    </span><span class="type">int</span><span class="normal"> _blockId</span><span class="symbol">;</span>
-<span class="normal">    </span><span class="keyword">enum</span><span class="normal"> Direction </span><span class="cbracket">{</span><span class="normal">left</span><span class="symbol">,</span><span class="normal"> right</span><span class="symbol">,</span><span class="normal"> up</span><span class="symbol">,</span><span class="normal"> down</span><span class="cbracket">}</span><span class="normal"> _move</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">enum</span><span class="normal"> </span><span class="classname">Direction</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal">left</span><span class="symbol">,</span><span class="normal"> right</span><span class="symbol">,</span><span class="normal"> up</span><span class="symbol">,</span><span class="normal"> down</span><span class="cbracket">}</span><span class="normal"> _move</span><span class="symbol">;</span>
 <span class="normal">    </span><span class="function">Move</span><span class="symbol">(</span><span class="type">int</span><span class="normal"> blockID</span><span class="symbol">,</span><span class="normal"> </span><span class="usertype">Direction</span><span class="normal"> d</span><span class="symbol">):</span>
 <span class="normal">        </span><span class="function">_blockId</span><span class="symbol">(</span><span class="normal">blockID</span><span class="symbol">),</span>
 <span class="normal">        </span><span class="function">_move</span><span class="symbol">(</span><span class="normal">d</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{}</span>

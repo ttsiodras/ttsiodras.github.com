@@ -55,7 +55,7 @@ Here it is, in all its splendor, my nerdy brothers and sisters... My new little 
 
 <h2>Before Atomic PI</h2>
 
-<p>I love SBCs.
+<p>I love Single-Board Computers (SBCs).
 <p>
 I started playing with them 3 years ago, beginning with a Raspberry PI2.
 A year later I "graduated" into a setup that was
@@ -64,33 +64,19 @@ OrangePI board, that I assembled into an always-on file server, and
 <a href="https://www.borgbackup.org/">borgbackup</a> server; with an I2C
 attached LCD screen, a fan, and various other bells and whistles.</p>
 
-<p>I was pretty sure that for my needs, the price/performance ratio I reached 
-with the OrangePI was unbeatable. The nearest "competitor", the Raspberry PI3
-was three times as expensive - and at the same time offered substantially
-less I/O-performance (<em>since in RPIs everything must pass through a single USB root hub</em>).</p>
-
-<p>Instead, my dirt-cheap Orange PI Zero contains 4 USB root-level hubs. After
-connecting an external female USB port to the appropriate set of header pins,
-I was able to connect two external USB drives directly - i.e. on separate hubs.
- Data transfer between them worked at the full USB2.0 speed - approximately 37
-MBytes/sec <em>(try that with a Raspberry PI and you'll instantly see the difference...)</em></p>
+<p>In addition, all of it was done via completely open-sourced SW.
+I compiled the <a href="https://www.armbian.com/">ARMBIAN</a> image for my Beast
+myself - from sources - so I was fully in control of this tiny UNIX server. </p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
 <img src="The.Beast.TM.jpg" width="640" height="360" alt="The Old Beast (TM)"><p>
 <em>The Old Beast (TM) - 4-core ARM, PI(D)-controlled FAN, I2C 1602, level-shifter...</em>
 </div>
 
-<p>Simply put, I was able to have more than twice the speed, via a board that
-cost 1/3rd the price of an RPI3!</p>
-
-<p>And as for SW, I compiled the <a href="https://www.armbian.com/">ARMBIAN</a> image for my Beast
-myself - from sources - so I was fully in control of this tiny UNIX server. Borgbackup worked
-perfectly inside it over the last year - and it has already saved me a couple of times, by giving me the
-ability to have dozens of mountable backup snapshots; without paying
-storage-wise for anything beyond the compressed "deltas" between them. This includes huge Virtual
-machine images - try backing those up with anything except Borg and you'll see what I mean;
-a simple sector-worth of data inserted in the middle of a 10GB VMDK file causes most other backup SW to store
-an "extra" 10GB... Borg instead only stores a compressed version of the changed sector.</p>
+<p>I was pretty sure that for my needs, the price/performance ratio I reached 
+with the OrangePI was unbeatable. The nearest "competitor", the Raspberry PI3
+was <strong>three times as expensive</strong> - and in my experiments, delivered <strong>less than half
+I/O-performance</strong> (<em>since in RPIs everything must pass through a single USB root hub</em>).</p>
 
 <h2>"No, that's impossible..."</h2>
 
@@ -336,9 +322,11 @@ it will serve me well.</p>
 
 <p>I love it :-)</p>
 
-<p><strong>UPDATE</strong>: I added <a href="remotepower.html">remote-controlled poweron/poweroff and remote serial port functionality</a>, via an ESP8266.
+<h2>Update - a month later</h2>
+
+<p>I added <a href="remotepower.html">remote-controlled poweron/poweroff and remote serial port functionality</a>, via an ESP8266.
 <br>Here's a couple of videos demonstrating both features - for details,
-check out the blog post.</p>
+check out the linked blog post.</p>
 
 <div>
 <div class="video-container">
@@ -387,7 +375,7 @@ and allows me to remotely poweron/poweroff my AtomicPI</em>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Sep 28 18:59:48 2019</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Nov 10 16:42:23 2019</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

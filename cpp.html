@@ -105,7 +105,7 @@ C++ allows you to write less code, with no run-time overhead, and with more safe
 <p>Oh, wait, the efficient C programmer says, use a union!</p>
 
 <div class='codegenWrapper'>
-<pre><tt><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">union</span><span class="normal"> tagSuperPixel </span><span class="cbracket">{</span>
+<pre><tt><span class="keyword">typedef</span><span class="normal"> </span><span class="keyword">union</span><span class="normal"> </span><span class="classname">tagSuperPixel</span><span class="normal"> </span><span class="cbracket">{</span>
 <span class="normal">    </span><span class="usertype">PixelDataAmbient</span><span class="normal"> a</span><span class="symbol">;</span>
 <span class="normal">    </span><span class="usertype">PixelDataGouraud</span><span class="normal"> g</span><span class="symbol">;</span>
 <span class="normal">    </span><span class="usertype">PixelDataPhong</span><span class="normal">   p</span><span class="symbol">;</span>
@@ -117,7 +117,7 @@ C++ allows you to write less code, with no run-time overhead, and with more safe
 
 <div class='codegenWrapper'>
 <pre><tt><span class="normal">  </span><span class="function">RasterizeTriangleScanline</span><span class="symbol">(</span>
-<span class="normal">    </span><span class="keyword">enum</span><span class="normal"> mode</span><span class="symbol">,</span><span class="normal"> </span><span class="comment">// { ambient, gouraud, phong }</span>
+<span class="normal">    </span><span class="keyword">enum</span><span class="normal"> </span><span class="classname">mode</span><span class="symbol">,</span><span class="normal"> </span><span class="comment">// { ambient, gouraud, phong }</span>
 <span class="normal">    </span><span class="usertype">SuperPixel</span><span class="normal"> left</span><span class="symbol">,</span>
 <span class="normal">    </span><span class="usertype">SuperPixel</span><span class="normal"> right</span><span class="symbol">)</span>
 <span class="normal">  </span><span class="cbracket">{</span>

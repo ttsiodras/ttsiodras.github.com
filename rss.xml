@@ -9,6 +9,24 @@
   <atom:link href="https://www.thanassis.space/rss.xml" rel="self" type="application/rss+xml" />
 
 <item>
+<title>Drained batteries, LEDs, and creative solitude</title>
+<guid>https://www.thanassis.space/chargepump.html</guid>
+<link>https://www.thanassis.space/chargepump.html</link>
+<description>Drained batteries, LEDs, and creative solitude</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>4 April 2020 17:16:12 +0100</pubDate>
+</item>
+
+<item>
+<title>Playing with ROCK PI S - an RK3308 IoT device</title>
+<guid>https://www.thanassis.space/rockpis.html</guid>
+<link>https://www.thanassis.space/rockpis.html</link>
+<description>Playing with ROCK PI S - an RK3308 IoT device</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>25 January 2020 17:35:09 +0100</pubDate>
+</item>
+
+<item>
 <title>Compiling a CPU, in a cheap FPGA board</title>
 <guid>https://www.thanassis.space/myowncpu.html</guid>
 <link>https://www.thanassis.space/myowncpu.html</link>
