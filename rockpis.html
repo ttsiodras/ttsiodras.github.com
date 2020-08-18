@@ -59,7 +59,7 @@ A machine from a more civilized era - when men were men, wrote their own drivers
 <li>RJ45 10/100Mbit Ethernet</li>
 <li>802.11 b/g/n Wifi + bluetooth 4.0 with external antenna connector (antenna not included)</li>
 <li>26 pin GPIO header</li>
-<li>26 pin voice/audio header (I2C, PCM, TDM, PDM, SPDIF, and HDMI ARC)</li>
+<li>26 pin voice/audio header (I2S, PCM, TDM, PDM, SPDIF, and HDMI ARC)</li>
 <li>Dimensions of 1.7 x 1.7 inch (~38.1mm x 38.1mm)</li>
 </ul>
 
@@ -109,7 +109,7 @@ and perform anything necessary to setup the network - to allow easier access (ov
      Armbian_20.02.0-rc0_Rockpi-s_buster_legacy_4.4.207.img
 
 # dd if=Armbian_20.02.0-rc0_Rockpi-s_buster_legacy_4.4.207.img \
-    bs=1M oflag=sync status=progress of=/dev/sdc
+    bs=1M oflag=sync iflag=fullblock status=progress of=/dev/sdc
 </code></pre>
 
 <p>In the example invocation above, my SD card is under /dev/sdc - make sure you
@@ -181,11 +181,11 @@ Std deviation: 0.199651
 
 <p>What about the newcomer? Well, the <strong>ROCK PI S</strong> scored 70% higher than the Raspberry...</p>
 
-<pre><code>Average value: 26.767120
-Std deviation: 0.913838
-       Median: 26.068800
-          Min: 25.376800
-          Max: 27.731600
+<pre><code>Average value: 28.139440
+Std deviation: 0.084740
+       Median: 28.153200
+          Min: 28.003400
+          Max: 28.227900
 </code></pre>
 
 <p>...with a temperature that didn't exceed 76C (shown via <code>armbianmonitor -m</code>).</p>
@@ -242,10 +242,10 @@ the current consumption topped at 150mA (0.75W)</p></li>
 impression so far is very <strong>positive</strong>. Given the price of 12 Euros,
 this machine definitely outperforms my Orange PI Zero (which is
 basically the only competitor at the same level). It consumes 2x-3x less
-energy, runs 70% faster, and it's also running at 64bit (which could
+energy, runs 33% faster, and it's also running at 64bit (which could
 result in even better comparison results when doing integer arithmetic).
 I try to avoid this kind of comparisons, though [1]. You don't need
-them to see that this is very decent IoT hardware.</p>
+them to see that this is quite performant IoT hardware.</p>
 
 <p>I love it that one can buy such machines for this kind of prices - and
 delegate peripheral processing to "edge" computing. </p>
@@ -283,7 +283,7 @@ goodies in the basket.</p>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Jan 26 19:35:51 2020</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Jul 5 12:14:45 2020</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">
