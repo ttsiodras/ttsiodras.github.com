@@ -32,6 +32,7 @@
 <tr><td><em>August 4, 2008:</em></td><td>Made a plain-C package available, to support 64-bit OSes (as well as OS/X and Cygwin users).<br></td></tr>
 <tr><td><em>March 9, 2009:</em></td><td>Made a FUSE-based filesystem that transparently uses these tools.<br></td></tr>
 <tr><td width="20%"><em>June 14, 2010:</em></td><td>Fixed memory issues reported by Valgrind - now works with all GCC versions.</td></tr>
+<tr><td width="20%"><em>October 10, 2020:</em></td><td>Streaming support, a hands-on corruption example, and dd options</td></tr>
 </table>
   <h2>Shield my files? Why?</h2>
   You know why!
@@ -261,6 +262,93 @@ operating systems (Linux, Mac OS/X, Free/Net/OpenBSD, even Windows
 with Cygwin).
 <li>Python-FUSE support.
 </ul>
+  <h2>UPDATE, many years later: Streaming support, a hands-on corruption, and dd options</h2>
+<p>While answering some questions I received about usage of rsbep for streaming processes, I realized I could demonstrate <code>dd</code>’s recovery from actual corruption at raw device level, via the functionality offered by dmsetup’s <code>error</code>. This is a mandatory part that <code>rsbep</code> depends on, i.e. that when errors happen during reading, we still get <em>some</em> data, <em>any</em> data for them. We - i.e. the algorithm - can then recover the lost data.</p>
+<p>The example below will create a device formed from two loop devices, with an erroneous zone between them.</p>
+<p>First, we create the two loop devices, serializing their data into two 1MB files:</p>
+<pre><code># mkdir example
+# cd example
+# truncate -s 1M a.img b.img
+# losetup -f a.img
+# losetup -f b.img
+# losetup -a
+
+/dev/loop1: [65024]:7984102 (/home/ttsiod/tmp/Milan/b.img)
+/dev/loop0: [65024]:7984101 (/home/ttsiod/tmp/Milan/a.img)</code></pre>
+<p>Now let’s fill up the devices with data:</p>
+<pre><code># i=0; while printf &#39;A%06d&#39; $i ; do i=$((i+1)) ; done &gt; /dev/loop0
+-bash: printf: write error: No space left on device
+
+# i=0; while printf &#39;B%06d&#39; $i ; do i=$((i+1)) ; done &gt; /dev/loop1
+-bash: printf: write error: No space left on device</code></pre>
+<p>This wrote a series of counters in them, one after the other:</p>
+<pre><code># hexdump -C /dev/loop0 | head -3
+00000000  41 30 30 30 30 30 30 41  30 30 30 30 30 31 41 30  |A000000A000001A0|
+00000010  30 30 30 30 32 41 30 30  30 30 30 33 41 30 30 30  |00002A000003A000|
+00000020  30 30 34 41 30 30 30 30  30 35 41 30 30 30 30 30  |004A000005A00000|</code></pre>
+<p>Now let’s create the joined-and-errored device:</p>
+<pre><code># dmsetup create DeviceWithBadSectors &lt;&lt; EOF
+0 2000 linear /dev/loop0 0
+2000 96 error
+2096 2000 linear /dev/loop1 48
+EOF
+
+# blockdev --getsz /dev/mapper/DeviceWithBadSectors
+4096</code></pre>
+<p>This new device (<code>/dev/mapper/DeviceWithBadSectors</code>) is made of the first 2000 sectors of <code>/dev/loop0</code>, followed by 96 bad sectors; and then by the last 2000 sectors from <code>/dev/loop1</code>. This, as we saw above, makes up for a device with a total of 4096 sectors, 96 of which - in the middle - are bad.</p>
+<p>Now let’s try reading the data of this device - first, with <code>ddrescue</code>, a tool specifically made to read from bad devices:</p>
+<pre><code># ddrescue /dev/mapper/DeviceWithBadSectors recovered
+GNU ddrescue 1.25
+Press Ctrl-C to interrupt
+     ipos:    1072 kB, non-trimmed:        0 B,  current rate:   2048 kB/s
+     opos:    1072 kB, non-scraped:        0 B,  average rate:   2048 kB/s
+non-tried:        0 B,  bad-sector:    49152 B,    error rate:    139 kB/s
+  rescued:    2048 kB,   bad areas:        1,        run time:          0s
+pct rescued:   97.65%, read errors:       98,  remaining time:          0s
+                              time since last successful read:         n/a
+Finished
+
+# ls -l recovered
+-rw-r--r-- 1 root root 2097152 Oct 10 13:41 recovered
+
+# blockdev --getsz recovered
+4096</code></pre>
+<p>Indeed, we got data for all 4096 sectors - including the 96 bad ones, for which <code>ddrescue</code> will have placed zeroes in the output. This is exactly what <code>rsbep</code> needs to happen for the Reed-Solomon algorithm to function properly; i.e. we need the data from the bad sectors to be there - bad, but in their place. We can’t afford to miss them!</p>
+<p>OK - but <code>ddrescue</code> writes into a file. What about streaming operations? And also, most people won’t have it installed - can’t we use <code>dd</code> for the same purpose?</p>
+<p>Let’s establish what is the output data we want - what is the MD5 checksum of the recovered data?</p>
+<pre><code># md5sum recovered
+d2ae90b3a830d34c7e92717e8549b909  recovered</code></pre>
+<p>Now let’s see what happens with <code>dd</code> - used with the proper options:</p>
+<pre><code># dd if=/dev/mapper/DeviceWithBadSectors conv=noerror,sync bs=512 &gt; /dev/null
+...
+dd: error reading &#39;/dev/mapper/DeviceWithBadSectors&#39;: Input/output error
+2000+95 records in
+2095+0 records out
+1072640 bytes (1.1 MB, 1.0 MiB) copied, 0.00982337 s, 109 MB/s
+4000+96 records in
+4096+0 records out
+2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.024313 s, 86.3 MB/s
+
+# dd if=/dev/mapper/DeviceWithBadSectors conv=noerror,sync bs=512 2&gt;/dev/null | wc -c
+2097152
+
+# dd if=/dev/mapper/DeviceWithBadSectors conv=noerror,sync bs=512 2&gt;/dev/null | md5sum
+d2ae90b3a830d34c7e92717e8549b909</code></pre>
+<p>So we see that <code>dd</code> read the same data as <code>ddrescue</code> - the MD5 checksum is good, and we have indeed read 2097152 bytes - i.e. 4096 sectors of 512 bytes each. This means <code>rsbep</code> will be able to perfectly recover, even though we are streaming the data out.</p>
+<p>The “magic” options for <code>dd</code>, are, as shown above:</p>
+<ul>
+<li><code>noerror</code>: don’t stop on hard drive read error, and</li>
+<li><code>sync</code>: pad every input block with NULs to input block size</li>
+</ul>
+<p>So, we now have all the ingredients to use <code>rsbep</code> in a streaming scenario… e.g. sending data over SSH to another machine, or whatever.</p>
+<p>Here’s a standalone example via tar - first, creating a backup:</p>
+<pre><code># cd /path/to/backup
+# tar cpf - ./ | xz | \
+    rsbep  -B 255 -D 223 -R 4080 &gt; /var/tmp/shielded.data.xz.rsbep</code></pre>
+<p>And here’s recovering:</p>
+<pre><code># cd /path/to/restore
+# dd if=/var/tmp/shielded.data.xz.rsbep conv=noerror,sync bs=512 | \
+    rsbep -d -B 255 -D 223 -R 4080 | tar Jtvf -</code></pre>
   <h2>Conclusion</h2>
 These tools works fine for me, and I always use them when
 I backup data or move them around (e.g. from work to home).
@@ -300,7 +388,7 @@ And yes, they have already saved my data a couple of times.
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Mon Jan 9 22:08:56 2017</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Oct 10 14:22:49 2020</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

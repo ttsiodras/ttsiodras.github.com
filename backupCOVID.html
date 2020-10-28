@@ -63,7 +63,7 @@ compressed (videos) - why waste CPU trying to compress them?</p></li>
 <li><p>The spare storage is used by ZFS to speed up reads, too. When multiple processes
 read data, <strong>both drives will be used at the same time to serve them.</strong></p></li>
 <li><p>To protect the sensitivity of the data, my ZFS pool is built from encrypted
-LUKS devices. The mirror is not build on the raw devices of the two disks;
+LUKS devices. The mirror is not built on the raw devices of the two disks;
 it is instead built on top of
 <a href="https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup">LUKS</a>-encrypted
 devices that are backed by them.
