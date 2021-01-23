@@ -1,0 +1,524 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/stationm1.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<title>Station M1 - my fastest ARM SBC</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Station M1 - my fastest ARM SBC</div>
+        <div id="MainContent">
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(January 2021)</em></p>
+
+<div class="tldr">
+<b>TL; DR: Another year, another SBC!</b>
+This time, it's a 4-core RK3328, with Gigabit Ethernet and USB3.
+My fastest ARM-based computer yet!<p>
+
+Let's install 
+<a target="_blank" href="https://www.armbian.com/">Armbian</a>
+on it, and put it through performance tests.<p>
+</div>
+
+<h2>The hardware</h2>
+
+<p>I received the Station M1 a few days ago - courtesy of
+<a target="_blank" href="https://www.stationpc.com/">Firefly</a>.</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="stationm1.jpg" alt="Credit-card sized, inside a metal enclosure"><p>
+<em>Credit-card sized, inside a metal enclosure</em>
+</div>
+
+<p><font color="red"><b>Inside:</b></font></p>
+
+<ul>
+<li><strong>RK3328</strong> Quad-core A53 64bit CPU, at 1.5GHz</li>
+<li>2GB or 4GB of <strong>DDR3 RAM</strong>. My board is the 2GB model, costing 65$ at the time I am writing this.</li>
+<li>8/16/32/64/128GB <strong>EMMC</strong> for storage; my board came with 16GB. Note: you can also use Micro-SD cards.</li>
+<li>802.11 b/g/n <strong>Wifi</strong> (2.4GHz) + bluetooth 4.2. Antenna is included inside the enclosure.</li>
+<li>26 pin <strong>GPIO</strong> header - assuming you open the enclosure.</li>
+</ul>
+
+<p><font color="red"><b>Front:</b></font></p>
+
+<ul>
+<li>One <strong>USB3</strong> and one USB2 type-A ports.</li>
+<li><strong>Infrared receiver</strong> - the SBC also comes with a remote control</li>
+<li><strong>Micro-SD</strong> card slot</li>
+<li><strong>Power button</strong>; a sorely missed feature in many other SBCs <em>(forcing
+people like me to do <a href="remotepower.html" target="_blank">crazy</a> things)</em>.</li>
+</ul>
+
+<p><font color="red"><b>Back:</b></font></p>
+
+<ul>
+<li><strong>USB-C</strong> for power (5V)</li>
+<li>1x <strong>HDMI2.0</strong>, supporting up to 4K@60Hz</li>
+<li>RJ45 10/100/1000 (i.e. <strong>Gigabit Ethernet</strong>)</li>
+<li>3.5mm <strong>audio jack</strong></li>
+<li>All this in <strong>credit-card size!</strong> See picture with 2 Euro coin for size comparison.</li>
+</ul>
+
+<p>The SBC came with a power adapter, so I plugged it in, connected a Full-HD 
+monitor to the HDMI port, and...</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="stationm1-welcome.jpg" alt="Default setup screen"><p>
+<em>Default setup screen</em>
+</div>
+
+<p>After 5 minutes of configuration setup, I ended up with a fully operational
+Android 10 set-top box experience; with the provided remote control allowing
+easy control of the pre-installed Kodi.</p>
+
+<p>But if you want to see an Android review of this SBC, you are on the wrong 
+site :-)<br>
+I have far more fun <a href="android.html" target="_blank">hacking Android</a>
+than I ever have using it.</p>
+
+<p>So, to quote a <a target="_blank" href="https://www.youtube.com/user/EEVblog">famous electronics Youtuber</a>:</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<em>"Don't turn it on! <strong>Take it apart!</strong>"</em></p>
+
+<p>...and I'll add: <em>"...and then install a fully open-source OS, compiled from scratch"</em>.</p>
+
+<p>Keep reading :-)</p>
+
+<h2>Disassembly</h2>
+
+<p>There are 4 screws holding the enclosure firmly in place. After removing them,
+the insides of the SBC are easily accessible:</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="stationm1-disassembly.jpg" alt="Disassembled"><p>
+<em>Disassembled.</em>
+</div>
+
+<p>As you can see, the Wi-Fi antenna is already pre-installed; the two chips 
+giving my SBC 2GB of RAM are easily identifiable; and on the top, the
+GPIO pins that make SBCs what they are - perfect toys for makers :-)</p>
+
+<p>In case you are wondering, yes, that's a battery slot for an RTC.<br>
+I always use NTP, of course - but this is still a nice perk :-)</p>
+
+<p>In the case of the Station, the 3 pins shown in the picture below
+form a 3.3V serial port, that speaks at 1500000 baud - in classic 8-N-1.
+ Any USB2TTL dongle that works with 3.3V levels will do nicely:</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="stationm1-serial.jpg" alt="Serial port"><p>
+<em>Serial port</em>
+</div>
+
+<h2>The issue of SW - Armbian</h2>
+
+<p>At a high level, there are basically two options with most ARM SBCs <em>(including this one)</em>.</p>
+
+<ul>
+<li>Either you trust the makers of the board with the custom
+distributions they build (including Android ones).<br></li>
+<li>Or you trust <a target="_blank" href="https://www.armbian.com/">Armbian</a>.</li>
+</ul>
+
+<p>I am firmly in the second camp. I don't know where the makers of the Station M1
+stand on the subject, but as a rule, SBC builders rarely - if ever - update
+their custom distros. I can't abide by that.<p></p>
+
+<p><a target="_blank" href="https://docs.armbian.com/Developer-Guide_Using-Vagrant/">
+I therefore prefer building the entire, flashable Armbian distribution for my targets myself - from source</a>.
+There is no better way to trust my SBCs, than knowing that I built their OS myself;
+and that I can go as deep as I want and debug everything using the source code...
+From the deepest dungeon at kernel level, all the way to the top-level bash scripts. </p>
+
+<p>Then again, I do this sort of thing <a href="cv.pdf">for a living</a>. Your mileage may vary.</p>
+
+<p>If you do decide to build from sources, the board is marked in the Armbian
+<a href="https://github.com/armbian/build/blob/master/config/boards/station-m1.csc">repo</a>
+as CSC - so you need to enable the CSC option during the build, and then
+choose "Station M1". Other than that, everything just worked;
+building went just as smoothly as any other flashable Armbian image I've compiled:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ git clone https</span><span class="symbol">:</span><span class="normal">//github</span><span class="symbol">.</span><span class="normal">com/armbian/build</span><span class="symbol">/</span>
+<span class="normal">$ cd build</span>
+<span class="normal">$ sudo </span><span class="symbol">.</span><span class="normal">/compile</span><span class="symbol">.</span><span class="normal">sh</span>
+</tt></pre>
+</div>
+
+<p>Since it takes some time to do this build, I performed it from an Ubuntu-Focal
+Droplet that I created in my Digital Ocean account. At a cost of 3 cents per hour
+and a total build time of approximately 3h, I paid 10 cents to have fully traceable
+SW for my SBC.</p>
+
+<p>Not bad :-)</p>
+
+<p>Another option you have is to trust completely the Armbian developers - and simply
+download the <a target="_blank" href="https://www.armbian.com/station-m1/">pre-built image</a>.</p>
+
+<p>In either case, you then "flash" the image in any micro SD card.
+In my case, I executed something like this:</p>
+
+<pre><code># ls -l *img
+-rw-r--r-- 1 root root 1816133632 Jan 20 20:06
+    Armbian_21.02.0-trunk_Station-m1_bullseye_current_5.10.9.img
+
+# dd if=Armbian_21.02.0-trunk_Station-m1_bullseye_current_5.10.9.img
+    bs=1M oflag=sync iflag=fullblock status=progress of=/dev/sdc
+</code></pre>
+
+<p>When running this command, my Micro-SD card was inside a USB adapter plugged-in and visible under /dev/sdc.
+Make sure you use the appropriate target here, <strong>otherwise you will wipe out your own machine's
+data!</strong> The output of <code>dmesg</code> is your friend here, look at it (and the output
+of <code>lsblk</code>) to see the name of the device for your SD writer.</p>
+
+<p>The <code>sync</code> output flag of <code>dd</code> caused a significant improvement in reliability with
+my SD writer. You may or may not need this option - but if you don't use it,
+make sure you actually invoke <code>sync</code> after <code>dd</code> is complete. And you will definitely
+benefit from a big block size (<code>bs=1M</code>) and a nice and simple progress report
+while the writing takes place (<code>status=progress</code>). </p>
+
+<p>Most importantly: don't you dare remove the <code>fullblock</code> iflag. Trust me - there be dragons there.</p>
+
+<h2>Booting Armbian</h2>
+
+<p>After that, I plugged the Micro-SD card in the Station M1, and booted - in a 
+normal, Armbian boot. I didn't use my USB-to-TTL adapter this time; the HDMI
+cable offered a far easier way to interact with the boot process - and a
+keyboard plugged in the USB2 port allowed me to easily work with the system.</p>
+
+<p>I then connected the SBC directly to my router (over the Gigabit Ethernet
+port), setup SSH, rebooted, and SSH-ed into the machine from my laptop.</p>
+
+<p>Since I hate the speed and reliability aspects of Micro-SD cards, I then
+proceeded to migrate into an external USB3 drive. I can probably migrate into
+the EMMC, but I chose not to - I prefer to keep it in its pristine
+("Android-y") state, for easy re-use when COVID allows me to visit people
+again. A credit-card sized, portable set-top box is always nice :-)</p>
+
+<p>To migrate to the external drive, I copied everything in the root fs into a
+freshly formatted 5GB ext partition. The rest of the drive was formatted as
+a LUKS-encrypted drive, which will take advantage of the crypto instructions
+in this SBCs ARM cores.</p>
+
+<p>I then modified two files in the SD-card filesystem to make the system boot
+from the USB drive instead:</p>
+
+<ul>
+<li>The <code>/boot/armbianEnv.txt</code> needs to know where the root fs lives:</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment"># cat /boot/</span>
+<span class="variable">verbosity</span><span class="symbol">=</span><span class="number">1</span>
+<span class="variable">bootlogo</span><span class="symbol">=</span><span class="keyword">false</span>
+<span class="variable">overlay_prefix</span><span class="symbol">=</span><span class="normal">rockchip</span>
+<span class="variable">fdtfile</span><span class="symbol">=</span><span class="normal">rockchip/rk</span><span class="number">3328</span><span class="normal">-roc-pc</span><span class="symbol">.</span><span class="normal">dtb</span>
+<span class="variable">rootdev</span><span class="symbol">=</span><span class="variable">UUID</span><span class="symbol">=........</span><span class="normal">-</span><span class="symbol">....</span><span class="normal">-</span><span class="symbol">....</span><span class="normal">-</span><span class="symbol">....</span><span class="normal">-</span><span class="symbol">............</span>
+</tt></pre>
+</div>
+
+<p>The device UUID is easily obtainable via <code>blkid -c /dev/null</code>.</p>
+
+<ul>
+<li>The <code>/etc/fstab</code> should also point to the proper root.
+So the proper UUID needs to appear there:</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment"># cat /mnt/usb/etc/fstab</span>
+<span class="variable">UUID</span><span class="symbol">=...</span><span class="normal"> </span><span class="symbol">/</span><span class="normal"> ext4 defaults</span><span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>That's it - the SBC now works from reliable, fast storage.</p>
+
+<h2>How fast is it, with USB3 storage?</h2>
+
+<p>Well, don't take my word for it - let's watch it in action:</p>
+
+<p><center>
+<a href="https://asciinema.org/a/386483" target="_blank"><img src="https://asciinema.org/a/386483.svg" /></a>
+</center></p>
+
+<p>What you can see in this <em>asciinema</em> video:</p>
+
+<ul>
+<li><p>This (110MB+ per second) is the same speed I have seen with this mechanical
+external USB3 drive on any of my computers (including PCs). No slowdowns in
+the Station M1.</p></li>
+<li><p>Did you notice the temperature of 37C? This is my coolest SBC yet...
+The metal enclosure and the thermal pad it uses to attach on the SoC perform
+their work admirably.</p></li>
+</ul>
+
+<h2>Benchmarking CPU performance</h2>
+
+<p>OK, but what if we stress the machine? Let's benchmark the device with my <a href="renderer.html">renderer</a>.</p>
+
+<pre><code># apt install libsdl1.2-dev
+...
+# wget -q -O - https://github.com/ttsiodras/renderer/archive/v2.3b.tar.gz \
+    | tar zxvf -
+# cd renderer-2.3b
+# ./configure
+# make -j4
+...
+# make bench
+</code></pre>
+
+<p>My renderer uses all available cores, and stresses the memory and the FPU a lot <a href="#renderer">[1]</a>.
+You can see results from all kinds of machines running it via the <a href="https://openbenchmarking.org/test/pts/ttsiod-renderer#metrics">Phoronix</a>
+test suite.</p>
+
+<p>For completeness, I include the results from all my ARM SBCs - so you can compare
+for yourself.</p>
+
+<ul>
+<li><strong>Raspberry PI2</strong>: it reached 58C - and scored 17fps...</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">Average value</span><span class="symbol">:</span><span class="normal"> </span><span class="number">17.306140</span>
+<span class="normal">Std deviation</span><span class="symbol">:</span><span class="normal"> </span><span class="number">0.199651</span>
+<span class="normal">       Median</span><span class="symbol">:</span><span class="normal"> </span><span class="number">17.401600</span>
+<span class="normal">          Min</span><span class="symbol">:</span><span class="normal"> </span><span class="number">17.064300</span>
+<span class="normal">          Max</span><span class="symbol">:</span><span class="normal"> </span><span class="number">17.479500</span>
+</tt></pre>
+</div>
+
+<ul>
+<li><strong>Orange PI Zero</strong>: It scored 21 frames per second and its temperature rose above 80C.
+That forced me to <a target="_blank" href="thebeast.html#thebeast">install a fan to keep it cool</a>...</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">Average value</span><span class="symbol">:</span><span class="normal"> </span><span class="number">21.027340</span>
+<span class="normal">Std deviation</span><span class="symbol">:</span><span class="normal"> </span><span class="number">0.037930</span>
+<span class="normal">       Median</span><span class="symbol">:</span><span class="normal"> </span><span class="number">21.017200</span>
+<span class="normal">          Min</span><span class="symbol">:</span><span class="normal"> </span><span class="number">20.979300</span>
+<span class="normal">          Max</span><span class="symbol">:</span><span class="normal"> </span><span class="number">21.082800</span>
+</tt></pre>
+</div>
+
+<ul>
+<li><strong>ROCK PI S</strong> scored 28fps, with a temperature that reached 76C:</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">Average value</span><span class="symbol">:</span><span class="normal"> </span><span class="number">28.139440</span>
+<span class="normal">Std deviation</span><span class="symbol">:</span><span class="normal"> </span><span class="number">0.084740</span>
+<span class="normal">       Median</span><span class="symbol">:</span><span class="normal"> </span><span class="number">28.153200</span>
+<span class="normal">          Min</span><span class="symbol">:</span><span class="normal"> </span><span class="number">28.003400</span>
+<span class="normal">          Max</span><span class="symbol">:</span><span class="normal"> </span><span class="number">28.227900</span>
+</tt></pre>
+</div>
+
+<ul>
+<li><strong>Station M1</strong>: Let's watch the newcomer live:</li>
+</ul>
+
+<p><center>
+<a href="https://asciinema.org/a/386492" target="_blank"><img src="https://asciinema.org/a/386492.svg" /></a>
+</center></p>
+
+<p>The Station M1 scored 32.7 fps. It never exceeded 1.3GHz while doing so,
+  which makes me think there's more potential here - the Armbian defaults
+  can probably be bumped up. Not that I need more horsepower <em>(it offers
+  more than what I need)</em> but it's still nice to know there's room to grow.</p>
+
+<p>Also, very importantly - notice that even though we stressed the machine to
+  an extreme - all cores fully utilised <em>(see second run with <code>top</code> in the
+  first <code>tmux</code> pane for confirmation)</em> the temperature <strong>never went above 53C</strong>.</p>
+
+<p>The enclosure barely felt warm during the test; nothing even remotely concerning.
+  From a thermal perspective, amongst all my ARM SBCs, this is the one I trust the most.</p>
+
+<h2>Network</h2>
+
+<p>Is it truly a Gigabit device?</p>
+
+<p>Well, the best way to confirm it, is to use another <a href="atomicpi.html">machine</a>
+on the same Gigabit network, to send/receive data and benchmark via <code>iperf3</code>.</p>
+
+<p>Again, let's see it done live:</p>
+
+<p><center>
+<a href="https://asciinema.org/a/386494" target="_blank"><img src="https://asciinema.org/a/386494.svg" /></a>
+</center></p>
+
+<p>That looks like Gigabit to me :-)</p>
+
+<h2>Power consumption</h2>
+
+<p>OK - so we know this is a more than fast enough SBC, with fast USB3
+storage and Gigabit networking. But how does it fare in terms of
+power consumption?</p>
+
+<p>It does have the advantage of being an ARM, not an x86 design - but 
+still, let's see how it does:</p>
+
+<ul>
+<li><p>I placed my USB power meter in the loop, and measured the current going
+in. After the boot completed, with the SBC's power supply "feeding"
+both itself and the mechanical USB3 drive as well, I measured a total
+of 370mA going in. Since this is a 5V supply, <em>we are talking about 1.85W
+for this mini-NAS</em>.</p></li>
+<li><p>I then launched my renderer. With all cores fully utilised, the
+consumption rose to an almost rock-solid 720mA (3.6W).</p></li>
+<li><p>And when I stressed the USB3 drive - i.e. when I fetched data at
+maximum speed, with <code>pv -ptebar</code> - the consumption hovered around
+900mA; i.e. a bit less than 5W.</p></li>
+</ul>
+
+<h2>Conclusions</h2>
+
+<p>I haven't yet exercised all features offered by this SBC. I am especially
+looking forward to playing with its OpenGL capabilities :-) ...but my overall
+impression so far is very <strong>positive</strong>. The combination of the metal
+enclosure with a respectable performance at a low power consumption,
+while giving Gigabit networking and USB3 speeds, makes it a very nice
+machine indeed.</p>
+
+<p>Aeons ago, I used SPARCstations - back when I was a student. And I was more
+than happy with what I could do with their 40MHz brains.</p>
+
+<p>To see now these ARM devices offer so much power, in credit-card-sized enclosures... 
+It is really mind-blowing.</p>
+
+<p>I've seen it all, methinks :-)</p>
+
+<hr>
+
+<p><a name="renderer">[1]</a> <em>The reason I avoid <code>sysbench</code>, <code>dhrystones</code> and the like, is because they
+really aren't representative "loads". My <a href="renderer.html">renderer</a> is a far better overall
+<a href="https://openbenchmarking.org/test/pts/ttsiod-renderer#metrics">stress tester</a>
+ - checking the performance of integer and FPU calculations, done by multiple cores, while at the same time stress-testing the
+memory bandwidth.</em></p>
+
+<div class="redBox">
+If you liked this article, you'll probably also appreciate...
+<ul>
+<li>My <a target="_blank" href="atomicpi.html">Atomic PI</a> adventures
+<li>Turning an Orange PI Zero into <a target="_blank" href="https://www.thanassis.space/thebeast.html#thebeast">my pet "beast"</a>
+<li>Experimenting with a <a target="_blank" href="rockpis.html">Rock PI S</a>.
+</ul>
+Well... what can I say? I love SBCs :-)
+</div>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jan 23 18:57:57 2021</em></td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/stationm1.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

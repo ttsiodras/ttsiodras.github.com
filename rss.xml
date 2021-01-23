@@ -9,6 +9,33 @@
   <atom:link href="https://www.thanassis.space/rss.xml" rel="self" type="application/rss+xml" />
 
 <item>
+<title>Another year, another SBC (Firefly/Station M1)</title>
+<guid>https://www.thanassis.space/stationm1.html</guid>
+<link>https://www.thanassis.space/stationm1.html</link>
+<description>Another year, another SBC (Firefly/Station M1)</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>23 Jan 2021 19:17:00 +0100</pubDate>
+</item>
+
+<item>
+<title>Making Mandelbrot run in a 1.4$ microcontroller - and speeding up 100x with XaoS</title>
+<guid>https://github.com/ttsiodras/MandelbrotSSE</guid>
+<link>https://github.com/ttsiodras/MandelbrotSSE</link>
+<description>Making Mandelbrot run in a 1.4$ microcontroller - and speeding up 100x with XaoS</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>30 Oct 2020 22:00:00 +0100</pubDate>
+</item>
+
+<item>
+<title>Backing up to SBC-based ZFS</title>
+<guid>https://www.thanassis.space/backupCOVID.html</guid>
+<link>https://www.thanassis.space/backupCOVID.html</link>
+<description>Backing up to SBC-based ZFS</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>7 Jul 2020 21:59:21 +0100</pubDate>
+</item>
+
+<item>
 <title>Drained batteries, LEDs, and creative solitude</title>
 <guid>https://www.thanassis.space/chargepump.html</guid>
 <link>https://www.thanassis.space/chargepump.html</link>
