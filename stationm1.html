@@ -113,12 +113,13 @@ the insides of the SBC are easily accessible:</p>
 giving my SBC 2GB of RAM are easily identifiable; and on the top, the
 GPIO pins that make SBCs what they are - perfect toys for makers :-)</p>
 
-<p>In case you are wondering, yes, that's a battery slot for an RTC.<br>
-I always use NTP, of course - but this is still a nice perk :-)</p>
+<p>In case you are wondering, yes, that's a battery slot for an RTC.
+I always use NTP, of course - but this is a nice perk for usage scenarios
+where the SBC is not connected to the web.</p>
 
-<p>In the case of the Station, the 3 pins shown in the picture below
+<p>In the case of the Station M1, the 3 pins shown in the picture below
 form a 3.3V serial port, that speaks at 1500000 baud - in classic 8-N-1.
- Any USB2TTL dongle that works with 3.3V levels will do nicely:</p>
+Any USB2TTL dongle that works with 3.3V levels will do nicely:</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
 <img src="stationm1-serial.jpg" alt="Serial port"><p>
@@ -183,8 +184,8 @@ In my case, I executed something like this:</p>
 
 <p>When running this command, my Micro-SD card was inside a USB adapter plugged-in and visible under /dev/sdc.
 Make sure you use the appropriate target here, <strong>otherwise you will wipe out your own machine's
-data!</strong> The output of <code>dmesg</code> is your friend here, look at it (and the output
-of <code>lsblk</code>) to see the name of the device for your SD writer.</p>
+data!</strong> The output of <code>dmesg</code> is your friend - look at it <em>(as well as the output
+of <code>lsblk</code>)</em> to see the name of the device for your SD writer.</p>
 
 <p>The <code>sync</code> output flag of <code>dd</code> caused a significant improvement in reliability with
 my SD writer. You may or may not need this option - but if you don't use it,
@@ -192,7 +193,8 @@ make sure you actually invoke <code>sync</code> after <code>dd</code> is complet
 benefit from a big block size (<code>bs=1M</code>) and a nice and simple progress report
 while the writing takes place (<code>status=progress</code>). </p>
 
-<p>Most importantly: don't you dare remove the <code>fullblock</code> iflag. Trust me - there be dragons there.</p>
+<p>Most importantly: don't you dare remove the <code>fullblock</code> iflag. Trust me on
+this - you need it.</p>
 
 <h2>Booting Armbian</h2>
 
@@ -369,20 +371,36 @@ on the same Gigabit network, to send/receive data and benchmark via <code>iperf3
 storage and Gigabit networking. But how does it fare in terms of
 power consumption?</p>
 
-<p>It does have the advantage of being an ARM, not an x86 design - but 
-still, let's see how it does:</p>
+<p>I revert the configuration to a Micro-SD based boot - to see how we score without an external USB3 drive attached:</p>
+
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ZhDUSiL3Exg?rel=0" frame border="0" allowfullscreen>
+</iframe>
+</div>
+
+<div style="text-align: center">
+  <em>Current consumption of Station M1</em>
+</div>
 
 <ul>
-<li><p>I placed my USB power meter in the loop, and measured the current going
-in. After the boot completed, with the SBC's power supply "feeding"
-both itself and the mechanical USB3 drive as well, I measured a total
-of 370mA going in. Since this is a 5V supply, <em>we are talking about 1.85W
-for this mini-NAS</em>.</p></li>
-<li><p>I then launched my renderer. With all cores fully utilised, the
-consumption rose to an almost rock-solid 720mA (3.6W).</p></li>
-<li><p>And when I stressed the USB3 drive - i.e. when I fetched data at
-maximum speed, with <code>pv -ptebar</code> - the consumption hovered around
-900mA; i.e. a bit less than 5W.</p></li>
+<li><p>I place my INA219-based power meter in the loop, and record the current
+going in <em>(I have an ESP8266 getting the data of the INA219 over I2C, and
+transmitting the measurements over WiFi to my laptop. Probably a subject
+for another blog post :-)</em></p></li>
+<li><p>As shown in the video, during the boot the device fluctuates from 250mA to 550mA.<br>
+When it settles down, it idles at 170mA.</p></li>
+<li><p>I then launch my renderer, which uses all 4 CPU cores - and the current usage
+stays solidly between 480-500mA.</p></li>
+<li><p>It's not recorded in the video; but I then plug my external USB3 drive,
+so the SBC's power supply now "feeds" both the SBC and the mechanical USB3
+drive.</p></li>
+<li><p>Current now jumps up to an idle usage of 370mA. Since this is a 5V supply,
+<em>we are talking about 1.85W for this mini-NAS</em>.</p></li>
+<li><p>With the drive still attached, I re-launch my renderer. With all cores fully
+utilised, the consumption rises to an almost rock-solid 720mA (3.6W).</p></li>
+<li><p>And finally, I stress the USB3 drive - i.e. I fetch data from it at
+maximum speed, with <code>pv -ptebar</code>. The consumption hovers around 900mA;
+i.e. a bit less than 5W.</p></li>
 </ul>
 
 <h2>Conclusions</h2>
@@ -442,7 +460,7 @@ Well... what can I say? I love SBCs :-)
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jan 23 18:57:57 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Jan 24 12:23:09 2021</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

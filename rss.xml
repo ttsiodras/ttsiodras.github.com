@@ -9,6 +9,15 @@
   <atom:link href="https://www.thanassis.space/rss.xml" rel="self" type="application/rss+xml" />
 
 <item>
+<title>A USB2.0 adapter for my AtomicPI</title>
+<guid>https://www.thanassis.space/stationm1.html</guid>
+<link>https://www.thanassis.space/stationm1.html</link>
+<description>A USB2.0 adapter for my AtomicPI</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>03 Feb 2021 20:07:00 +0100</pubDate>
+</item>
+
+<item>
 <title>Another year, another SBC (Firefly/Station M1)</title>
 <guid>https://www.thanassis.space/stationm1.html</guid>
 <link>https://www.thanassis.space/stationm1.html</link>

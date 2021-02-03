@@ -32,7 +32,7 @@
 I desperately needed to extract the complete (and very lengthy) command line I had written 6 months ago in a bash shell - which was still running under <tt>screen</tt>. Read on to see how I eventually made it...
 </td></tr></table>
 
-<p>Let's assume you are using bash as your daily shell. You've heard lots of worrying things lately about it's safety. But that's not what's bothering you.</p>
+<p>Let's assume you are using bash as your daily shell. You've heard lots of worrying things lately about it's <a target="_blank" href="https://en.wikipedia.org/wiki/Shellshock_(software_bug)">safety</a>. But that's not what's bothering you.</p>
 
 <p>What's bothering you is that some months ago you abused the holy UNIX principles with it. It couldn't be helped. You were asked to implement a daemon that monitors a folder for incoming "stuff". The clients upload files there, and you were expected to do various things with them.</p>
 
@@ -224,8 +224,21 @@ from which it was spawned (and which GDB searches for, to get the address of <co
 
 <p>And decide it's been quite a while since I posted something on my blog :-)</p>
 
-<p><p>&nbsp;<br>
-<a href="http://www.reddit.com/r/programming/comments/2i6pnk/the_magic_cmdline_and_how_i_got_it_back/">Discuss on Reddit</a></p>
+<p><p>&nbsp;<br></p>
+
+<div class="redBox">
+<em>
+<b>Update, many years later</b>: A question that keeps re-appearing every time this post shows up in places like Hacker News or Reddit: "Why didn't you just "Ctrl-c", up arrow?"... Or: "Why didn't you just "Ctrl-z", up arrow, down-arrow, "fg"?
+<p>
+Remember: <b>The script was running in production, doing actual work.</b> Stopping it with Ctrl-c, when you don't remember anything about it and what it spawns, was not a safe option.  If you think about it, you'll realize there are plenty of things that don't recover from Ctrl-C... Batch processes in network operations that affect state, API calls... I am sure you know what I mean.
+<p>
+As for Ctrl-z: try running this in your <tt>bash</tt>, and applying the "Ctrl-z/fg" approach to it: <tt>while true ; do sleep 1 ; done</tt>. You'll see that the loop won't recover - it won't resume its proper operation...
+<p>
+So, to put it simply: sending signals to processes I had no recollection of, <b>was not as safe</b> as reading my shell's memory with the god of debuggers.
+</em>
+</div>
+
+<p><a href="http://www.reddit.com/r/programming/comments/2i6pnk/the_magic_cmdline_and_how_i_got_it_back/">Discuss on Reddit</a></p>
 
 <p><a href="https://news.ycombinator.com/item?id=8405458">Discuss on HN</a></p>
 
@@ -251,7 +264,7 @@ from which it was spawned (and which GDB searches for, to get the address of <co
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Feb 21 12:56:49 2016</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Jan 31 11:25:54 2021</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">
