@@ -14,25 +14,28 @@
 <script type="text/javascript" src="prototype.js"></script>
 <script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
 <script type="text/javascript" src="lightbox.js"></script>
-<title>A USB2.0 adapter for my AtomicPI</title>
+<title>A USB2.0 adapter and a 3D-printed enclosure for my AtomicPI</title>
 </head>
 <body>
     <div class="well" id="Page">
-        <div id="Banner">A USB2.0 adapter for my AtomicPI</div>
+        <div id="Banner">A USB2.0 adapter and a 3D-printed enclosure for my AtomicPI</div>
         <div id="MainContent">
             <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(January 2021)</em></p>
 
-<h1>A USB2.0 adapter for my AtomicPI</h1>
+<h1>USB2.0 adapter and 3D-printed enclosure (AtomicPI)</h1>
+
+<p><a href="https://github.com/ttsiodras/AtomicPI-3D-printed-enclosure"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a></p>
 
 <div class="tldr">
-<b>TL;DR:</b> I used some cheap components to create a USB 2.0 port for my Atomic PI.
+<b>TL;DR:</b> I used some cheap components to create a USB 2.0 port for my Atomic PI...
 <div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
-<img src="atomicpi-usb2-2.jpg" alt="Final product, pic 3"><p>
+<img src="atomicpi-TLDR.webp" alt="Final form."><p>
 </div>
 
-<p><p>
+<p>...and then I used OpenSCAD to design and 3D-print an enclosure.
+<p>
 My previous articles on this excellent 35$ SBC:</p>
 
 <ul>
@@ -52,16 +55,17 @@ I love my AtomicPI :-)<p>
 <em>The old form</em>
 </div>
 
-<p>I wanted to use the additional USB port "hiding" in the webcam - but being eager to do it, I didn't order any components/connectors. I just reused a female USB breakout board I had, and directly soldered it on the webcam pins of the PI <em>(as shown in the photo above - from right to left, skip one pin (GND), then VCC, D-, D+, GND)</em>.</p>
+<p>Back in 2019, I wanted to use the additional USB port "hiding" in the webcam. And being eager to do it, I didn't order any components/connectors - I just reused a female USB breakout board I had, and directly soldered it on the webcam pins of the PI <em>(as shown in the photo above - from right to left, skip one pin (GND), then VCC, D-, D+, GND)</em>.</p>
 
-<p>I also hot-glued after soldering - for extra stability!<p>
-What can I say? I <b>enjoy</b> hacking things :-)</p>
+<p>I also hot-glued after soldering - for extra stability! :-)<p></p>
 
-<p>And if you doubt the setup, you shouldn't! It has performed its duties as a ZFS server for a year and a half, with zero issues. ZFS periodically scrubs the mirrored pool, formed from two external 2TB drives - one accessed over USB3, the other over my custom USB2 port. Any issues with cabling/noise would have surfaced by now - there were none.</p>
+<p>What can I say? I <b>enjoy</b> hacking things.</p>
+
+<p>You may be doubting this setup - but you shouldn't. It has performed its duties as a ZFS server for a year and a half, with zero issues. ZFS periodically scrubs the mirrored pool, formed from two external 2TB drives - one accessed over USB3, the other over my custom USB2 port. Any issues with cabling/noise would have surfaced by now - there were none.</p>
 
 <h2>3D-printing an enclosure? A better USB port first!</h2>
 
-<p>This past Xmas, I rewarded myself with an Ender V2 3D printer. I am a tinkerer by nature, so I felt it was high time I jump on this hobby too.</p>
+<p>So... This past Xmas, I rewarded myself with an Ender V2 3D printer. I am a tinkerer by nature, so I felt it was high time I jump on this hobby too.</p>
 
 <p>And what better way to start, than by building an enclosure for my Atomic PI!</p>
 
@@ -80,7 +84,9 @@ I can't have it dangling off the side :-)</p>
 
 <p>The ingredients arrived 10 days later - so...</p>
 
-<p><strong>Step 1</strong>: Crimping solid core wires into the contacts, and inserting them inside the connector:</p>
+<p><strong>Step 1</strong>:</p>
+
+<p>Crimping solid core wires into the contacts, and inserting them inside the connector...</p>
 
 <p>I don't have a crimper, so this was a bit of an exercise in patience :-)</p>
 
@@ -91,7 +97,9 @@ From left to right: VCC, D-, D+, GND
 </em>
 </div>
 
-<p><strong>Step 2</strong>: Cut a piece of perfboard that will perfectly fit alongside the big heatsink - and solder the USB port on it.
+<p><strong>Step 2</strong>:</p>
+
+<p>Cut a piece of perfboard that will perfectly fit alongside the big heatsink - and solder the USB port on it.
 Also, enlarge the corner hole to accomodate a PCB standoff - which will allow a much more solid attachment of this 'adapter' board on the motherboard.</p>
 
 <div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
@@ -99,7 +107,9 @@ Also, enlarge the corner hole to accomodate a PCB standoff - which will allow a 
 <em>Female USB port on perfboard - placed, not soldered yet</em>
 </div>
 
-<p><strong>Step 3</strong>: Assemble the pieces, and mold the solid-core wires to properly place the connector - so that it will match with the webcam port:</p>
+<p><strong>Step 3</strong>:</p>
+
+<p>Assemble the pieces, and mold the solid-core wires to properly place the connector - so that it will match with the webcam port:</p>
 
 <div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
 <img src="atomicpi-assembly1.jpg" alt="Assembly, side 1"><p>
@@ -111,7 +121,9 @@ Also, enlarge the corner hole to accomodate a PCB standoff - which will allow a 
 <em>Assembly, side 2</em>
 </div>
 
-<p><strong>Step 4</strong>: Add a bit of hot glue, for even more stability... and plug it in!</p>
+<p><strong>Step 4</strong>:</p>
+
+<p>Add a bit of hot glue, for even more stability... and plug it in!</p>
 
 <div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
 <img src="atomicpi-usb2-1.jpg" alt="Final product, pic 1"><p>
@@ -125,19 +137,52 @@ Also, enlarge the corner hole to accomodate a PCB standoff - which will allow a 
 <img src="atomicpi-usb2-3.jpg" alt="Final product, pic 3"><p>
 </div>
 
-<p>The new USB port...</p>
+<h2>USB port stress test with ZFS</h2>
 
-<ul>
-<li>now "lives" inside the body area of the motherboard</li>
-<li>it's quite solidly attached <em>(with the PCB standoff on one side, and the JST connector on the other)</em></li>
-<li>...and it just passed a complete ZFS scrub with both drives attached.</li>
-</ul>
+<p>OK - so the new USB port now "lives" inside the body area of the motherboard.
+It's also quite solidly attached <em>(with the PCB standoff on one side, and the JST connector on the other)</em></p>
 
-<p>It basically works just as well as the port it replaced...<br>
-But it <em>definitely</em> looks better :-)</p>
+<p>Time to test it, with a ZFS scrub on my 2TB ZFS pool...</p>
+
+<p>...a test that it passed with flying colors.</p>
+
+<p>So the new port works just as well as the port it replaced...<br>
+And it <em>definitely</em> looks better :-)</p>
 
 <p>I am officially out of excuses now - I have to learn OpenSCAD, and design/print an enclosure... <br>
 Here we go!</p>
+
+<h2>Two after-work-evenings later...</h2>
+
+<p>OpenSCAD makes this job so easy! Amazing SW, I love it - feels just like writing code, 
+with a <em>very</em> visual debugger :-) </p>
+
+<p>This deserves a new blog post. Alas, no time...</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="openscad.jpg" alt="On my way to 3D-printing with OpenSCAD"><p>
+</div>
+
+<h2>And finally...</h2>
+
+<p>One weekend later...</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="atomicpi-glorious.jpg" alt="Final result"><p>
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="atomicpi-final.webp" alt="So much better than before :-)"><p>
+</div>
+
+<p>So, so much better :-)</p>
+
+<p>In case you are wondering, the top cover snaps into place, via a dent
+<em>(inspiration: <a href="https://www.thingiverse.com/thing:2411898/remixes">Inhumierer (Thingiverse)</a> )</em></p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="atomicpi-cover.jpg" alt="Top-cover"><p>
+</div>
 
 <br>
     <hr>
@@ -161,7 +206,7 @@ Here we go!</p>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Wed Feb 3 20:06:03 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Feb 14 11:38:18 2021</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">
