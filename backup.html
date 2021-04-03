@@ -321,13 +321,13 @@ data - as well as automatic detection and correction of hardware data
 errors - and it will cost me NOTHING: instead of formating the BigFile 
 as ReiserFS, I will format it as ZFS. 
 <p>In fact, I could already add compression of backed up data in many 
-places; I could ask the Windows server (through Explorer) to keep the 
+places; I could ask the Windows server (through Explorer) to keep the
 BigFile as a compressed one; or I could apply any of the many 
 <a href="https://github.com/libfuse/libfuse/wiki/Filesystems">FUSE based
 compressible filesystems</a> to the mounted ReiserFS image (much better). 
 <p>The possibilities are endless - in the open source world, at least.
   <div class="redBox">
-  <b>Update: Use FreeBSD/ZFS</b><p>
+  <b>Update 1: Use FreeBSD/ZFS</b><p>
   Keep in mind, that in the years that passed since I wrote
   this, my backup procedure improved further, by moving to...
   FreeBSD/ZFS. I am still rsyncing - but the target storage
@@ -341,6 +341,26 @@ compressible filesystems</a> to the mounted ReiserFS image (much better).
   <li>All in all, this single Atom330 contains almost a years-worth of the history of EVERYTHING in my company: the remote USA server's filesystem, the file-server in the company (a Windows machine, with rsyncd installed on it), the VMWARE server's .vmdk files (large files on the order of many GB - changing on a daily basis!), etc.
   </ul>
   ZFS rules.
+  <p><b>Update 2: Use Borgbackup, store on ZFS</b><p>
+  Borg goes a step further than ZFS; it uses rolling checksums (the kind
+  that rsync uses) to identify parts of a stream that remain identical.
+  Think of it this way: ZFS snapshots will only store the sectors
+  that changed, via Copy-on-Write semantics. Borg backups, will identify
+  the same areas regardless of where they are found - even in separate
+  files. This de-duplication is then followed by compression; with
+  an end result that is <b>insanely</b> efficient; I can safely say
+  that I will be able to store 1000s of daily backups without breaking
+  a sweat.
+
+  <p>And of course, the Borg backup-ed data are stored in ZFS; to take
+  advantage of the self-healing (automatic detection and recovery
+  from data corruption) that ZFS offers.
+
+  <p>Also note: you don't have to use FreeBSD anymore; ZFS-on-Linux
+  works perfectly.
+
+  <p><b>Executive summary</b>: As of 2021, at least, the state of the art
+  is Borgbackups stored in ZFS pools.
 </div>
 <br>
     <hr>
@@ -364,7 +384,7 @@ compressible filesystems</a> to the mounted ReiserFS image (much better).
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Feb 27 10:05:14 2016</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Thu Mar 4 11:46:32 2021</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">
