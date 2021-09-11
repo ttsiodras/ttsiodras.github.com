@@ -1,0 +1,1186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/monkeyisland.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<title>The Monkey Island (TM) PC-Speaker music player</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">The Monkey Island (TM) PC-Speaker music player</div>
+        <div id="MainContent">
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(July 2021)</em></p>
+
+<h1>The Monkey Island (TM) PC-Speaker music player</h1>
+
+<p><a href="https://github.com/ttsiodras/ATtiny85_MonkeyIslandPlayer"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a></p>
+
+<div class="tldr">
+<b>TL;DR:</b>
+<ul>
+<li>I modified DOSBox to extract the frequency/delay value pairs of the Monkey Island PC-Speaker songs.
+<li>I then used Huffman compression to squeeze all music inside an ATtiny85 (<B>512 <em>bytes</em> of RAM, 8 <em>KB</em> of flash</B>)
+<li>Once I managed that, I then created a small circuit with a speaker - to play the music...
+<li>...as a gift for my nieces and nephews; whom I'll see next week after more than a year's isolation (COVID)!
+</ul>
+<p>
+Yes, their uncle is a complete nerd. And he made sure they grew up meeting Guybrush Threepwood :-)
+
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/B6dVIQt_cSE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+<p></div></p>
+
+<h1>History</h1>
+
+<p>If you...</p>
+
+<ul>
+<li>...had the good fortune of playing <a href="https://en.wikipedia.org/wiki/The_Secret_of_Monkey_Island">Monkey Island</a> back in 1990 on a PC clone...</li>
+<li>...while listening to the crappy-yet-magnificent PC-speaker music...</li>
+<li>...and you also have a tech/nerdy disposition...</li>
+</ul>
+
+<p>...then there's a good chance you will enjoy some of what follows :-)</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="guybrush1.jpg" alt="The adventure begins...">
+<p>
+<em>The adventure begins...</em>
+</div>
+
+<p>I met Guybrush Threepwood in 1990 - and followed him in his adventures in the Caribbean.</p>
+
+<p>To be clear, I am talking about a game. But not just <em>any</em> game... There are many things one can say about Monkey Island - one of them, is that <a href="https://en.wikipedia.org/wiki/List_of_video_games_considered_the_best">it is included in the list of the best games ever</a> <em>(if you haven't played it, you should seriously consider trying it out)</em>.</p>
+
+<p>But the most important thing about it... is that in so many ways, it is <b>Art</b>.</p>
+
+<p>Of the best kind.</p>
+
+<p>And part of that art, was the PC-speaker music!</p>
+
+<p>Naturally therefore, an old nerd eventually feels the need to dig that treasure out...</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="guybrush0.jpg" alt="Who knows, we may even get a T-shirt!">
+<p>
+<em>Who knows, we may even get a T-shirt!</em>
+</div>
+
+<h1>DOSBox</h1>
+
+<p>These days, even our phones are supercomputers. At least they feel that way, to a guy <a href="speccy3d.html">who grew up with a ZX Spectrum</a>.</p>
+
+<p>It is therefore quite easy, from a CPU-requirements standpoint, to emulate old machines.</p>
+
+<p><a href="https://www.dosbox.com/">DOSBox</a> is one of the programs that do just that: it emulates DOS machines almost perfectly, allowing old-timers like me to relive their DOS days - and use the data from the original diskette of Monkey Island :-)</p>
+
+<p>Since DOSBox is open-source, the adventure begun by hunting for the frequency-driving code of the PC Speaker. It was relatively easy: in good old PCs, the speaker was driven by the Programmable Interval Timer (PIT) - so after slightly modifying DOSBox's timer-handling code...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">//</span>
+<span class="comment">// Meanwhile...</span>
+<span class="comment">//</span>
+<span class="comment">// Inside src/hardware/timer.cpp</span>
+<span class="comment">//</span>
+<span class="comment">//</span>
+<span class="normal">            </span><span class="keyword">case</span><span class="normal"> </span><span class="number">0x02</span><span class="symbol">:</span><span class="normal">                      </span><span class="comment">/* Timer hooked to PC-Speaker */</span>
+<span class="normal">                    </span><span class="function">PCSPEAKER_SetCounter</span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">-&gt;</span><span class="normal">cntr</span><span class="symbol">,</span><span class="normal">p</span><span class="symbol">-&gt;</span><span class="normal">mode</span><span class="symbol">);</span>
+
+<span class="symbol">+</span><span class="normal">                   </span><span class="comment">// Tell me the secrets of Monkey Island!</span>
+<span class="symbol">+</span><span class="normal">                   </span><span class="function">printf</span><span class="symbol">(</span><span class="string">"%.3g Hz @ %u</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal">PIT_TICK_RATE</span><span class="symbol">/(</span><span class="type">double</span><span class="symbol">)</span><span class="normal">p</span><span class="symbol">-&gt;</span><span class="normal">cntr</span><span class="symbol">,</span><span class="normal"> PIC_Ticks</span><span class="symbol">);</span>
+
+<span class="normal">                    </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="label">            default:</span>
+<span class="normal">                    </span><span class="function">LOG</span><span class="symbol">(</span><span class="normal">LOG_PIT</span><span class="symbol">,</span><span class="normal">LOG_ERROR</span><span class="symbol">)(</span><span class="string">"PIT:Illegal timer selected for writing"</span><span class="symbol">);</span>
+</tt></pre>
+</div>
+
+<p>...I made DOSBox print out what frequency it is currently forcing through the PC-Screamer.</p>
+
+<p>That also required configuring my modified DOSBox to sing appropriately...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment"># In dosbox.conf</span>
+
+<span class="variable">sb16</span><span class="symbol">=</span><span class="normal">none</span>
+<span class="symbol">...</span>
+<span class="variable">gus</span><span class="symbol">=</span><span class="keyword">false</span>
+<span class="symbol">...</span>
+<span class="variable">pcspeaker</span><span class="symbol">=</span><span class="keyword">true</span>
+</tt></pre>
+</div>
+
+<p>And after launching my mutated DOSBox - while redirecting standard output - this sort of data came out:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="symbol">...</span>
+<span class="number">1.19e+06</span><span class="normal"> Hz @ </span><span class="number">15179</span>
+<span class="number">1.19e+06</span><span class="normal"> Hz @ </span><span class="number">15184</span>
+<span class="number">1.19e+06</span><span class="normal"> Hz @ </span><span class="number">15188</span>
+<span class="number">1.19e+06</span><span class="normal"> Hz @ </span><span class="number">15192</span>
+<span class="number">1.19e+06</span><span class="normal"> Hz @ </span><span class="number">15196</span>
+<span class="number">1.19e+06</span><span class="normal"> Hz @ </span><span class="number">15201</span>
+<span class="number">1.19e+06</span><span class="normal"> Hz @ </span><span class="number">15205</span>
+<span class="number">989</span><span class="normal"> Hz @ </span><span class="number">15209</span>
+<span class="number">989</span><span class="normal"> Hz @ </span><span class="number">15213</span>
+<span class="number">989</span><span class="normal"> Hz @ </span><span class="number">15218</span>
+<span class="number">784</span><span class="normal"> Hz @ </span><span class="number">15222</span>
+<span class="number">784</span><span class="normal"> Hz @ </span><span class="number">15226</span>
+<span class="number">784</span><span class="normal"> Hz @ </span><span class="number">15230</span>
+<span class="number">784</span><span class="normal"> Hz @ </span><span class="number">15234</span>
+<span class="number">658</span><span class="normal"> Hz @ </span><span class="number">15239</span>
+<span class="number">658</span><span class="normal"> Hz @ </span><span class="number">15243</span>
+<span class="number">658</span><span class="normal"> Hz @ </span><span class="number">15247</span>
+<span class="number">658</span><span class="normal"> Hz @ </span><span class="number">15251</span>
+<span class="number">494</span><span class="normal"> Hz @ </span><span class="number">15256</span>
+<span class="number">494</span><span class="normal"> Hz @ </span><span class="number">15260</span>
+<span class="number">494</span><span class="normal"> Hz @ </span><span class="number">15264</span>
+<span class="number">494</span><span class="normal"> Hz @ </span><span class="number">15268</span>
+<span class="number">392</span><span class="normal"> Hz @ </span><span class="number">15272</span>
+<span class="number">392</span><span class="normal"> Hz @ </span><span class="number">15277</span>
+<span class="number">392</span><span class="normal"> Hz @ </span><span class="number">15281</span>
+<span class="number">329</span><span class="normal"> Hz @ </span><span class="number">15285</span>
+<span class="number">329</span><span class="normal"> Hz @ </span><span class="number">15289</span>
+<span class="number">329</span><span class="normal"> Hz @ </span><span class="number">15294</span>
+<span class="number">329</span><span class="normal"> Hz @ </span><span class="number">15298</span>
+<span class="number">165</span><span class="normal"> Hz @ </span><span class="number">15302</span>
+<span class="number">165</span><span class="normal"> Hz @ </span><span class="number">15306</span>
+<span class="number">165</span><span class="normal"> Hz @ </span><span class="number">15310</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<ul>
+<li>The 1.19MHz means silence.</li>
+<li>The rest, is pure melody!</li>
+</ul>
+
+<p>And since it is time-stamped melody, one can easily extract each note's duration.</p>
+
+<p>So I quickly hacked some <a href="makeWAV.py">Python</a> to turn this digital Sheet Music <em>(from the redirected file <code>notes</code>)</em> into <code>some.wav</code> file...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">#!/usr/bin/env python</span>
+<span class="preproc">import</span><span class="normal"> os</span>
+
+<span class="normal">FREQ </span><span class="symbol">=</span><span class="normal"> </span><span class="number">22050</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">emitSilence</span><span class="symbol">(</span><span class="normal">f</span><span class="symbol">,</span><span class="normal"> ms</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="symbol">(</span><span class="string">"Silence for"</span><span class="symbol">,</span><span class="normal"> ms</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"ms"</span><span class="symbol">)</span>
+<span class="normal">    ms </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> ms </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">5000</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> ms</span>
+<span class="normal">    f</span><span class="symbol">.</span><span class="function">write</span><span class="symbol">(</span><span class="string">''</span><span class="symbol">.</span><span class="function">join</span><span class="symbol">([</span><span class="function">chr</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">)]*</span><span class="function">int</span><span class="symbol">(</span><span class="number">22050</span><span class="symbol">*</span><span class="normal">ms</span><span class="symbol">/</span><span class="number">1000</span><span class="symbol">)))</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">emitFreq</span><span class="symbol">(</span><span class="normal">f</span><span class="symbol">,</span><span class="normal"> freq</span><span class="symbol">,</span><span class="normal"> ms</span><span class="symbol">):</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="symbol">(</span><span class="string">"Emitting"</span><span class="symbol">,</span><span class="normal"> freq</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"HZ for"</span><span class="symbol">,</span><span class="normal"> ms</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"ms"</span><span class="symbol">)</span>
+<span class="normal">    samples </span><span class="symbol">=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">FREQ</span><span class="symbol">/</span><span class="normal">freq</span><span class="symbol">)</span>
+<span class="normal">    samples_on </span><span class="symbol">=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">samples</span><span class="symbol">/</span><span class="number">2</span><span class="symbol">)</span>
+<span class="normal">    data </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span><span class="function">chr</span><span class="symbol">(</span><span class="number">255</span><span class="symbol">)]*</span><span class="normal">samples_on</span>
+<span class="normal">    data </span><span class="symbol">+=</span><span class="normal"> </span><span class="symbol">[</span><span class="function">chr</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">)]*(</span><span class="normal">samples </span><span class="symbol">-</span><span class="normal"> samples_on</span><span class="symbol">)</span>
+<span class="normal">    time_of_one_period </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1000</span><span class="symbol">.</span><span class="normal"> </span><span class="symbol">*</span><span class="normal"> samples</span><span class="symbol">/</span><span class="normal">FREQ</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> ms </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">:</span>
+<span class="normal">        f</span><span class="symbol">.</span><span class="function">write</span><span class="symbol">(</span><span class="string">''</span><span class="symbol">.</span><span class="function">join</span><span class="symbol">(</span><span class="normal">data</span><span class="symbol">))</span>
+<span class="normal">        ms </span><span class="symbol">-=</span><span class="normal"> time_of_one_period</span>
+
+<span class="keyword">def</span><span class="normal"> </span><span class="function">main</span><span class="symbol">():</span>
+<span class="normal">    f </span><span class="symbol">=</span><span class="normal"> </span><span class="function">open</span><span class="symbol">(</span><span class="string">"some.raw"</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"wb"</span><span class="symbol">)</span>
+<span class="normal">    freq</span><span class="symbol">,</span><span class="normal"> tick </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">    oldFreq</span><span class="symbol">,</span><span class="normal"> oldTick </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span>
+<span class="normal">    </span><span class="keyword">for</span><span class="normal"> line </span><span class="keyword">in</span><span class="normal"> </span><span class="function">open</span><span class="symbol">(</span><span class="string">"notes"</span><span class="symbol">):</span>
+<span class="normal">        freq</span><span class="symbol">,</span><span class="normal"> tick </span><span class="symbol">=</span><span class="normal"> line</span><span class="symbol">.</span><span class="function">split</span><span class="symbol">(</span><span class="string">'Hz @ '</span><span class="symbol">)</span>
+<span class="normal">        tick </span><span class="symbol">=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="normal">tick</span><span class="symbol">.</span><span class="function">strip</span><span class="symbol">())</span>
+<span class="normal">        freq </span><span class="symbol">=</span><span class="normal"> </span><span class="function">int</span><span class="symbol">(</span><span class="function">float</span><span class="symbol">(</span><span class="normal">freq</span><span class="symbol">))</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> freq </span><span class="symbol">!=</span><span class="normal"> oldFreq</span><span class="symbol">:</span>
+<span class="normal">            ms </span><span class="symbol">=</span><span class="normal"> tick</span><span class="symbol">-</span><span class="normal">oldTick</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> oldFreq </span><span class="keyword">in</span><span class="normal"> </span><span class="symbol">(-</span><span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="number">1190000</span><span class="symbol">):</span>
+<span class="normal">                </span><span class="keyword">print</span><span class="symbol">(</span><span class="string">"Silence"</span><span class="symbol">,</span><span class="normal"> ms</span><span class="symbol">)</span>
+<span class="normal">                </span><span class="function">emitSilence</span><span class="symbol">(</span><span class="normal">f</span><span class="symbol">,</span><span class="normal"> ms</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">                </span><span class="keyword">print</span><span class="symbol">(</span><span class="string">"Freq"</span><span class="symbol">,</span><span class="normal"> oldFreq</span><span class="symbol">,</span><span class="normal"> ms</span><span class="symbol">)</span>
+<span class="normal">                </span><span class="function">emitFreq</span><span class="symbol">(</span><span class="normal">f</span><span class="symbol">,</span><span class="normal"> oldFreq</span><span class="symbol">,</span><span class="normal"> ms</span><span class="symbol">)</span>
+<span class="normal">            oldTick </span><span class="symbol">=</span><span class="normal"> tick</span>
+<span class="normal">        oldFreq </span><span class="symbol">=</span><span class="normal"> freq</span>
+<span class="normal">    f</span><span class="symbol">.</span><span class="function">close</span><span class="symbol">()</span>
+<span class="normal">    os</span><span class="symbol">.</span><span class="function">system</span><span class="symbol">(</span><span class="string">"sox -r 22050 -e unsigned -b 8 -c 1 some.raw some.wav"</span><span class="symbol">)</span>
+<span class="normal">    os</span><span class="symbol">.</span><span class="function">unlink</span><span class="symbol">(</span><span class="string">"some.raw"</span><span class="symbol">)</span>
+
+<span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="function">main</span><span class="symbol">()</span>
+</tt></pre>
+</div>
+
+<p>It worked!</p>
+
+<p>I could hear the glorious beeps - rendered from my own code.</p>
+
+<p>I proceeded to chop the <code>notes</code> down into individual songs... <em>(which was rather easy, thanks to prolonged silence periods between them)</em></p>
+
+<p>It was now time to build <font color="blue"><B>The Player (TM)</b></font>.</p>
+
+<h1>Step 1: The target</h1>
+
+<p>All of this won't be fun enough, unless we reproduce the original setup - i.e. slow machines, crappy speakers, etc.</p>
+
+<p>I decided to push things to the limit <em>(if you ask why, you are reading the wrong blog)</em>.<BR>
+My target: to create a standalone player based on the ATtiny85.</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="attiny85.jpg" alt="ATtiny85 picture">
+<p>
+</div>
+
+<p>That is, a microcontroller with...</p>
+
+<ul>
+<li>512 <strong>bytes</strong> of RAM</li>
+<li>...and 8 <strong>KB</strong> of Flash. </li>
+</ul>
+
+<p>That's all: 8.5KB of space - <strong>total</strong>.<BR>
+Even less room to work with than on my ZX Spectrum :-)</p>
+
+<p>You young people and your gigabytes!<BR>
+We don't need ya.</p>
+
+<h1>Step 2: Fit, please fit</h1>
+
+<p>We obviously can't fit the song data in 512 bytes of RAM.<br>
+Heck, the notes alone <em>(not the delays)</em> ...are more than 2.6K 16-bit values!</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ head frequencies_0</span><span class="symbol">.</span><span class="normal">data </span>
+<span class="number">989</span>
+<span class="number">784</span>
+<span class="number">658</span>
+<span class="number">494</span>
+<span class="number">392</span>
+<span class="number">329</span>
+<span class="number">165</span>
+<span class="number">65535</span>
+<span class="number">329</span>
+<span class="number">65535</span>
+
+<span class="normal">$ wc -l frequencies_</span><span class="symbol">*</span>
+<span class="normal"> </span><span class="number">1360</span><span class="normal"> frequencies_0</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="normal">  </span><span class="number">211</span><span class="normal"> frequencies_1</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="normal">  </span><span class="number">706</span><span class="normal"> frequencies_2</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="normal">  </span><span class="number">376</span><span class="normal"> frequencies_3</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="normal"> </span><span class="number">2653</span><span class="normal"> total</span>
+</tt></pre>
+</div>    
+
+<p>Hmm.<BR>
+Let's start by moving the data into the microcontroller's Flash space - the same
+place where our code will also reside.</p>
+
+<p>A bit of Python will convert the notes and delays into nice <code>const</code>-ant C arrays...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">const</span><span class="normal"> </span><span class="type">unsigned</span><span class="normal"> </span><span class="type">short</span><span class="normal"> frequencies</span><span class="symbol">[]</span><span class="normal"> PROGMEM </span><span class="symbol">=</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="number">989</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="number">784</span><span class="symbol">,</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="cbracket">}</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<p>...annotated with <code>PROGMEM</code> - telling the cross-compiler to move everything into Flash space.</p>
+
+<p>We compile, link...  aaaand...<br>
+Nope.</p>
+
+<p>Not even <em>close</em> to fitting.</p>
+
+<p>Time to think about compression.</p>
+
+<h1>Step 3: Huffman coding</h1>
+
+<p>I've been a SW engineer for more than 3 decades now - I am no stranger to custom compression.
+In fact, I owe my understanding of pointers to the compression code I wrote in C in the 2nd semester of my engineering education, back in 1990 - while implementing the marvel <em>(to my 18-year-old eyes)</em> of <a href="https://en.wikipedia.org/wiki/Huffman_coding">Huffman coding</a>.</p>
+
+<p>What are Huffman codes, you ask? You can read the link above for details, but the idea is really simple:</p>
+
+<ul>
+<li>if we use less bits for our most frequent data</li>
+<li>and use more bits for our less frequent data</li>
+</ul>
+
+<p>...then overall, we need a lot less bits.</p>
+
+<p>In our case, for example, we want to compress 16-bit frequency values. Assume that our music data indicate that we have tons of 989Hz frequencies in our songs. Well then, we can represent them with just one bit: <strong>'0'</strong>. Everything else will be represented with a prefix of <strong>'1'</strong> first, but if we have enough 989Hz in our data, we will compress each one of them to just one bit - i.e. 1/16th of their original space! We will therefore gain significant savings <em>(more than enough to compensate for the "loss" due to the growth of the others)</em>.</p>
+
+<p>How do you create the optimal codes for your inputs? Quite easily, with a heap-based algorithm. I could redo the code myself from scratch, as I did 30 years ago - but I am, erm, wiser now. Googling didn't reveal a Huffman compressor for embedded spaces, but I can always re-use code in higher-level languages - to compress the song data to Huffman codes ; and then only code myself the decoder in C/C++ <em>(for real-time reproduction inside the ATtiny85)</em>.</p>
+
+<p>After a bit of Googling for Python code implementing Huffman coding, I ended up on this piece of <a href="https://rosettacode.org/wiki/Huffman_coding#Python">Rosetta code</a>. Python comes with a heap implementation out of the box, so this is nice and terse.</p>
+
+<p>But... the code is actually not as nice as it could be.<BR>
+I proceeded to add type specs - and that immediately made things much clearer.</p>
+
+<p>Compare this...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">def</span><span class="normal"> </span><span class="function">encode</span><span class="symbol">(</span><span class="normal">symb2freq</span><span class="symbol">):</span>
+<span class="comment">    """Huffman encode the given dict mapping symbols to weights"""</span>
+<span class="normal">    heap </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[[</span><span class="normal">wt</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">sym</span><span class="symbol">,</span><span class="normal"> </span><span class="string">""</span><span class="symbol">]]</span><span class="normal"> </span><span class="keyword">for</span><span class="normal"> sym</span><span class="symbol">,</span><span class="normal"> wt </span><span class="keyword">in</span><span class="normal"> symb2freq</span><span class="symbol">.</span><span class="function">items</span><span class="symbol">()]</span>
+<span class="normal">    </span><span class="function">heapify</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1</span><span class="symbol">:</span>
+<span class="normal">        lo </span><span class="symbol">=</span><span class="normal"> </span><span class="function">heappop</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">)</span>
+<span class="normal">        hi </span><span class="symbol">=</span><span class="normal"> </span><span class="function">heappop</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> pair </span><span class="keyword">in</span><span class="normal"> lo</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">:]:</span>
+<span class="normal">            pair</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="string">'0'</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> pair</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> pair </span><span class="keyword">in</span><span class="normal"> hi</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">:]:</span>
+<span class="normal">            pair</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">=</span><span class="normal"> </span><span class="string">'1'</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> pair</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">]</span>
+<span class="normal">        </span><span class="function">heappush</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">[</span><span class="normal">lo</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> hi</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> lo</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">:]</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> hi</span><span class="symbol">[</span><span class="number">1</span><span class="symbol">:])</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> </span><span class="function">sorted</span><span class="symbol">(</span><span class="function">heappop</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">)[</span><span class="number">1</span><span class="symbol">:],</span><span class="normal"> key</span><span class="symbol">=</span><span class="keyword">lambda</span><span class="normal"> p</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">(</span><span class="function">len</span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">[-</span><span class="number">1</span><span class="symbol">]),</span><span class="normal"> p</span><span class="symbol">))</span>
+</tt></pre>
+</div>
+
+<p>...to this:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment"># The types used by the Huffman compression engine.</span>
+<span class="normal">Symbol </span><span class="symbol">=</span><span class="normal"> int          </span><span class="comment"># Our input data are just bytes</span>
+<span class="normal">Weight </span><span class="symbol">=</span><span class="normal"> int          </span><span class="comment"># We count their frequencies via Counter</span>
+<span class="normal">BinaryString </span><span class="symbol">=</span><span class="normal"> str    </span><span class="comment"># ...and encoded them into a binary string</span>
+<span class="normal">HuffmanTable </span><span class="symbol">=</span><span class="normal"> List</span><span class="symbol">[</span><span class="normal">Tuple</span><span class="symbol">[</span><span class="normal">Symbol</span><span class="symbol">,</span><span class="normal"> BinaryString</span><span class="symbol">]]</span><span class="normal">  </span><span class="comment"># via this.</span>
+
+<span class="comment"># Types needed during encoding</span>
+<span class="normal">HeapEntry </span><span class="symbol">=</span><span class="normal"> Tuple</span><span class="symbol">[</span><span class="normal">Weight</span><span class="symbol">,</span><span class="normal"> HuffmanTable</span><span class="symbol">]</span>
+<span class="normal">Heap </span><span class="symbol">=</span><span class="normal"> List</span><span class="symbol">[</span><span class="normal">HeapEntry</span><span class="symbol">]</span>
+
+<span class="comment"># Let's make a Huffman table...</span>
+<span class="keyword">def</span><span class="normal"> </span><span class="function">make_huffman_table</span><span class="symbol">(</span>
+<span class="normal">        symbol_to_weight</span><span class="symbol">:</span><span class="normal"> Dict</span><span class="symbol">[</span><span class="normal">Symbol</span><span class="symbol">,</span><span class="normal"> Weight</span><span class="symbol">])</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> HuffmanTable</span><span class="symbol">:</span>
+<span class="comment">    """</span>
+<span class="comment">    From a dict of symbols to weights, make a Huffman table.</span>
+<span class="comment">    Since our symbols are integers, the end result is a table of</span>
+<span class="comment">    (integer, binary string to use for this integer).</span>
+<span class="comment">    """</span>
+<span class="normal">    heap </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span>
+<span class="normal">        </span><span class="symbol">(</span><span class="normal">wt</span><span class="symbol">,</span><span class="normal"> </span><span class="symbol">[(</span><span class="normal">sym</span><span class="symbol">,</span><span class="normal"> </span><span class="string">""</span><span class="symbol">)])</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> sym</span><span class="symbol">,</span><span class="normal"> wt </span><span class="keyword">in</span><span class="normal"> symbol_to_weight</span><span class="symbol">.</span><span class="function">items</span><span class="symbol">()]</span><span class="normal">  </span><span class="comment"># type: Heap</span>
+<span class="normal">    </span><span class="function">heapify</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&gt;</span><span class="normal"> </span><span class="number">1</span><span class="symbol">:</span>
+<span class="normal">        lo_weight</span><span class="symbol">,</span><span class="normal"> lo_entries </span><span class="symbol">=</span><span class="normal"> </span><span class="function">heappop</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">)</span>
+<span class="normal">        hi_weight</span><span class="symbol">,</span><span class="normal"> hi_entries </span><span class="symbol">=</span><span class="normal"> </span><span class="function">heappop</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">)</span>
+<span class="normal">        new_lo_entries </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span>
+<span class="normal">            </span><span class="symbol">(</span><span class="normal">symbol</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'0'</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> binary_string</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> symbol</span><span class="symbol">,</span><span class="normal"> binary_string </span><span class="keyword">in</span><span class="normal"> lo_entries</span><span class="symbol">]</span>
+<span class="normal">        new_hi_entries </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span>
+<span class="normal">            </span><span class="symbol">(</span><span class="normal">symbol</span><span class="symbol">,</span><span class="normal"> </span><span class="string">'1'</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> binary_string</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">for</span><span class="normal"> symbol</span><span class="symbol">,</span><span class="normal"> binary_string </span><span class="keyword">in</span><span class="normal"> hi_entries</span><span class="symbol">]</span>
+<span class="normal">        </span><span class="function">heappush</span><span class="symbol">(</span>
+<span class="normal">            heap</span><span class="symbol">,</span>
+<span class="normal">            </span><span class="symbol">(</span><span class="normal">lo_weight </span><span class="symbol">+</span><span class="normal"> hi_weight</span><span class="symbol">,</span><span class="normal"> new_lo_entries </span><span class="symbol">+</span><span class="normal"> new_hi_entries</span><span class="symbol">))</span>
+<span class="normal">    _</span><span class="symbol">,</span><span class="normal"> huffman_data </span><span class="symbol">=</span><span class="normal"> </span><span class="function">heappop</span><span class="symbol">(</span><span class="normal">heap</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">return</span><span class="normal"> </span><span class="function">sorted</span><span class="symbol">(</span><span class="normal">huffman_data</span><span class="symbol">,</span><span class="normal"> key</span><span class="symbol">=</span><span class="keyword">lambda</span><span class="normal"> p</span><span class="symbol">:</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">],</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">[-</span><span class="number">1</span><span class="symbol">])))</span>
+</tt></pre>
+</div>
+
+<p>I love Python code. I really do.</p>
+
+<p>But I have to state it out loud: type specs really, <strong>really</strong> help. A lot.<BR>
+IMHO, this is the most important change in Python 3.</p>
+
+<p>Comments don't hurt, either.</p>
+
+<p>As shown above, I also modified the code to remove the list mutations. Why not create the new lists on the spot? We can afford to, nowadays. This also makes the code "properly" typed - previously, the list contained two different types. It now contains Tuples, i.e. pairs of things.</p>
+
+<p>We get brownie points for improving the code's functional-style, too.</p>
+
+<p>To make it perfect, I also improved the code until it passed <code>Flake8</code>, <code>Pylint</code> and <code>Mypy</code> checks.<BR>
+Static Analysis for the win.</p>
+
+<p>Finally, I added the simplest possible test - i.e. I created 5000 random data inputs, and performed encode-decode round-trips <em>(to make sure the code re-creates whatever it started with)</em>. That easily raised the coverage to 100%.</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">def</span><span class="normal"> </span><span class="function">test_round_trips</span><span class="symbol">()</span><span class="normal"> </span><span class="symbol">-&gt;</span><span class="normal"> None</span><span class="symbol">:</span>
+<span class="normal">    </span><span class="preproc">import</span><span class="normal"> random</span>
+<span class="normal">    TESTS </span><span class="symbol">=</span><span class="normal"> </span><span class="number">5000</span>
+<span class="normal">    data </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">[</span>
+<span class="normal">        </span><span class="number">10</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> random</span><span class="symbol">.</span><span class="function">randint</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">10</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">7</span>
+<span class="normal">        </span><span class="keyword">else</span><span class="normal"> random</span><span class="symbol">.</span><span class="function">randint</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">65536</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">for</span><span class="normal"> i </span><span class="keyword">in</span><span class="normal"> </span><span class="function">range</span><span class="symbol">(</span><span class="normal">TESTS</span><span class="symbol">)]</span>
+<span class="normal">    huffman_table</span><span class="symbol">,</span><span class="normal"> encoded_bitstream </span><span class="symbol">=</span><span class="normal"> </span><span class="function">encode</span><span class="symbol">(</span><span class="normal">data</span><span class="symbol">)</span>
+<span class="normal">    decoded_data </span><span class="symbol">=</span><span class="normal"> </span><span class="function">decode</span><span class="symbol">(</span><span class="normal">huffman_table</span><span class="symbol">,</span><span class="normal"> encoded_bitstream</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="keyword">print</span><span class="symbol">(</span><span class="string">"[-] Compression ratio: %5.2f%%\n"</span><span class="normal"> </span><span class="symbol">%</span><span class="normal"> </span><span class="symbol">(</span>
+<span class="normal">        </span><span class="number">100</span><span class="symbol">.*</span><span class="function">len</span><span class="symbol">(</span><span class="normal">encoded_bitstream</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">/</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">TESTS</span><span class="symbol">*</span><span class="number">16</span><span class="symbol">)))</span>
+<span class="normal">    </span><span class="keyword">assert</span><span class="normal"> data </span><span class="symbol">==</span><span class="normal"> decoded_data</span>
+</tt></pre>
+</div>
+
+<p>Notice that the test deliberately skews the distribution of values - a set of completely random inputs, where each value is just as likely as the others, obviously doesn't compress at all.</p>
+
+<p>OK - after all that, I could <strong>really</strong> trust the Huffman encoder.</p>
+
+<div class="redBox">
+In case you want to play with this Python code, <a href="https://github.com/ttsiodras/HuffmanPy">I placed it in a Github repo of its own</a> - feel free to use/abuse it :-)
+</div>
+
+<p>I could now proceed to <a href="https://github.com/ttsiodras/ATtiny85_MonkeyIslandPlayer/blob/master/contrib/encode_huffman.py">unleash the power of Huffman coding</a> on my extracted song data... </p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">$ </span><span class="symbol">.</span><span class="normal">/encode_huffman</span><span class="symbol">.</span><span class="normal">py </span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Reading frequencies_0</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Reading frequencies_1</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Reading frequencies_2</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Reading frequencies_3</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Creating Huffman table </span><span class="keyword">for</span><span class="normal"> all frequencies data</span><span class="symbol">...</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Huffman encoding </span><span class="keyword">for</span><span class="normal"> frequencies_0</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">:</span><span class="normal"> </span><span class="number">28.9</span><span class="symbol">%</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Huffman encoding </span><span class="keyword">for</span><span class="normal"> frequencies_1</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">:</span><span class="normal"> </span><span class="number">34.2</span><span class="symbol">%</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Huffman encoding </span><span class="keyword">for</span><span class="normal"> frequencies_2</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">:</span><span class="normal"> </span><span class="number">26.7</span><span class="symbol">%</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Huffman encoding </span><span class="keyword">for</span><span class="normal"> frequencies_3</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">:</span><span class="normal"> </span><span class="number">29.4</span><span class="symbol">%</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Reading delay_0</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Reading delay_1</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Reading delay_2</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Reading delay_3</span><span class="symbol">.</span><span class="normal">data</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Creating Huffman table </span><span class="keyword">for</span><span class="normal"> all delay data</span><span class="symbol">...</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Huffman encoding </span><span class="keyword">for</span><span class="normal"> delay_0</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">:</span><span class="normal"> </span><span class="number">30.0</span><span class="symbol">%</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Huffman encoding </span><span class="keyword">for</span><span class="normal"> delay_1</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">:</span><span class="normal"> </span><span class="number">29.2</span><span class="symbol">%</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Huffman encoding </span><span class="keyword">for</span><span class="normal"> delay_2</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">:</span><span class="normal"> </span><span class="number">31.5</span><span class="symbol">%</span>
+<span class="symbol">[</span><span class="normal">-</span><span class="symbol">]</span><span class="normal"> Huffman encoding </span><span class="keyword">for</span><span class="normal"> delay_3</span><span class="symbol">.</span><span class="normal">data</span><span class="symbol">:</span><span class="normal"> </span><span class="number">36.6</span><span class="symbol">%</span>
+</tt></pre>
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="guybrush2.jpg" alt="Down to ~30%! Victory...">
+<p>
+<em>Down to ~30%! Victory...</em>
+</div>
+
+<p>Excellent! We went down to ~30% of our original space.</p>
+
+<p>I then placed the compressed binary strings as a series of bytes into <code>const</code>-ant, <code>PROGMEM</code> arrays...</p>
+
+<p>...and the cross-compiler reported that it all fit in our tiny 8KB of Flash.</p>
+
+<h1>Step 4: Encoding (the Huffman table)</h1>
+
+<p>But - wait a second.</p>
+
+<p>Huffman-encoded data mean nothing without the corresponding Huffman tables.<br>
+I needed to store those as well...</p>
+
+<p>So I tried...</p>
+
+<p>...aaaaand I am out of space again.</p>
+
+<p>Hmm....</p>
+
+<p>Our Huffman table, contains information like this - about each input symbol <em>(i.e. each frequency value)</em>:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="cbracket">{</span><span class="normal">    </span><span class="symbol">-</span><span class="number">1</span><span class="normal"> </span><span class="comment">/* silence */</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="symbol">...</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="number">783</span><span class="normal"> </span><span class="comment">/* frequency in Hz */</span><span class="symbol">,</span><span class="normal"> </span><span class="number">3</span><span class="normal"> </span><span class="comment">/* length in bits */</span><span class="symbol">,</span>
+<span class="normal">         </span><span class="number">0x80</span><span class="normal"> </span><span class="comment">/* the first 3 bits, i.e. '100' */</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">,</span><span class="normal"> </span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="number">989</span><span class="normal"> </span><span class="comment">/* frequency in Hz */</span><span class="symbol">,</span><span class="normal"> </span><span class="number">5</span><span class="normal"> </span><span class="comment">/* length in bits */</span><span class="symbol">,</span>
+<span class="normal">         </span><span class="number">0x90</span><span class="normal"> </span><span class="comment">/* the first 5 bits, i.e. '10010' */</span><span class="normal"> </span><span class="cbracket">}</span><span class="symbol">,</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>Let's apply the brute-force-i-am-an-idiot method:</p>
+
+<ul>
+<li>First of all, instead of storing 16 bits per frequency, we can store their deltas <em>(in the example above, instead of storing 989, store 989-783)</em>. I sort the Huffman table when I create it, so it turns out that the deltas always fit <em>in a single byte</em>. That means we win one byte of space for each entry.</li>
+<li>Then, the length in bits is never larger than 15. So it fits in 4 bits - here's another win of half a byte per entry.</li>
+<li>I can therefore emit a single array of bytes, that goes like this...</li>
+</ul>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="symbol">[</span><span class="number">8</span><span class="symbol">-</span><span class="normal">bits</span><span class="symbol">-</span><span class="normal">of</span><span class="symbol">-</span><span class="normal">frequency</span><span class="symbol">-</span><span class="normal">delta</span><span class="symbol">][</span><span class="number">4</span><span class="normal"> bits </span><span class="usertype">of</span><span class="normal"> length</span><span class="symbol">][</span><span class="usertype">Huffman</span><span class="normal"> bits</span><span class="symbol">]</span>
+<span class="symbol">[</span><span class="number">8</span><span class="symbol">-</span><span class="normal">bits</span><span class="symbol">-</span><span class="normal">of</span><span class="symbol">-</span><span class="normal">frequency</span><span class="symbol">-</span><span class="normal">delta</span><span class="symbol">][</span><span class="number">4</span><span class="normal"> bits </span><span class="usertype">of</span><span class="normal"> length</span><span class="symbol">][</span><span class="usertype">Huffman</span><span class="normal"> bits</span><span class="symbol">]</span>
+<span class="symbol">[</span><span class="number">8</span><span class="symbol">-</span><span class="normal">bits</span><span class="symbol">-</span><span class="normal">of</span><span class="symbol">-</span><span class="normal">frequency</span><span class="symbol">-</span><span class="normal">delta</span><span class="symbol">][</span><span class="number">4</span><span class="normal"> bits </span><span class="usertype">of</span><span class="normal"> length</span><span class="symbol">][</span><span class="usertype">Huffman</span><span class="normal"> bits</span><span class="symbol">]</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>I proceeded to code this.</p>
+
+<div class="redBox">
+All the logic I am talking about is written in Python - and generates the Huffman table data as C array definitions.
+<p>
+You should really get yourself used to this <em>(i.e. code-generation)</em>... It gives you insane powers. Most people, like me, "discover" it on their own. Others are smarter and/or luckier - they meet <a href="score4.html#lisp">Lisp macros</a> first, or they read <em>The Pragmatic Programmer</em>.
+<p>
+The "official" name of the practise is <em>model-driven-engineering</em> - though I am abusing the term a bit. In our case, the model is as dumb as they come - our songs' data. But suffice to say that the basic principle here is as old as automation itself: <em>if you can automatically create something, you should. <b>And that applies to your code itself, too!</b></em>. 
+<p>
+I read <em>The Pragmatic Programmer</em> much later in life. It advised many things that I painfully discovered on my own; code-generation; don't copy-paste; don't repeat yourself; etc.
+<p>
+You should probably read that book.
+</div>
+
+<p>The new code packed the Huffman table tightly...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">huffman_table_binary_string </span><span class="symbol">=</span><span class="normal"> </span><span class="string">''</span>
+<span class="keyword">for</span><span class="normal"> idx</span><span class="symbol">,</span><span class="normal"> row </span><span class="keyword">in</span><span class="normal"> </span><span class="function">enumerate</span><span class="symbol">(</span><span class="normal">huffman_table</span><span class="symbol">):</span>
+<span class="normal">    symbol</span><span class="symbol">,</span><span class="normal"> binary_string </span><span class="symbol">=</span><span class="normal"> row</span>
+<span class="normal">    </span><span class="keyword">assert</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">binary_string</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">16</span>
+
+<span class="normal">    </span><span class="comment"># Encode the symbol</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> idx </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0</span><span class="symbol">:</span>
+<span class="normal">        v </span><span class="symbol">=</span><span class="normal"> </span><span class="number">255</span><span class="normal"> </span><span class="keyword">if</span><span class="normal"> symbol </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> symbol</span>
+<span class="normal">    </span><span class="keyword">else</span><span class="symbol">:</span>
+<span class="normal">        v </span><span class="symbol">=</span><span class="normal"> symbol</span><span class="symbol">-</span><span class="normal">oldSym</span>
+<span class="normal">        </span><span class="keyword">assert</span><span class="normal"> </span><span class="number">0</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> v </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">256</span>
+<span class="normal">    tv </span><span class="symbol">=</span><span class="normal"> </span><span class="function">bin</span><span class="symbol">(</span><span class="normal">v</span><span class="symbol">)[</span><span class="number">2</span><span class="symbol">:]</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">tv</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">8</span><span class="symbol">:</span>
+<span class="normal">        tv </span><span class="symbol">=</span><span class="normal"> </span><span class="string">'0'</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> tv</span>
+<span class="normal">    huffman_table_binary_string </span><span class="symbol">+=</span><span class="normal"> tv</span>
+<span class="normal">    oldSym </span><span class="symbol">=</span><span class="normal"> symbol</span>
+
+<span class="normal">    </span><span class="comment"># Encode the length</span>
+<span class="normal">    length_string </span><span class="symbol">=</span><span class="normal"> </span><span class="function">bin</span><span class="symbol">(</span><span class="function">len</span><span class="symbol">(</span><span class="normal">binary_string</span><span class="symbol">))[</span><span class="number">2</span><span class="symbol">:]</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="normal"> </span><span class="function">len</span><span class="symbol">(</span><span class="normal">length_string</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">4</span><span class="symbol">:</span>
+<span class="normal">        length_string </span><span class="symbol">=</span><span class="normal"> </span><span class="string">'0'</span><span class="normal"> </span><span class="symbol">+</span><span class="normal"> length_string</span>
+<span class="normal">    huffman_table_binary_string </span><span class="symbol">+=</span><span class="normal"> length_string</span>
+
+<span class="normal">    </span><span class="comment"># Finally, add the Huffman code</span>
+<span class="normal">    huffman_table_binary_string </span><span class="symbol">+=</span><span class="normal"> binary_string</span>
+<span class="normal">fout</span><span class="symbol">.</span><span class="function">write</span><span class="symbol">(</span><span class="string">', '</span><span class="symbol">.</span><span class="function">join</span><span class="symbol">(</span><span class="function">getHex</span><span class="symbol">(</span><span class="normal">huffman_table_binary_string</span><span class="symbol">)))</span>
+</tt></pre>
+</div>
+
+<p>...and the cross-compiler reported that everything - both song data and Huffman table - now fit! :-)</p>
+
+<p>You'll notice in the code above...</p>
+
+<ul>
+<li>the <code>delta</code> <em>(<code>symbol - oldSym</code>)</em> computation</li>
+<li><code>assert</code>s checking our assumptions hold <em>(e.g. that length always fits in 4 bits)</em></li>
+<li>...as well as the creation of the 4 bit, 0-left-padded bitstring with the length.</li>
+</ul>
+
+<p>Also notice something else: in general, it is bad form to create
+Python strings by just concatenating them together. It is much
+faster to append them in a list, and <code>.join</code> them in the end.
+But remember - <strong>this is a code generator</strong>. It doesn't matter how
+fast it runs, as long as it doesn't run too slowly <em>(it doesn't -
+it finishes in less than one second for all 4 songs I extracted)</em>.</p>
+
+<p>OK! Time for the C decoder - that will run in the embedded target...</p>
+
+<h1>Step 5: Decoding</h1>
+
+<p>You never forget writing C - it's like riding a bike:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="preproc">#define</span><span class="normal"> </span><span class="function">GET_BITS</span><span class="symbol">(</span><span class="normal">N</span><span class="symbol">,</span><span class="normal"> val</span><span class="symbol">)</span><span class="normal">                     </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="keyword">do</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal">                                     </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="usertype">uint16_t</span><span class="normal"> cnt_bits </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span><span class="normal">               </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">cnt_bits </span><span class="symbol">&lt;</span><span class="normal"> N</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal">               </span><span class="symbol">\</span>
+<span class="normal">            val </span><span class="symbol">&lt;&lt;=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal">                       </span><span class="symbol">\</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">current_huffman_mask </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">p</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">                val </span><span class="symbol">|=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal">                    </span><span class="symbol">\</span>
+<span class="normal">            </span><span class="cbracket">}</span><span class="normal">                                </span><span class="symbol">\</span>
+<span class="normal">            cnt_bits</span><span class="symbol">++;</span><span class="normal">                      </span><span class="symbol">\</span>
+<span class="normal">            current_huffman_mask </span><span class="symbol">&gt;&gt;=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span><span class="normal">      </span><span class="symbol">\</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">current_huffman_mask</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span><span class="normal">     </span><span class="symbol">\</span>
+<span class="normal">                p</span><span class="symbol">++;</span><span class="normal">                         </span><span class="symbol">\</span>
+<span class="normal">                current_huffman_mask </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0x80</span><span class="symbol">;</span><span class="normal"> </span><span class="symbol">\</span>
+<span class="normal">            </span><span class="cbracket">}</span><span class="normal">                                </span><span class="symbol">\</span>
+<span class="normal">        </span><span class="cbracket">}</span><span class="normal">                                    </span><span class="symbol">\</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">while</span><span class="symbol">(</span><span class="number">0</span><span class="symbol">)</span>
+
+<span class="normal">    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">Huffman</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">p </span><span class="symbol">=</span><span class="normal"> pHuffmanTable</span><span class="symbol">;</span>
+<span class="normal">    current_huffman_mask </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0x80</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">int16_t</span><span class="normal"> value </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="comment">// Get the first symbol (it fits in 8 bits)</span>
+<span class="normal">    </span><span class="function">GET_BITS</span><span class="symbol">(</span><span class="number">8</span><span class="symbol">,</span><span class="normal"> value</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">value </span><span class="symbol">==</span><span class="normal"> </span><span class="number">255</span><span class="symbol">)</span>
+<span class="normal">        value </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">while</span><span class="symbol">(</span><span class="normal">p </span><span class="symbol">&lt;</span><span class="normal"> pHuffmanTableEnd</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="comment">// For each entry in the Huffman table...</span>
+<span class="normal">        </span><span class="usertype">uint16_t</span><span class="normal"> bitmask </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0x8000</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="usertype">uint8_t</span><span class="normal"> cnt </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="comment">// Get the 4 bits indicating the length...</span>
+<span class="normal">        </span><span class="function">GET_BITS</span><span class="symbol">(</span><span class="number">4</span><span class="symbol">,</span><span class="normal"> cnt</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="usertype">uint8_t</span><span class="normal"> consumed_bits </span><span class="symbol">=</span><span class="normal"> cnt</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="usertype">uint16_t</span><span class="normal"> code </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="comment">// ...and get length-bits afterwards...</span>
+<span class="normal">        </span><span class="function">GET_BITS</span><span class="symbol">(</span><span class="normal">consumed_bits</span><span class="symbol">,</span><span class="normal"> code</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="comment">// We need to form a bitmask to only compare </span>
+<span class="normal">        </span><span class="comment">// the bits we care about...</span>
+<span class="normal">        code </span><span class="symbol">&lt;&lt;=</span><span class="normal"> </span><span class="symbol">(</span><span class="number">16</span><span class="normal"> </span><span class="symbol">-</span><span class="normal"> consumed_bits</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="symbol">(--</span><span class="normal">cnt</span><span class="symbol">)</span>
+<span class="normal">            bitmask </span><span class="symbol">|=</span><span class="normal"> bitmask </span><span class="symbol">&gt;&gt;</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">code </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">bits </span><span class="symbol">&amp;</span><span class="normal"> bitmask</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="comment">// Yay! We decoded a symbol.</span>
+<span class="normal">            </span><span class="function">fprintf</span><span class="symbol">(</span><span class="normal">fp</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"%d</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> value </span><span class="symbol">==</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="normal"> </span><span class="symbol">?</span><span class="normal"> </span><span class="number">65535</span><span class="normal"> </span><span class="symbol">:</span><span class="normal"> value</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="function">fflush</span><span class="symbol">(</span><span class="normal">fp</span><span class="symbol">);</span>
+<span class="normal">            loaded_bits </span><span class="symbol">-=</span><span class="normal"> consumed_bits</span><span class="symbol">;</span>
+<span class="normal">            total_bits </span><span class="symbol">-=</span><span class="normal"> consumed_bits</span><span class="symbol">;</span>
+<span class="normal">            p </span><span class="symbol">=</span><span class="normal"> pHuffmanTable</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="usertype">uint8_t</span><span class="normal"> delta </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="function">GET_BITS</span><span class="symbol">(</span><span class="number">8</span><span class="symbol">,</span><span class="normal"> delta</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="comment">// new symbol is made via adding the delta</span>
+<span class="normal">        value </span><span class="symbol">+=</span><span class="normal"> delta</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">total_bits</span><span class="symbol">)</span>
+<span class="normal">        </span><span class="keyword">break</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<p>For each incoming input, we go through the "magic" bitstream that stores the Huffman table.
+And each time, we decode the symbol (which is a delta-encoded, ergo <code>value+=delta</code>),
+then read the 4 bits that tell us how many bits follow, and finally,
+we read those bits - and compare with the head of our bitstream.</p>
+
+<p>We know that we don't have encoding sequences longer than 15 bits,
+so our 16-bits <code>code</code> suffices - so we binary AND it to mask out the
+bits we don't care about, and compare what remains: <code>code == (bits &amp; bitMask)</code>.
+If it matches, we've just decoded a symbol.</p>
+
+<p>The code was first tested on the host (hence the <code>fprintf</code>s):
+I used it to decode the data from the Python-generated C-arrays,
+and checked if they matched with our original song data.</p>
+
+<p>They did! The Code is Good (TM).</p>
+
+<p>Time to move the code inside a microcontroller... and drive a speaker!</p>
+
+<h1>Step 6: Driving a speaker</h1>
+
+<p>If you have fun fooling around with electronics - <a href="https://www.thanassis.space/thebeast.html">as I do</a> -
+you probably play a lot with microcontrollers. One of the first things you learn, is
+that these tiny beasts <em>(from the ATtiny all the way to the ESP32)</em> will suffer from 
+brown-outs if you try to drive too much current from them.</p>
+
+<p>In plain terms: Yes, you can easily create a frequency in a microcontroller by 
+toggling a GPIO pin at appropriate times. But you can't hook it to a speaker
+and expect it to work.</p>
+
+<p>Let's say your speaker is an 8 Ohms one. If you just connect it to your 5V microcontroller's
+GPIO output, you expect that pin to drive 5000mV / 8Ohm = 625mA. Good luck with that!</p>
+
+<p>No, you need to <strong>drive</strong> the speaker. And yes, you could use a ready-made chip that
+does this job, like the LM386 - but where's the fun in that?</p>
+
+<p>No - we will use <strong>A SINGLE TRANSISTOR</strong>.<BR>
+Because we can.</p>
+
+<p>It says so in the Internet, <a href="https://forum.arduino.cc/t/transistor-gain-and-loudspeaker/167131/5">so it must be true!</a></p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="guybrush3.jpg" alt="Let's drive a speaker">
+<p>
+<em>Let's drive a speaker</em>
+</div>
+
+<p>Even though it was part of my engineering curriculum 30 years ago, you really shouldn't trust me
+on anything electronics-related. Having said that, my take on that circuit is...</p>
+
+<ul>
+<li>We don't want to drive the transistor to saturation <em>(because the sound will get distorted)</em>.</li>
+<li>So we pick a moderate 1K value - the base current keeps the transistor more or less in the linear region.</li>
+<li>We also don't want to drive DC currents to our speaker <em>(we don't want to blow it up!)</em></li>
+<li>Ergo, we need a cap. 100uF electrolytics are apparently a good match for this task - and thankfully, I had some.</li>
+<li>Finally, even though it is driven from our power supply and not from a pin of our micro, we still don't want too much current through our 8 Ohm speaker; ergo, the 220 Ohms resistor.</li>
+</ul>
+
+<p>All of this is crude, and needs more looking up of datasheets and far more detailed computations.</p>
+
+<p>But... did I mention I am doing this for fun? :-)</p>
+
+<p>So I moved to the next step: assembling everything on a breadboard, and started testing with a BluePill: a 1.5$ Beast...</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="BluePill.jpg" alt="Ready, player one"><p>
+<em>Ready, player one</em>
+</div>
+
+<p>...with tons of horsepower - <a href="https://hackaday.com/2020/10/25/stm32-gets-up-close-and-personal-with-mandelbrot/">I used it recently to do a real-time Mandelbrot zoom :-)</a>.</p>
+
+<p>OK, it can draw... but can it sing?</p>
+
+<p>I used a state machine to toggle the single GPIO pin - that drives the transistor's base at the song's frequencies:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="comment">// in the main loop:</span>
+
+<span class="type">unsigned</span><span class="normal"> </span><span class="type">long</span><span class="normal"> currentMicros </span><span class="symbol">=</span><span class="normal"> </span><span class="function">micros</span><span class="symbol">();</span>
+<span class="type">int</span><span class="normal"> passedMicros </span><span class="symbol">=</span><span class="normal"> currentMicros</span><span class="symbol">-</span><span class="normal">previousMicros</span><span class="symbol">;</span>
+
+<span class="keyword">switch</span><span class="symbol">(</span><span class="normal">state</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="keyword">case</span><span class="normal"> Silence</span><span class="symbol">:</span>
+<span class="normal">    silenceMicrosRemaining </span><span class="symbol">-=</span><span class="normal"> passedMicros</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">silenceMicrosRemaining </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="function">updateState</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="keyword">case</span><span class="normal"> PlayingON</span><span class="symbol">:</span>
+<span class="normal">    onMicrosRemaining </span><span class="symbol">-=</span><span class="normal"> passedMicros</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">onMicrosRemaining </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        onMicrosRemaining </span><span class="symbol">=</span><span class="normal"> onMicros</span><span class="symbol">;</span>
+<span class="normal">        state </span><span class="symbol">=</span><span class="normal"> PlayingOFF</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="function">digitalWrite</span><span class="symbol">(</span><span class="normal">SPEAKER_PIN</span><span class="symbol">,</span><span class="normal"> LOW</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="function">digitalWrite</span><span class="symbol">(</span><span class="normal">LED_PIN</span><span class="symbol">,</span><span class="normal"> LOW</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="keyword">break</span><span class="symbol">;</span>
+<span class="keyword">case</span><span class="normal"> PlayingOFF</span><span class="symbol">:</span>
+<span class="normal">    offMicrosRemaining </span><span class="symbol">-=</span><span class="normal"> passedMicros</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">offMicrosRemaining </span><span class="symbol">&lt;</span><span class="normal"> </span><span class="number">0</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        offMicrosRemaining </span><span class="symbol">=</span><span class="normal"> offMicros</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">periodsRemaining</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            </span><span class="function">updateState</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            periodsRemaining</span><span class="symbol">--;</span>
+<span class="normal">            state </span><span class="symbol">=</span><span class="normal"> PlayingON</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="function">digitalWrite</span><span class="symbol">(</span><span class="normal">SPEAKER_PIN</span><span class="symbol">,</span><span class="normal"> HIGH</span><span class="symbol">);</span>
+<span class="normal">            </span><span class="function">digitalWrite</span><span class="symbol">(</span><span class="normal">LED_PIN</span><span class="symbol">,</span><span class="normal"> HIGH</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+<span class="normal">previousMicros </span><span class="symbol">=</span><span class="normal"> currentMicros</span><span class="symbol">;</span>
+</tt></pre>
+</div>
+
+<p>Notice that there's no <code>delay</code> here. The code constantly looks at the time, and checks
+how much time has passed since the last check. In this way, it can adapt to whatever
+speed our microcontroller is running - and it can also do other things <em>(checking a
+button, for instance)</em>.</p>
+
+<p>As for the logic, it is quite simple: we toggle the pin ON/OFF to emit the frequency we want;
+and we do so for the number of desired periods, to reach our delay - which we recompute every 
+time we need to emit a new note:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="type">void</span><span class="normal"> </span><span class="function">updateState</span><span class="symbol">()</span>
+<span class="cbracket">{</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> freq </span><span class="symbol">=</span><span class="normal"> </span><span class="function">decode_frequency</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="type">int</span><span class="normal"> durationMS </span><span class="symbol">=</span><span class="normal"> </span><span class="function">decode_delay</span><span class="symbol">();</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">freq </span><span class="symbol">!=</span><span class="normal"> </span><span class="symbol">-</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="type">int</span><span class="normal"> volume </span><span class="symbol">=</span><span class="normal"> </span><span class="number">60</span><span class="symbol">;</span>
+<span class="normal">        periodMicros </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1000000</span><span class="symbol">/((</span><span class="type">long</span><span class="symbol">)</span><span class="normal">freq</span><span class="symbol">);</span>
+<span class="normal">        onMicros </span><span class="symbol">=</span><span class="normal"> periodMicros </span><span class="symbol">*</span><span class="normal"> volume</span><span class="symbol">/</span><span class="number">100</span><span class="symbol">;</span>
+<span class="normal">        offMicros </span><span class="symbol">=</span><span class="normal"> periodMicros </span><span class="symbol">*</span><span class="normal"> </span><span class="symbol">(</span><span class="number">100</span><span class="symbol">-</span><span class="normal">volume</span><span class="symbol">)/</span><span class="number">100</span><span class="symbol">;</span>
+<span class="normal">        state </span><span class="symbol">=</span><span class="normal"> PlayingON</span><span class="symbol">;</span>
+<span class="normal">        onMicrosRemaining </span><span class="symbol">=</span><span class="normal"> onMicros</span><span class="symbol">;</span>
+<span class="normal">        offMicrosRemaining </span><span class="symbol">=</span><span class="normal"> offMicros</span><span class="symbol">;</span>
+<span class="normal">        periodsRemaining </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">((</span><span class="type">long</span><span class="symbol">)</span><span class="normal">durationMS</span><span class="symbol">)*</span><span class="number">1000L</span><span class="symbol">/</span><span class="normal">periodMicros</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="function">digitalWrite</span><span class="symbol">(</span><span class="normal">SPEAKER_PIN</span><span class="symbol">,</span><span class="normal"> HIGH</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="function">digitalWrite</span><span class="symbol">(</span><span class="normal">LED_PIN</span><span class="symbol">,</span><span class="normal"> HIGH</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        state </span><span class="symbol">=</span><span class="normal"> Silence</span><span class="symbol">;</span>
+<span class="normal">        silenceMicrosRemaining </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">((</span><span class="type">long</span><span class="symbol">)</span><span class="normal">durationMS</span><span class="symbol">)*</span><span class="number">1000L</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="function">digitalWrite</span><span class="symbol">(</span><span class="normal">SPEAKER_PIN</span><span class="symbol">,</span><span class="normal"> LOW</span><span class="symbol">);</span>
+<span class="normal">        </span><span class="function">digitalWrite</span><span class="symbol">(</span><span class="normal">LED_PIN</span><span class="symbol">,</span><span class="normal"> LOW</span><span class="symbol">);</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>So we <code>make &amp;&amp; make upload</code>, and...</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="guybrush4.jpg" alt="It sings!">
+<p>
+</div>
+
+<p>...YES! It sings!</p>
+
+<p>I hear the lovely speaker tunes of one of the greatest games ever...
+just as I did 30 years ago.</p>
+
+<p>And the LED blinks as we move from note to silence and back again. Bonus :-)</p>
+
+<p>I also used a simple button to allow switching from one song to the next.
+It's pulled-down to GND normally, but when I push the button, the GPIO
+pin goes high:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="function">digitalRead</span><span class="symbol">(</span><span class="normal">BUTTON_PIN</span><span class="symbol">)</span><span class="normal"> </span><span class="symbol">==</span><span class="normal"> HIGH</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">buttonIsPressed</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        buttonIsPressed </span><span class="symbol">=</span><span class="normal"> true</span><span class="symbol">;</span>
+<span class="normal">        microsWhenButtonWasPressed </span><span class="symbol">=</span><span class="normal"> currentMicros</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">buttonIsPressed </span><span class="symbol">&amp;&amp;</span><span class="normal"> </span><span class="symbol">((</span><span class="normal">currentMicros</span><span class="symbol">-</span><span class="normal">microsWhenButtonWasPressed</span><span class="symbol">)&gt;</span><span class="number">100000L</span><span class="symbol">))</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">song </span><span class="symbol">==</span><span class="normal"> </span><span class="number">0xFFFF</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            song </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="function">loadSong</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span><span class="normal"> </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            song</span><span class="symbol">++;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">song </span><span class="symbol">&gt;=</span><span class="normal"> </span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">g_Melodies</span><span class="symbol">)/</span><span class="keyword">sizeof</span><span class="symbol">(</span><span class="normal">g_Melodies</span><span class="symbol">[</span><span class="number">0</span><span class="symbol">]))</span>
+<span class="normal">                song </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0xFFFF</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">else</span>
+<span class="normal">                </span><span class="function">loadSong</span><span class="symbol">();</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">        buttonIsPressed </span><span class="symbol">=</span><span class="normal"> false</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>If you are wondering about the first <code>if</code> inside the <code>else</code> block, it is 
+there to perform the simplest possible button debouncing - the "just wait" method.<BR></p>
+
+<p>We then loop around the Python-generated global array of the songs.</p>
+
+<h1>Step 7: Run, ATtiny85, run!</h1>
+
+<p>Next, I switched to my ATtiny85 <code>Makefile</code> - and issued <code>make &amp;&amp; make upload</code> again.
+I use an Arduino UNO to program my ATtiny85s. In fact, I made a simple board that 
+"plugs" into it - I believe they are called "hats"? - to ease the process:</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="attiny85-programmer.jpg" alt="ATtiny85 programmer">
+<p>
+<em>ATtiny85 programmer</em>
+</div>
+
+<p>The code built and uploaded just fine.</p>
+
+<p>So I placed the puny microcontroller on the same breadboard as the BluePill,
+connected the proper GPIO to the base of the transistor that drives the speaker,
+and...</p>
+
+<p>Oh no.</p>
+
+<p>It plays... But it can't make it on time!
+The ATtiny is too slow!</p>
+
+<p>Or rather - to phrase things accurately - <strong>my code is not good enough</strong>.</p>
+
+<p>Yet.</p>
+
+<h1>Step 8: Back to Huffman tables</h1>
+
+<p>So I look at my code again.</p>
+
+<p>It really does store the Huffman table <strong>very compactly</strong>.
+But it doesn't care at all about the fact that as we decode,
+we need to loop through each symbol in the table, looking for the one
+we want to decode.</p>
+
+<p>That's not the Huffman way. Remember what I said above, about how I <strong>really</strong>
+learned the way C pointers work when I was implementing Huffman coding?
+That was because back then, I made
+an actual tree - with incoming '0's leading down the left subtree, and
+incoming '1's leading down the right one - until I met a leaf node, i.e.
+a node that told me: <em>"I decoded Symbol X"</em>.</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="huffman.png" alt="Huffman tree, from Wikipedia">
+<p>
+<em>Huffman tree, from Wikipedia</em>
+</div>
+
+<p>That's optimal - in run-time complexity.</p>
+
+<p>What I did here instead, was extremely optimised for space storage alone - and 
+I paid the price for an O(N) <em>(full scan of the table)</em> for each incoming symbol!</p>
+
+<p>OK - but using trees is not an option. We simply don't have the space for
+such luxuries - even the simplest serialization <em>(store the left child of slot N
+at 2xN, and the right child at 2xN+1)</em> would completely exhaust our puny memory
+space.</p>
+
+<p>I need somehow to fit everything - and yet allow for fast decoding. How?</p>
+
+<p>Hmm...</p>
+
+<p>Wait a second.</p>
+
+<div class="redBox">
+Due to the way Huffman codes are made, one can be sure that as one 
+starts looking at them bit-by-bit, from their beginning, they will NEVER
+overlap. That is to say, there are no two symbols that <b>begin with
+the same prefix</b>.
+</div>
+
+<p>Look at the tree above - you traverse it from top to bottom, going
+left/right depending on whether you see 0/1s in your input bitstring.
+The number you form with these bits, when you meet your final symbol,
+is unique - no two symbols can share it, because that would mean they 
+share the same path through the tree!</p>
+
+<p>Now imagine you place all the Huffman symbols in a table - <strong>indexed with
+the integer value of their binary string representation</strong>, and having
+as a value the symbol itself <em>(in our case, the frequency)</em>.</p>
+
+<p>If there's no Huffman code pointing in a slot, store a zero.</p>
+
+<p>This will create a very sparsely populated table - but your decoding
+becomes insanely simple - and fast:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="normal">bits </span><span class="symbol">&lt;&lt;=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">current_mask </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">pCompressedData</span><span class="symbol">)</span>
+<span class="normal">    bits </span><span class="symbol">|=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">current_mask </span><span class="symbol">&gt;&gt;=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">total_bits</span><span class="symbol">--;</span>
+<span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">current_mask</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    current_mask </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0x80</span><span class="symbol">;</span>
+<span class="normal">    pCompressedData</span><span class="symbol">++;</span>
+<span class="cbracket">}</span>
+<span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">pHuffmanTable</span><span class="symbol">[</span><span class="normal">bits</span><span class="symbol">])</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="function">fprintf</span><span class="symbol">(</span><span class="normal">fp</span><span class="symbol">,</span><span class="normal"> </span><span class="string">"%d</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> pHuffmanTable</span><span class="symbol">[</span><span class="normal">bits</span><span class="symbol">]);</span>
+<span class="normal">    </span><span class="function">fflush</span><span class="symbol">(</span><span class="normal">fp</span><span class="symbol">);</span>
+<span class="normal">    bits </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="symbol">...</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>All I needed to do, to make this work, was to efficiently store such a sparse table.
+And what simpler way to do this, than to change this sort of data - containing the zeroes...</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">739</span>
+<span class="number">1</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span>
+<span class="number">2</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span>
+<span class="number">3</span><span class="symbol">,</span><span class="normal"> </span><span class="number">989</span>
+<span class="number">4</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span>
+<span class="number">5</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span>
+<span class="number">6</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span>
+<span class="number">7</span><span class="symbol">,</span><span class="normal"> </span><span class="number">0</span>
+<span class="number">8</span><span class="symbol">,</span><span class="normal"> </span><span class="number">1031</span>
+<span class="symbol">...</span>
+</tt></pre>
+</div>
+
+<p>...into this - i.e. <em>"ignore the empty slots - just emit the valid entries"</em>:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="number">0</span><span class="symbol">,</span><span class="normal"> </span><span class="number">739</span>
+<span class="number">3</span><span class="symbol">,</span><span class="normal"> </span><span class="number">989</span>
+<span class="number">8</span><span class="symbol">,</span><span class="normal"> </span><span class="number">1031</span>
+</tt></pre>
+</div>    
+
+<p>This structure allows even the tiniest of computer brains to quickly scan for the index;
+and our final, complete, fast Huffman-decoder is this:</p>
+
+<div class='codegenWrapper'>
+<pre><tt><span class="usertype">class</span><span class="normal"> HuffmanDecoder </span><span class="cbracket">{</span>
+<span class="normal">    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">uint8_t</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">_pCompressedData</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">uint16_t</span><span class="normal"> _total_bits</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">Huffman</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">_pHuffmanTable</span><span class="symbol">;</span>
+
+<span class="normal">    </span><span class="usertype">uint8_t</span><span class="normal"> _loaded_bits</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">uint8_t</span><span class="normal"> _current_mask</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="usertype">uint16_t</span><span class="normal"> _bits</span><span class="symbol">;</span>
+<span class="label">public:</span>
+<span class="normal">    </span><span class="function">HuffmanDecoder</span><span class="symbol">()</span><span class="normal"> </span><span class="cbracket">{}</span>
+
+<span class="normal">    </span><span class="type">void</span><span class="normal"> </span><span class="function">loadNewData</span><span class="symbol">(</span>
+<span class="normal">        </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">uint8_t</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">pCompressedData</span><span class="symbol">,</span>
+<span class="normal">        </span><span class="usertype">uint16_t</span><span class="normal"> total_bits</span><span class="symbol">,</span>
+<span class="normal">        </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">Huffman</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">pHuffmanTable</span><span class="symbol">)</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">        _pCompressedData </span><span class="symbol">=</span><span class="normal"> pCompressedData</span><span class="symbol">;</span>
+<span class="normal">        _total_bits </span><span class="symbol">=</span><span class="normal"> total_bits</span><span class="symbol">;</span>
+<span class="normal">        _pHuffmanTable </span><span class="symbol">=</span><span class="normal"> pHuffmanTable</span><span class="symbol">;</span>
+<span class="normal">        _current_mask </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0x80</span><span class="symbol">;</span>
+<span class="normal">        _bits </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+
+<span class="normal">    </span><span class="type">int</span><span class="normal"> </span><span class="function">decode</span><span class="symbol">()</span>
+<span class="normal">    </span><span class="cbracket">{</span>
+<span class="normal">        </span><span class="keyword">const</span><span class="normal"> </span><span class="usertype">Huffman</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">p </span><span class="symbol">=</span><span class="normal"> _pHuffmanTable</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="usertype">uint16_t</span><span class="normal"> current_idx</span><span class="symbol">;</span>
+<span class="normal">        </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">_total_bits</span><span class="symbol">)</span>
+<span class="normal">            </span><span class="keyword">return</span><span class="normal"> </span><span class="number">0x7FFF</span><span class="symbol">;</span><span class="normal"> </span><span class="comment">// THE END</span>
+<span class="normal">        </span><span class="keyword">while</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">            _bits </span><span class="symbol">&lt;&lt;=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">_current_mask </span><span class="symbol">&amp;</span><span class="normal"> </span><span class="function">pgm_read_byte_near</span><span class="symbol">(</span><span class="normal">_pCompressedData</span><span class="symbol">))</span>
+<span class="normal">                _bits </span><span class="symbol">|=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">            _current_mask </span><span class="symbol">&gt;&gt;=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">            _total_bits</span><span class="symbol">--;</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(!</span><span class="normal">_current_mask</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                _current_mask </span><span class="symbol">=</span><span class="normal"> </span><span class="number">0x80</span><span class="symbol">;</span>
+<span class="normal">                _pCompressedData</span><span class="symbol">++;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            p </span><span class="symbol">=</span><span class="normal"> _pHuffmanTable</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="keyword">while</span><span class="symbol">(</span><span class="number">1</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                current_idx </span><span class="symbol">=</span><span class="normal"> </span><span class="function">pgm_read_word_near</span><span class="symbol">(</span><span class="normal">p</span><span class="symbol">);</span><span class="normal"> </span>
+<span class="normal">                </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">_bits </span><span class="symbol">&lt;=</span><span class="normal"> current_idx</span><span class="symbol">)</span>
+<span class="normal">                    </span><span class="keyword">break</span><span class="symbol">;</span><span class="normal"> </span><span class="comment">// We either found it, or jumped over the idx</span>
+<span class="normal">                p </span><span class="symbol">+=</span><span class="normal"> </span><span class="number">2</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">            </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">_bits </span><span class="symbol">==</span><span class="normal"> current_idx</span><span class="symbol">)</span><span class="normal"> </span><span class="cbracket">{</span>
+<span class="normal">                </span><span class="type">int</span><span class="normal"> value </span><span class="symbol">=</span><span class="normal"> </span><span class="function">pgm_read_word_near</span><span class="symbol">(++</span><span class="normal">p</span><span class="symbol">);</span>
+<span class="normal">                _bits </span><span class="symbol">=</span><span class="normal"> </span><span class="number">1</span><span class="symbol">;</span>
+<span class="normal">                </span><span class="keyword">return</span><span class="normal"> value</span><span class="symbol">;</span>
+<span class="normal">            </span><span class="cbracket">}</span>
+<span class="normal">        </span><span class="cbracket">}</span>
+<span class="normal">    </span><span class="cbracket">}</span>
+<span class="cbracket">}</span>
+</tt></pre>
+</div>
+
+<p>Notice that it reads from flash-stored data (i.e.  <code>PROGMEM</code>-ed data) via
+the <code>pgm_read_word_near</code> and <code>pgm_read_byte_near</code> functions - but other
+than that, it's as simple as it gets. We keep reading bits to form
+the index we will scan for, and then look in the table, checking
+indexes as we go. If we overshoot, it means the value is not in the table;
+so go read more bits.</p>
+
+<p>To be clear: we still do a "full table" scan, but of a different kind of table,
+that doesn't force us to do bit-shifting shenanigans per each entry searched.
+Our code - our inner loop - is <strong>much simpler now</strong>. I measured the
+object-code size of the decoding function - via the output of "<code>avr-nm --print-size -t decimal</code>",
+and this new decoder was 1/3rd the size of the previous one!</p>
+
+<p>It should therefore run close to 3x faster, on the ATtiny85 - no cache
+here to meddle the numbers :-)</p>
+
+<p>Also: less code means more room in my flash. Remember, the flash doesn't
+just store the songs - it must also store my code!</p>
+
+<h1>Step 9: The Player (TM), standalone</h1>
+
+<p>Time to test - <code>make &amp;&amp; make upload</code>, lift the ATtiny85 from the programmer,
+put it on the breadboard, and...</p>
+
+<p>The new code worked flawlessly. On the first try. </p>
+
+<p>So I moved to the final step - I placed all components on a small perfboard,
+and soldered them all together...</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="guybrush5.jpg" alt="The Player (TM)">
+<p>
+<em>The Player (TM)</em>
+</div>
+
+<p>Here's a video of the final result. Powered by a USB powerbank,
+we consume on average less than 10mA:</p>
+
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/B6dVIQt_cSE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+<p>If you made it all the way, I hope you enjoyed reading this - and maybe learned a thing or two.</p>
+
+<p>The entire codebase - using my Python Huffman engine as a submodule - is <a href="https://github.com/ttsiodras/ATtiny85_MonkeyIslandPlayer">here</a>.</p>
+
+<p>Have an excellent summer vacation, everyone!</p>
+
+<p>&nbsp;<p>
+<a href="https://news.ycombinator.com/item?id=27971019" target="_blank">Discuss in Hacker News</a><BR>
+<a href="https://old.reddit.com/r/electronics/comments/osl0h5/the_monkey_island_tm_pcspeaker_music_player/" target="_blank">Discuss in Reddit</a><BR>
+<a href="https://hackaday.com/2021/08/19/custom-compression-squeezes-classic-computer-choruses-into-a-tiny-controller/" target="_blank">Discuss in Hackaday</a></p>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Thu Aug 19 11:30:04 2021</em></td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/monkeyisland.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

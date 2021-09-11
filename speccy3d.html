@@ -1,0 +1,265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/speccy3d.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<title>Real-time 3D on a ZX Spectrum 48K</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Real-time 3D on a ZX Spectrum 48K</div>
+        <div id="MainContent">
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(August 2020)</em></p>
+
+<p><a href="https://github.com/ttsiodras/3D-on-a-ZX-Spectrum-48K">
+<img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub">
+</a></p>
+
+<h1>The backstory</h1>
+
+<p>I've been fooling around with SW-only 3D graphics
+<a href="https://www.thanassis.space/renderer.html">for quite some time</a>.
+A couple of years ago, <a href="https://github.com/ttsiodras/3D-on-an-ATmega328p/">I ported the main logic</a>
+into an ATmega328P microcontroller, implementing "points-only" 3D rendering,
+and driving an OLED display via the SPI interface...  at the
+magnificent resolution of 128x64 :-)</p>
+
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/nsqmnkfZtSw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+<h1>The challenge - run it on the Speccy</h1>
+
+<p>So the path to even more useless tinkering was clear:</p>
+
+<p><strong>I had to make this work for my ZX Spectrum 48K! :-)</strong></p>
+
+<p>And as you can see below... I did:</p>
+
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/IJQAdUcj330" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+<p><a href="https://github.com/ttsiodras/3D-on-a-ZX-Spectrum-48K">Here's the complete code</a>.
+There's a simple <em>Makefile</em> driving the build process - so once you have <code>z88dk</code> installed, just type:</p>
+
+<pre><code>make clean all run
+</code></pre>
+
+<p>The resulting <code>statue.tap</code> file is also committed in the repo,
+in case you just want to quickly run this in your FUSE emulator.</p>
+
+<h1>Compiling z88dk</h1>
+
+<p>The cross-compiler used for the compilation is <a href="https://www.z88dk.org/forum/">z88dk</a>.
+If it's not packaged in your distribution, you can easily build it from source:</p>
+
+<pre><code>mkdir -p ~/Github/
+cd ~/Github/
+git clone https://github.com/z88dk/z88dk/
+cd z88dk
+git submodule init
+git submodule update
+./build.sh
+</code></pre>
+
+<p>You can now use the cross compiler - by just setting up your enviroment (e.g. in your <code>.profile</code>):</p>
+
+<pre><code>export PATH=$HOME/Github/z88dk/bin:$PATH
+export ZCCCFG=$HOME/Github/z88dk/lib/config
+</code></pre>
+
+<h1>On 3D projection and Z80 assembly</h1>
+
+<p>Since the Speccy's brain is even tinier than the ATmega328P's, 
+I had to take even more liberties:  I changed the computation
+loop to orbit the viewpoint (instead of rotating the statue),
+thus leading to the simplest possible equations:</p>
+
+<pre><code>int wxnew = points[i][0]-mcos;
+int x = 128 + ((points[i][1]+msin)/wxnew);
+int y = 96 - (points[i][2]/wxnew);
+</code></pre>
+
+<p>No multiplications, no shifts; just two divisions, and a 
+few additions/subtractions.</p>
+
+<p>But that was not the end - if one is to reminisce, one must go
+<strong>all the way</strong>!</p>
+
+<p>So after almost 4 decades, I re-wrote Z80 assembly - and
+<a href="https://github.com/ttsiodras/3D-on-a-ZX-Spectrum-48K/blob/master/statue.c#L88">made much better use</a>
+of the Z80 registers <a href="https://retrocomputing.stackexchange.com/questions/6095/">than any C compiler can</a>.</p>
+
+<p>The result?</p>
+
+<p>Almost a 2x speedup... Reaching the phenomenal speed of 10 frames per sec :-)</p>
+
+<h1>Pre-calculating for maximum speed</h1>
+
+<p>I was also curious about precalculating the entire paths and the
+screen memory writes - you can see that code in the
+<a href="https://github.com/ttsiodras/3D-on-a-ZX-Spectrum-48K/tree/precompute">precompute</a>
+branch.</p>
+
+<div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/_-eZoSKz0HM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+<p>As you can see in the video above, this version runs 4 times faster,
+at 40 frames per sec. It does take a couple of minutes to precompute
+everything, though. Since I had all the time in the world to precompute,
+I used the complete equations
+(<a href="https://github.com/ttsiodras/3D-on-a-ZX-Spectrum-48K/blob/precompute/statue.c#L42">for rotating the statue and 3D projecting</a>)
+in 8.8 fixed-point arithmetic:</p>
+
+<div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
+<img src="linear_algebra.png" alt="3D Algebra"><p>
+<em>3D Algebra</em>
+</div>
+
+<p>The reason for the insane speed, is that I precompute the target pixels'
+video RAM locations and pixel offsets, leaving almost nothing for the
+<a href="https://github.com/ttsiodras/3D-on-a-ZX-Spectrum-48K/blob/precompute/statue.c#L179">final inner loop</a>,
+except extracting the memory access coordinates from 16 bits/pixel:</p>
+
+<ul>
+<li>The offset within the 6K of video RAM, in the upper 13 bits</li>
+<li>The pixel (0-7) within that byte, in the lower 3 bits</li>
+</ul>
+
+<p>It's also worth noting that the
+<a href="https://github.com/ttsiodras/3D-on-a-ZX-Spectrum-48K/blob/precompute/statue.c#L91">inline assembly version of the "blitter"</a>
+is 3.5 times faster than <a href="https://github.com/ttsiodras/3D-on-a-ZX-Spectrum-48K/blob/precompute/statue.c#L175">the C version</a>.
+Since these are just reads, shifts and writes, I confess I did not expect
+to see that much of a difference... But clearly, C compilers for the Z80
+<a href="https://retrocomputing.stackexchange.com/questions/6095/">need all the help they can get</a> :-)</p>
+
+<h1>Next step - the real thing</h1>
+
+<p>Now all I need to do is wait for my retirement... so I can use
+my electronics knowledge to revive my Speccy, and test this code
+on the real thing, not just on the Free Unix Spectrum Emulator :-)</p>
+
+<p>Then again, maybe you, kind reader, can try this out
+on your Speccy - and tell me if it works?</p>
+
+<p>&nbsp;<BR></p>
+
+<p><em><a target="_blank" href="https://hackaday.com/2020/08/17/3d-on-the-zx-spectrum-48k/">Discussion in Hackaday</a></em></p>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jul 10 19:38:04 2021</em></td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/speccy3d.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

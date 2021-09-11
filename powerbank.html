@@ -1,0 +1,363 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://www.thanassis.space/powerbank.html">
+<meta name="author" content="Thanassis Tsiodras">
+<meta name="author" content="Athanasios Tsiodras">
+<meta name="author" content="ttsiod">
+<meta name="author" content="ttsiodras">
+<link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
+<link rel="stylesheet" type="text/css" href="asciinema-player.css">
+<link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
+<script type="text/javascript" src="lightbox.js"></script>
+<title>Repairing an SLS 2200 Solar Charger Powerbank</title>
+</head>
+<body>
+    <div class="well" id="Page">
+        <div id="Banner">Repairing an SLS 2200 Solar Charger Powerbank</div>
+        <div id="MainContent">
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <br>&nbsp;<br>
+            <p><em>(September 2021)</em></p>
+
+<h1>Repairing an SLS 2200 Solar Charger Powerbank</h1>
+
+<p>During my summer vacations, the latest member of our family - Anastashs - gave me an SLS 2200 powerbank.</p>
+
+<p>&nbsp;<br>
+<em>"It has never worked. I'd like to see what you can do with it..."</em></p>
+
+<p>&nbsp;<br>
+Challenge accepted :-)</p>
+
+<h1>First steps - diagnosis</h1>
+
+<p>I know this is a solar-powered powerbank,
+but I can see it also has a charging port on the side.
+It should therefore be able to function as a normal,
+USB-charged powerbank.</p>
+
+<p>The charging port is a classic micro-USB one - so I plug
+my own powerbank there, through a USB meter, and try a transfusion...</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-is-dead.jpg" alt="Powerbank is dead...">
+<p>
+<em>0.00 Amps... Lovely.</em>
+</div>
+
+<p>Absolutely zero current goes in... This powerbank is as dead as Julius Caesar.</p>
+
+<ul>
+<li>It could be that some wire went loose inside - and the battery is unreachable</li>
+<li>Or it could be that the electronics are fried</li>
+<li>Or the LiPo battery inside may be dead.</li>
+</ul>
+
+<p>Only one way to find out...</p>
+
+<h1>Disassembly</h1>
+
+<p>The damn thing has no screws. It's glued together!</p>
+
+<p>I hate modern-day companies' greed. No screws means 100x more difficult repairs,
+and the result is tons of e-waste in landfills. Many things that would be
+easily repaired otherwise. Sigh...</p>
+
+<p>Thankfully, I have a heat gun - and a spudger.</p>
+
+<p>The top-left corner is loose, so <em>(with great difficulty)</em> I manage to squeeze
+the spudger in - with the heat gun loosening the glue underneath.</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-01.jpg" alt="Disassembly...">
+</div>
+
+<p>I go all around, melting the glue under the solar panel, and inserting
+things to hold the cracks open: </p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-03.jpg" alt="Disassembly...">
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-04.jpg" alt="Disassembly...">
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-05.jpg" alt="Disassembly...">
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-06.jpg" alt="Disassembly...">
+</div>
+
+<p>The thing is finally open.</p>
+
+<p>The cables to the solar panel appear to be soldered fine <em>(and are
+glued in-place for extra strength)</em>.</p>
+
+<p>I lift the panel to make it look at the window, and measure the voltage
+it generates with my multimeter. It's not dead - it shows 1.8V.
+Rather low,
+but maybe the electronics are boosting the voltage to reach the 4.2V
+necessary to charge the LiPo. The point is - it's not dead.</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-07.jpg" alt="Disassembly...">
+</div>
+
+<p>I unscrew the two screws that are now visible <em>(inside cylindrical
+holes over the "Solar" and "100%" labels)</em>, and desolder the panel.
+I then start work on the second layer to remove - the one on top,
+that protects the electronics board. </p>
+
+<p>Go, spudger, go!</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-08.jpg" alt="Disassembly...">
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-09.jpg" alt="Disassembly...">
+</div>
+
+<p>Moving all around, I unclip the hooks that keep the cover in place.</p>
+
+<p>And finally, the board is visible:</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-10.jpg" alt="Disassembly...">
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-11.jpg" alt="Disassembly...">
+</div>
+
+<p>I can do far more detailed tests now.</p>
+
+<p>Let's power up again via the charging port - and check the
+LiPo's voltage with the multimeter...</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-15.jpg" alt="Battery recovery...">
+</div>
+
+<p>Oh God - it's 0.8V...</p>
+
+<p>LiPo batteries are supposed to be held in between 4.2 (fully charged)
+and 3V (nominal discharge). Beyond either one of these limits,
+the control circuits are supposed to disconnect them.</p>
+
+<p>Then again, maybe this battery has been left on its own for so long
+it got completely discharged?<br>
+Or maybe the circuit itself has an issue and it is dragging it down?</p>
+
+<p>I better desolder it and test things in isolation:</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-13.jpg" alt="Disassembly...">
+</div>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-14.jpg" alt="Disassembly...">
+</div>
+
+<p>OK, the battery is at 0.8V on its own. It's almost completely flat.</p>
+
+<p>As for the charging circuitry, when I power it from my powerbank
+and check the battery endpoints, I see 4.2V - so the electronics
+work! <em>(They try to charge the connected LiPo, so they begin with 4.2V)</em>.</p>
+
+<p>What is most probably happening, is that the charging circuitry detects
+that the battery's voltage is extremely low, and "gives up" - it probably
+can't recover from a battery that is so "drained".</p>
+
+<h1>Arise, Battery - I command you</h1>
+
+<p>So I connect the battery on its own, directly, to my own power supply
+(which is itself powered from a laptop brick). But first, I set it 
+to 4.1V <em>(just a bit lower than the nominal maximum)</em> and <strong>very 
+importantly, with a Constant Current limit of 0.1A.</strong> </p>
+
+<p>The reason is that
+this battery is completely drained. If I connect it as-is, it will be like a man trapped in
+a desert for two weeks and dying of thirst,
+being suddenly thrown into a pool... It will "drink" too much current!
+<em>(and potentially burst in flames...)</em></p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-16.jpg" alt="Battery recovery...">
+</div>
+
+<p>After setting the limit, I power up - and indeed, the supply limits the "thirsty" battery to
+just 0.1A. The voltage of the LiPo is slowly rising from the
+abyss towards the 4.1V.</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-17.jpg" alt="Battery recovery...">
+</div>
+
+<p>After half an hour, the voltage has risen to 3.1V - so I resolder
+the battery to the original circuit, and try charging again.</p>
+
+<p>Woohoo! <strong>It works :-)</strong></p>
+
+<p>Current goes in - the big powerbank now charges the SLS 2200:</p>
+
+<div>
+<script type="text/javascript">
+// Apple devices (e.g. iPhone 3GS) need HW-accelerated MP4, which must
+// also be baseline encoded (translation: fat) and can only have
+// a height up to 496 pixels (translation: blurry). Sigh.
+var element = document.createElement('video');
+var hasWebM = element.canPlayType('video/webm');
+var hasMP4 = element.canPlayType('video/mp4');
+if (hasWebM || hasMP4) {
+    var format = hasWebM?'webm':'mp4';
+    var width = hasWebM?800:800;
+    var height = hasWebM?450:450;
+    document.write("<video controls poster='powerbank-fixed.jpg' " + 
+                   "width='" + width + "' " +
+                   "height='" + height + "'" +
+                   "src='powerbank-fixed." + format + "'" +
+                   "type='video/" + format + "'>No HTML5 video...<" +
+                   "/video>");
+} else {
+    // For the old generation, throw up a Flash control,
+    // offering the same MP4 content.
+    document.write(
+        "<embed src='flvplayer.swf' width='800' height='450' " +
+        "       bgcolor='#FFFFFF' type='application/x-shockwave-flash'" +
+        "       pluginspage='http://www.macromedia.com/go/getflashplayer' " +
+        "       flashvars='file=powerbank-fixed.mp4&autostart=false' />");
+}
+</script>
+<noscript>
+<video controls poster='powerbank-fixed.jpg'
+                   width='800' height='450'
+                   src='powerbank-fixed.mp4'
+                   type='video/mp4'>
+</video>
+</noscript>
+</div>
+
+<p>To verify that the powerbank is indeed repaired, I let it charge for 1h
+and then test it:</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="powerbank-fixed-test.jpg" alt="Powerbank fixed.">
+</div>
+
+<p>It works fine, feeding my USB test load - set to consume about half an amp.<BR>
+Powerbank fixed!</p>
+
+<p>Will now leave it next to the window - and see whether the solar charger
+helps at all in the cloudy Netherlands :-)</p>
+
+<br>
+    <hr>
+    <div style='margin-top:1em'>
+        <div style='float:left'>
+            <a target="_blank" href="https://stackoverflow.com/users/382050/ttsiodras">
+                <img src="382050.png" width="208" height="58" alt="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers" title="profile for ttsiodras at Stack Overflow, Q&amp;A for professional and enthusiast programmers">
+            </a>
+        </div>
+        <div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://github.com/ttsiodras">
+                <img border="1" src="github.png" alt='GitHub member ttsiodras' title='GitHub member ttsiodras'>
+            </a>
+        </div>
+        <!--div style='float:left; margin-left:1em'>
+            <a target="_blank" href="https://projecteuler.net/profile/ttsiodras.png">
+                <img src="https://projecteuler.net/profile/ttsiodras.png" alt='Project Euler member ttsiodras' title='Project Euler member ttsiodras'>
+            </a>
+        </div-->
+    </div>
+    <div style='clear:both; margin-bottom:0.5em'></div>
+
+<!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: </em></td></tr></table>
+
+            <hr style="margin-bottom: 1em">
+            <p id="disqus_thread">
+                The comments on this website require the use of JavaScript. Perhaps your browser isn't
+                JavaScript capable or the script is not being run for another reason. If you're
+                interested in reading the comments or leaving a comment behind please try again with a
+                different browser or from a different connection.
+            </p>
+            <script type="text/javascript">
+                /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                var disqus_shortname = 'ttsiodras';
+                var disqus_identifier = '../content/powerbank.content';
+
+                (function() {
+                    'use strict';
+
+                    /**
+                     * This method will handle the click on the button to load the comments. It will remove the
+                     * button and execute the original Disqus script for loading the comments.
+                     */
+                    function button_clickHandler(event) {
+                        // We need to get the button element, we could also use the target property of the event
+                        // but this will do just as well
+                        var button = document.getElementById('disqus_thread');
+                        // Now we will have to recreate the div element we removed from the HTML. We will place
+                        // it into the DOM like we did when we created the button
+                        var disqusContainer = document.createElement('div');
+                        button.parentNode.insertBefore(disqusContainer, button);
+                        button.parentNode.removeChild(button);
+
+                        // The div element will need to have the disqus_thread id as this is required for Disqus,
+                        // it is the way their code identifies the element in which the comments can be displayed
+                        disqusContainer.id = 'disqus_thread';
+
+                        // Now we can execute the original Disqus code
+                        var dsq = document.createElement('script');
+                        dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    }
+
+                    /**
+                     * This method will initialize the module. It will replace the JavaScript dependency message
+                     * with a button which will allow the visitor to load the comments.
+                     */
+                    function init() {
+                        // Try to get the element we used to display the message about the JavaScript dependency
+                        var placeholder = document.getElementById('disqus_thread');
+                        // If we didn't get the placeholder element we will stop setting up the button to load
+                        // the comments
+                        if (placeholder == null) {
+                            return;
+                        }
+
+                        // The placeholder was found, now we can create the button which will allow the visitor to
+                        // load the comments
+                        var button = document.createElement('button');
+                        button.appendChild(document.createTextNode('Click here to see the comments (powered by Disqus)'));
+                        button.addEventListener('click', button_clickHandler.bind(this));
+
+                        // We will insert the button before the placeholder and once the button has been placed in
+                        // the DOM we will remove the placeholder
+                        placeholder.parentNode.insertBefore(button, placeholder);
+                        placeholder.parentNode.removeChild(placeholder);
+
+                        // The placeholder used to have the id which can be reference by an anchor element, to make
+                        // sure we don't break this functionality we will apply the id to our newly created button
+                        button.id = 'disqus_thread';
+                    }
+
+                    // Setup the module
+                    init();
+                })();
+            </script>
+        </div>
+    </div>
+</body>
+</html>

@@ -9,6 +9,33 @@
   <atom:link href="https://www.thanassis.space/rss.xml" rel="self" type="application/rss+xml" />
 
 <item>
+<title>Repairing an SLS 2200 powerbank</title>
+<guid>https://www.thanassis.space/powerbank.html</guid>
+<link>https://www.thanassis.space/powerbank.html</link>
+<description>Repairing an SLS 2200 powerbank</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>11 Sept 2021 13:41:00 +0100</pubDate>
+</item>
+
+<item>
+<title>The Monkey Island PC-Speaker music player</title>
+<guid>https://www.thanassis.space/monkeyisland.html</guid>
+<link>https://www.thanassis.space/monkeyisland.html</link>
+<description>The Monkey Island PC-Speaker music player</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>27 Jul 2021 13:01:00 +0100</pubDate>
+</item>
+
+<item>
+<title>Built in a week: A tiny FORTH for an Arduino UNO's 2K of RAM</title>
+<guid>https://www.thanassis.space/miniforth.html</guid>
+<link>https://www.thanassis.space/miniforth.html</link>
+<description>Built in a week: A tiny FORTH for an Arduino UNO's 2K of RAM</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>03 Jul 2021 13:37:00 +0100</pubDate>
+</item>
+
+<item>
 <title>A USB2.0 adapter and a 3D-printed enclosure for my AtomicPI</title>
 <guid>https://www.thanassis.space/atomicpi-usb2.html</guid>
 <link>https://www.thanassis.space/atomicpi-usb2.html</link>
