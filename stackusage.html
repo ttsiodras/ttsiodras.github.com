@@ -22,7 +22,10 @@
         <div id="MainContent">
             <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
-              <em>(September 2011, posted on <a href="http://www.reddit.com/r/programming/comments/kkih6/stackchecking_a_program_that_will_execute_in_orbit/">Reddit</a> and <a href="http://news.ycombinator.com/item?id=3013768">Hacker News</a>)</em><br>&nbsp;<br>
+              <em>(September 2011, posted on <a href="http://www.reddit.com/r/programming/comments/kkih6/stackchecking_a_program_that_will_execute_in_orbit/">Reddit</a> and <a href="http://news.ycombinator.com/item?id=3013768">Hacker News</a>)</em><br>
+  <em>(October 2021, updated to use <tt>-fstack-usage</tt>)</em><br>&nbsp;<br>
+<a href="https://github.com/ttsiodras/checkStackUsage"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a>
+
 Things change.
 <p>
 For those of us that were raised with Z80 CPUs, it is abundantly clear that we are living in "times of plenty"; most developers no longer have to think about 
@@ -30,7 +33,7 @@ things like "fitting into memory" or "having enough stack space". Moore's Law pr
 <p>
 There are always exceptions, however: platforms where you still need to be careful about memory and CPU usage. Especially when the device operates in a critical environment (e.g. in orbit), you need to be <em>very</em> careful.
 <p>
-For the last 5 years I've been developing code for the European Space Agency, in the context of projects like <a href="http://semantix.gr/assert/">TASTE</a>; the target platform is an embedded Leon processor, an open-source SPARC derivative specifically designed for operating in space. You really don't want to run out of memory there - "blue screens of death" are too expensive when the nearest ground station operator... is some 36.000 km below :&#x2011;)
+For the last 5 years I've been developing code for the European Space Agency, in the context of projects like <a href="https://taste.tools">TASTE</a>; the target platform is an embedded Leon processor, an open-source SPARC derivative specifically designed for operating in space. You really don't want to run out of memory there - "blue screens of death" are too expensive when the nearest ground station operator... is some 36.000 km below :&#x2011;)
 <h2>Heap and Stack</h2>
 First of all, you can't use heap - not when you're in orbit. Why? Because quite simply, if you do use heap, and <tt>malloc</tt> returns null... what do you do? You can't ask the user for help - there are no human operators aboard the satellite, and telecommands sent remotely need a functioning program that listens to what is sent; if the code runs out of memory while handling the incoming telecommands, well, you have a dead satellite.
 <p>
@@ -293,10 +296,12 @@ This kind of functionality is usually part of far more mature tools than... quic
 Note that the calculated stack usage per function assumes a single thread running; If there are N threads spawned in our binary, then of course the stack usage scales correspondingly.
 <p>
 Finally, if you compile with debug info enabled (-g) you will get much better output - many symbols are not visible without it.
+<h2>Update, 10 years later...</h2>
+I found some time to improve the script - it now uses <tt>-fstack-usage</tt> data, and also copes with the same function appearing twice in the binary (<em>which can happen, when you reuse old libraries and/or use <tt>static</tt> at file-scope, to isolate symbols inside compilation units...</em>).
 <h2>Download</h2>
-You can download the script for yourself from <a href="stackUsage.py">here</a> - it currently supports x86 and SPARC/Leon binaries.
+The script lives and evolves in Github - <a href="https://github.com/ttsiodras/checkStackUsage/" target="_blank">here</a>.
+You can just clone the repo, or download the script directly from <a href="https://raw.githubusercontent.com/ttsiodras/checkStackUsage/master/checkStackUsage.py">here</a>. You can also download the (10 years old) version of the script that works without <tt>-fstack-usage</tt> from <a href="stackUsage.py">here</a>.
 <p>
-<em><b>Update</b>: Dan McGee added support for x86-64</em>.
 <br>
     <hr>
     <div style='margin-top:1em'>
@@ -319,7 +324,7 @@ You can download the script for yourself from <a href="stackUsage.py">here</a> -
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Oct 16 11:28:20 2021</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">
