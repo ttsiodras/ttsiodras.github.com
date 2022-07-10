@@ -14,7 +14,7 @@
 <link>https://www.thanassis.space/powerbank.html</link>
 <description>Repairing an SLS 2200 powerbank</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>11 Sept 2021 13:41:00 +0100</pubDate>
+<pubDate>11 Sep 2021 13:41:00 +0100</pubDate>
 </item>
 
 <item>
@@ -77,7 +77,7 @@
 <link>https://www.thanassis.space/chargepump.html</link>
 <description>Drained batteries, LEDs, and creative solitude</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>4 April 2020 17:16:12 +0100</pubDate>
+<pubDate>4 Apr 2020 17:16:12 +0100</pubDate>
 </item>
 
 <item>
@@ -86,7 +86,7 @@
 <link>https://www.thanassis.space/rockpis.html</link>
 <description>Playing with ROCK PI S - an RK3308 IoT device</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>25 January 2020 17:35:09 +0100</pubDate>
+<pubDate>25 Jan 2020 17:35:09 +0100</pubDate>
 </item>
 
 <item>
@@ -95,7 +95,7 @@
 <link>https://www.thanassis.space/myowncpu.html</link>
 <description>Compiling a SPARC-compatible CPU, inside a cheap FPGA board</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>20 October 2019 13:35:09 +0100</pubDate>
+<pubDate>20 Oct 2019 13:35:09 +0100</pubDate>
 </item>
 
 <item>
@@ -104,7 +104,7 @@
 <link>https://www.thanassis.space/remoteserial.html#remoteserial</link>
 <description>Remote serial port fully operational! Already used it to install OpenBSD on a stick :-)</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>3 August 2019 13:05:09 +0100</pubDate>
+<pubDate>3 Aug 2019 13:05:09 +0100</pubDate>
 </item>
 
 <item>
@@ -113,7 +113,7 @@
 <link>https://www.thanassis.space/remotepower.html</link>
 <description>Preparing for a remote serial port by making a remote on/off switch :-)</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>28 July 2019 11:46:19 +0100</pubDate>
+<pubDate>28 Jul 2019 11:46:19 +0100</pubDate>
 </item>
 
 <item>
@@ -131,7 +131,7 @@
 <link>https://github.com/ttsiodras/grlib-gpl/</link>
 <description>I can now proudly proclaim I "compiled" my own CPU :-)</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>17 March 2019 10:30:19 +0100</pubDate>
+<pubDate>17 Mar 2019 10:30:19 +0100</pubDate>
 </item>
 
 <item>
@@ -140,7 +140,7 @@
 <link>https://github.com/ttsiodras/MandelbrotInVHDL/</link>
 <description>What better way is there, to learn VHDL, than to play with some fractals?</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>9 December 2018 10:00:19 +0100</pubDate>
+<pubDate>9 Dec 2018 10:00:19 +0100</pubDate>
 </item>
 
 <item>
@@ -149,7 +149,7 @@
 <link>https://www.thanassis.space/thebeast.html</link>
 <description>Tinkering with electronics</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>5 August 2017 20:00:19 +0100</pubDate>
+<pubDate>5 Aug 2017 20:00:19 +0100</pubDate>
 </item>
 
 <item>
@@ -158,7 +158,7 @@
 <link>https://www.thanassis.space/animator.html</link>
 <description>The Program of the Month (26 years ago)</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>8 July 2017 12:00:19 +0100</pubDate>
+<pubDate>8 Jul 2017 12:00:19 +0100</pubDate>
 </item>
 
 <item>
@@ -167,7 +167,7 @@
 <link>https://www.thanassis.space/android.html</link>
 <description>Freeing my tablet (Android hacking, SW and HW)</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>23 October 2016 18:52:19 +0300</pubDate>
+<pubDate>23 Oct 2016 18:52:19 +0300</pubDate>
 </item>
 
 <item>
@@ -176,7 +176,7 @@
 <link>https://www.thanassis.space/coverage.html</link>
 <description>Code coverage analysis on embedded targets</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>27 April 2016 20:52:19 +0300</pubDate>
+<pubDate>27 Apr 2016 20:52:19 +0300</pubDate>
 </item>
 
 <item>
@@ -185,7 +185,7 @@
 <link>https://www.thanassis.space/longtail.html</link>
 <description>The long tail of Lisp</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>12 November 2015 01:41:19 +0300</pubDate>
+<pubDate>12 Nov 2015 01:41:19 +0300</pubDate>
 </item>
 
 <item>
@@ -194,7 +194,7 @@
 <link>https://www.thanassis.space/score4jsreact.html</link>
 <description>Score4JS in React/TypeScript</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>12 September 2015 13:53:05 +0200</pubDate>
+<pubDate>12 Sep 2015 13:53:05 +0200</pubDate>
 </item>
 
 <item>
@@ -203,7 +203,7 @@
 <link>https://www.thanassis.space/bashheimer.html</link>
 <description>What is running inside my bash?</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
-<pubDate>3 October 2014 13:53:05 +0200</pubDate>
+<pubDate>3 Oct 2014 13:53:05 +0200</pubDate>
 </item>
 
 
