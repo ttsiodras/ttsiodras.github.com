@@ -9,6 +9,15 @@
   <atom:link href="https://www.thanassis.space/rss.xml" rel="self" type="application/rss+xml" />
 
 <item>
+<title>A circuit to charge a LiPo and drive a load at the same time</title>
+<guid>https://www.thanassis.space/loadsharing.html</guid>
+<link>https://www.thanassis.space/loadsharing.html</link>
+<description>A circuit to charge a LiPo and drive a load at the same time</description>
+<author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
+<pubDate>06 Aug 2022 01:44:05 +0100</pubDate>
+</item>
+
+<item>
 <title>AVX instructions and SDL2 in my real-time Mandelbrot zoomer</title>
 <guid>https://github.com/ttsiodras/MandelbrotSSE</guid>
 <link>https://github.com/ttsiodras/MandelbrotSSE</link>
