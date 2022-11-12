@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Renderer 2.x - Porting to CUDA</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Renderer 2.x - Porting to CUDA</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
               <em>(December 2010)</em>
 <br>&nbsp;<br>
@@ -35,12 +31,37 @@
   <li>Z-order curve is used to cast the primary rays (Morton order) - significantly less divergence => more speed.</li>
   <li>Vertices, triangles and BVH data are stored in textures - major speed boost.</li>
   </ul>
-  The sources (latest version: 2.1h, April 2011) of this new raytracer are available <a href="https://github.com/ttsiodras/renderer-cuda/archive/v2.1k.tar.gz">from here</a>, and <a href="cudarenderer-2.x.latest-win32.7z">Win32 binaries</a> are also available (compressed <a href="http://www.7-zip.org/">with 7-zip</a>). I also included MSVC project files, to make builds under Win32 easier.
+  The sources (latest version: 2.1h, April 2011) of this new raytracer are available <a href="https://github.com/ttsiodras/renderer-cuda/archive/v2.1k.tar.gz">from here</a>, and <a href="cudarenderer-2.x.latest-win32.7z">Win32 binaries</a> are also available (compressed <a href="https://www.7-zip.org/">with 7-zip</a>). I also included MSVC project files, to make builds under Win32 easier.
   <p>Enjoy!<br>&nbsp;<br>
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/1o8HM11h8fc?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/1o8HM11h8fc?autoplay=1' class='full'>
+                <img src='1o8HM11h8fc.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
   </td></tr>
   </table>
   &nbsp;<br>
@@ -49,7 +70,7 @@
 <tr valign="top"><td width="20%"><em>January 30, 2011:</em></td><td>Complete re-write, now using Bounding Volume Hierarchy for acceleration of ray/triangle intersections. A C++ template generates a set of CUDA kernels, with selectable different features: reflections, Phong normal interpolation, shadows, Specular lighting, backface culling, anti-aliasing etc.</td></tr>
 <tr valign="top"><td><em>January 9, 2011:</em></td><td>Added loading of .3ds/.ply models, help screen and Win32 binaries.</td></tr>
 <tr valign="top"><td><em>January 7, 2011:</em></td><td>Optimal number of threads per block, and re-written kernel for better coalescing - the "train" object (seen in the new uploaded video) now spins at 21.5 fps on my GT240.</td></tr>
-<tr valign="top"><td><em>January 2, 2011:</em></td><td><A href="http://www.reddit.com/r/programming/comments/euxzx/porting_my_renderer_from_c_to_cuda_the_speed/">Reddit-ed</A>, <a href="http://goo.gl/P0KiC">most popular CUDA post ever</a> in Reddit/programming :&#x2011;)<br>
+<tr valign="top"><td><em>January 2, 2011:</em></td><td><A href="https://www.reddit.com/r/programming/comments/euxzx/porting_my_renderer_from_c_to_cuda_the_speed/">Reddit-ed</A>, <a href="https://goo.gl/P0KiC">most popular CUDA post ever</a> in Reddit/programming :&#x2011;)<br>
 <br></td></tr>
 </table>
 <h2>Introduction</h2>
@@ -60,11 +81,36 @@ After <a href="mandelSSE.html">testing the waters</a> with a simple Mandelbrot i
 I was eager to apply CUDA to my life-long obsession: <a href="renderer.html">my SW-only renderer</a>.
 <p>
 What happened then was interesting, so I decided to document it. And no, the text below is not about graphics. It is about taking a set of algorithms (that simply happen to be graphics algorithms) and trying to implement them in CUDA. Let me say this again: I know all about <a href="trimesh.html">OpenGL</a> and the shadow ARB extension, but this post is NOT about graphics. It is about a more generic question: "I have an algorithm. Will CUDA/OpenCL/DirectCompute help me execute my algorithm faster"?
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Qzn0Ep4tvSI?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/Qzn0Ep4tvSI?autoplay=1' class='full'>
+                <img src='Qzn0Ep4tvSI.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
-My GT240 offers <a href="http://en.wikipedia.org/wiki/GeForce_200_Series#Technical_summary">hundreds of GFlops</a>, so things looked promising.
+</center>
+
+My GT240 offers <a href="https://en.wikipedia.org/wiki/GeForce_200_Series#Technical_summary">hundreds of GFlops</a>, so things looked promising.
 <h2>First attempt - can I do rasterizing?</h2>
 Well, first things first. My SW-only renderer is optimized for CPUs: it renders via rasterizing, which roughly means
 that the top-most loop is of this form:
@@ -227,11 +273,11 @@ In the non-shadow version, the threads spawned by CUDA are executing more or les
 the same path. They follow the same "decision paths" in the ray-casting code. In the shadow ray mode, however, depending 
 on whether the point is in shadow or not, the path followed per thread is completely different.
 <p><b>And this is the second point where I hit a wall: the threads spawned must more-or-less execute the same path
-of code - they can't diverge. Or rather, they can - but the moment they do, all your speed benefit goes out the window</b>. As I discovered after the fact, this is also quoted in the <a href="http://en.wikipedia.org/wiki/CUDA#Limitations">wikipedia</a> article about CUDA:
+of code - they can't diverge. Or rather, they can - but the moment they do, all your speed benefit goes out the window</b>. As I discovered after the fact, this is also quoted in the <a href="https://en.wikipedia.org/wiki/CUDA#Limitations">wikipedia</a> article about CUDA:
 <table width="80%" summary="CUDA quote from Wikipedia" align="center"><tr><td><em>"Branches in the program code do not impact performance significantly, <b>provided that each of 32 threads takes the same execution path</b>; the SIMD execution model becomes a significant limitation for any inherently divergent task."</em></td></tr></table>
 <p>The second part of the video linked below shows how the CUDA raycaster became 30 times slower as soon as the
 shadow ray calculation was introduced.<p>
-<font color="red"><em><b>Update, one month later:</b> After studying some papers, I <a href="cudarenderer-BVH.html">implemented</a> a different order in casting rays: instead of doing it in a nested loop that goes from top-to-bottom, left-to-right, I used the <a href="http://en.wikipedia.org/wiki/Z-order_curve">Z-order curve</a>, also known as Morton order. This significantly reduced the divergence of the primary rays, and increased speed of primary rays by 30%. Next thing to try: ray packets!</em></font>
+<font color="red"><em><b>Update, one month later:</b> After studying some papers, I <a href="cudarenderer-BVH.html">implemented</a> a different order in casting rays: instead of doing it in a nested loop that goes from top-to-bottom, left-to-right, I used the <a href="https://en.wikipedia.org/wiki/Z-order_curve">Z-order curve</a>, also known as Morton order. This significantly reduced the divergence of the primary rays, and increased speed of primary rays by 30%. Next thing to try: ray packets!</em></font>
 <h3>Texture fetching</h3>
 <a name="textures"></a>
 Even though CUDA doesn't have caches, it has read-only "textures" that have small caches. I therefore proceeded to make
@@ -360,11 +406,36 @@ Yes - but there are some things you should know:
 <em>Note 1: NVIDIA added a L1 cache in newer CUDA cards (Fermi), so perhaps the first point will be alleviated. If anyone donates one, I will report back with results :&#x2011;)</em>
 <p>
 <em>Note 2: Yes, <a href="trimesh.html">I know about OpenGL</a> - custom HW can be used to solve anything. The post above is simply an objective report of what happened when I tried to apply CUDA to a set of algorithms I have experience with. It just so happens that these are also graphics algorithms. I didn't do it to create a commercial raycaster - this was just a weekend project. Note also that, to my knowledge, neither OpenGL nor DirectX have raycasting support - unless you intend to implement one in a fragment shader: using textures to store triangle data, etc... in which case, you are brave, may the Force be with you :&#x2011;)</em><p>
-<em>Note 3: After the posting to Reddit, one of the comments pointed to <a href="http://www.youtube.com/watch?v=4bITAdWvMXE">a presentation given by Brad Peebler of Luxology</a>, about CPU vs GPU rendering. They are of course using tremendously more complex algorithms, but their conclusions match mine: the more complex the algorithm, the more divergent, the harder it becomes to improve speed with a GPU implementation.</em>
+<em>Note 3: After the posting to Reddit, one of the comments pointed to <a href="https://www.youtube.com/watch?v=4bITAdWvMXE">a presentation given by Brad Peebler of Luxology</a>, about CPU vs GPU rendering. They are of course using tremendously more complex algorithms, but their conclusions match mine: the more complex the algorithm, the more divergent, the harder it becomes to improve speed with a GPU implementation.</em>
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/0F1A3npCe4A?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/0F1A3npCe4A?autoplay=1' class='full'>
+                <img src='0F1A3npCe4A.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
 <div style="text-align: center">
   <em>A dragon... in C++ and in CUDA.</em>
 </div>
@@ -468,7 +539,7 @@ You can navigate in realtime:
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Oct 21 20:14:05 2017</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

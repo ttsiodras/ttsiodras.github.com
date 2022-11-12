@@ -9,7 +9,6 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
 <script type="text/javascript" src="prototype.js"></script>
 <script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
@@ -20,7 +19,7 @@
     <div class="well" id="Page">
         <div id="Banner">Compiling a CPU, in a cheap FPGA board</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(October 2019)</em></p>
 
@@ -39,7 +38,10 @@ of yet another failed company - the
 <a target="_blank" href="https://github.com/tomverbeure/panologic-g2">Pano Logic G2</a>,
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="pano.gif" alt="Let's make a CPU!"><p>
+  <picture>
+    <source srcset="pano.webp" type="image/webp">
+    <img src="pano.gif" alt="Let's make a CPU!"><p>
+  </picture>
 </div>
 
 <p>Why not compile an <b>open-source</b> CPU inside this FPGA?
@@ -109,7 +111,10 @@ first dismantling the box, and then soldering wires to the JTAG connector:</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
 <a href="pano-1.jpg" rel="lightbox" title="Soldering JTAG wires">
-<img src="pano-1.jpg" alt="Soldering JTAG wires"></a><p>
+<picture>
+  <source srcset="pano-1.webp" type="image/webp">
+  <img src="pano-1.jpg" alt="Soldering JTAG wires"></a><p>
+</picture>
 <em>Soldering JTAG wires</em>
 </div>
 
@@ -121,13 +126,19 @@ details)</em>.</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
 <a href="pano-2.jpg" rel="lightbox" title="Blu-Tack is sometimes better than helping hands">
-<img src="pano-2.jpg" alt="Blu-Tack is sometimes better than helping hands"></a><p>
+<picture>
+  <source srcset="pano-2.webp" type="image/webp">
+  <img src="pano-2.jpg" alt="Blu-Tack is sometimes better than helping hands"></a><p>
+</picture>
 <em>When soldering, Blu-Tack is sometimes better than helping hands</em>
 </div>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
 <a href="pano-3.jpg" rel="lightbox" title="The end result - FPGA visible in IMPACT">
-<img src="pano-3.jpg" alt="The end result - FPGA visible in IMPACT"></a><p>
+<picture>
+  <source srcset="pano-3.webp" type="image/webp">
+  <img src="pano-3.jpg" alt="The end result - FPGA visible in IMPACT"></a><p>
+</picture>
 <em>The end result - FPGA visible in IMPACT</em>
 </div>
 
@@ -354,7 +365,10 @@ In fact, the total storage cost went <strong>BELOW</strong> the original storage
 plenty of copies of files spread all over - <strong>even within the same folder subtree</strong>.</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="cry.jpg" alt="How do we live like this"></a><p>
+<picture>
+  <source srcset="cry.webp" type="image/webp">
+  <img src="cry.jpg" alt="How do we live like this"></a><p>
+</picture>
 </div>
 
 <p>So... can we now, finally, launch the thing ?</p>
@@ -1116,7 +1130,7 @@ the ecosystem of pre-made "library IP blocks" that one needs to make a system op
 Now, I am not the only one stating that - when compared to their SW counterparts -
 the HW synthesis toolchains are in an abysmal state.
 There is a movement underway to implement open-source alternatives
-(e.g. see <a href="http://www.clifford.at/yosys/">Yosys</a>,
+(e.g. see <a href="https://yosyshq.net/yosys/">Yosys</a>,
 <a href="https://github.com/YosysHQ/arachne-pnr">arachne-pnr</a>, etc). But for these
 efforts to succeed, an ecosystem of open library IPs needs to be developed
 around them.
@@ -1458,9 +1472,33 @@ specifying, in code, <b>that we want 2 cores in our CPU</b>. FPGAs are amazing.<
 
 <p>We run our synthesis again, and a few minutes later...</p>
 
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/4HuM7ZUGPsI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/4HuM7ZUGPsI?autoplay=1' class='full'>
+                <img src='4HuM7ZUGPsI.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <p>That's it - GRMON sees both our cores, running at 50MHz:</p>
 
@@ -1576,7 +1614,7 @@ an insane 128MB of space... At that point, I will boot Linux in this thing.</p><
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jul 10 19:55:28 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 20:59:55 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

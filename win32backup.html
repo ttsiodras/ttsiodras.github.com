@@ -9,7 +9,6 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
 <script type="text/javascript" src="prototype.js"></script>
 <script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
@@ -20,7 +19,7 @@
     <div class="well" id="Page">
         <div id="Banner">Optimal backups for Windows machines</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <em>(April 2009)</em><p>
 In <a href="backup.html">an adjoining article</a>, I have described 
@@ -99,7 +98,7 @@ included in the "forbidden fruit" category... the registry hive, the SQL Server 
 your mail! <em>(unless you are wise enough to use Thunderbird, which has 
 no such issues)</em> - etc. Leaving these files out of the backup is simply 
 not an option. <p>To cover this requirement, Microsoft took a page out of 
-<a href="http://tldp.org/HOWTO/LVM-HOWTO/">LVM</a> snapshots and 
+<a href="https://tldp.org/HOWTO/LVM-HOWTO/">LVM</a> snapshots and 
 introduced with Windows XP the <em>Volume Shadow Copy services</em>.
 In plain words, they developed the necessary drivers and services that
 allow a process to take a "frozen picture" of the filesystem, and use
@@ -114,7 +113,7 @@ Unfortunately, the Volume Shadow Copy left again something to
 be desired: there is no way for normal processes to access these "shadow" 
 volumes, since they are not visible via normal drive letters (they
 are low-level devices, e.g. <tt>\\?\Volume{785cc4a6-3d68-11d7-9cc5-505054503030}</tt>).
-Thanks to <a href="http://blogs.msdn.com/adioltean/archive/2005/01/05/346793.aspx">Adi Oltean</a>,
+Thanks to <a href="https://web.archive.org/web/20051104101827/http://blogs.msdn.com/adioltean/archive/2005/01/05/346793.aspx">Adi Oltean</a>,
 however, there is a method that involves using Microsoft tools
 (<tt>vshadow</tt> and <tt>dosdev</tt>) that allow us to create these
 snapshots and give them a normal drive letter - after which, we can use
@@ -149,7 +148,7 @@ the day of the backup, etc. What follows is a very simple - yet fully functional
 scenario of the appropriate tools.
 <p>
 Download <a href="Backup.7z">my Windows XP backup package</a> (I used
-the open source <a href="http://www.7-zip.org/">7-zip</a> archiver,
+the open source <a href="https://www.7-zip.org/">7-zip</a> archiver,
 which compresses much better than anything else right now). Uncompress
 it in e.g. <tt>c:\Backup</tt>, and let's have a look inside:
 
@@ -197,7 +196,7 @@ vshadow.exe -script=vss-setvar.cmd -exec=vss-exec.cmd C:
 
 First, we make sure the backup directories exist.
 We then invoke the <tt>sync</tt> command from <a 
-href="http://technet.microsoft.com/en-us/sysinternals/default.aspx">Microsoft Sysinternals</a>,
+href="https://learn.microsoft.com/en-us/sysinternals/">Microsoft Sysinternals</a>,
 which flushes all filesystem buffers to the disks (<em>just in case
 something goes bad - Windows do have blue screens, you know :&#x2011;)</em>)
 We then invoke <tt>vshadow.exe</tt> to create a shadow volume
@@ -319,8 +318,8 @@ is forced to make a copy of the files that have changed - so if for example
 you use VMWARE images (which come with huge .vmdk files), any change inside them
 (even one little sector worth of data)
 will force a complete copy... and waste a lot of space. Copy-on-write filesystems
-like <a href="http://en.wikipedia.org/wiki/ZFS">ZFS</a> (and soon, 
-<a href="http://en.wikipedia.org/wiki/Btrfs">btrfs</a>) are incredibly more efficient:
+like <a href="https://en.wikipedia.org/wiki/ZFS">ZFS</a> (and soon, 
+<a href="https://en.wikipedia.org/wiki/Btrfs">btrfs</a>) are incredibly more efficient:
 If you run the rsync daemon on one of them, you can use rsync with the <tt>--inplace</tt> option, 
 and then use the filesystem's snapshotting mechanisms after rsync completes - which will only reserve space 
 <b>for the storage blocks that actually changed</b>! If you have an OpenSolaris/ZFS server, you can already use this to backup your machines - with such incredible storage gains, that
@@ -347,7 +346,7 @@ for all intents and purposes, you can enjoy almost unlimited daily backups.
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Feb 27 10:09:33 2016</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

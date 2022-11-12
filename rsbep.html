@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Shielding your files with Reed-Solomon codes</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Shielding your files with Reed-Solomon codes</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <a href="https://github.com/ttsiodras/rsbep-backup"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a>
 <em>(July 2008)</em>
@@ -28,7 +24,7 @@
 <small>(<em>Based on an <a href="RockFAT.html">idea</a> I had a decade ago</em>)</small>
 <h2>Changelog:</h2>
 <table border="0" summary="Changelog" style="width=100%;">
-<tr><td><em>August 3, 2008:</em></td><td><A href="http://hardware.slashdot.org/hardware/08/08/03/197254.shtml">Slashdotted!</A></td></tr>
+<tr><td><em>August 3, 2008:</em></td><td><A href="https://hardware.slashdot.org/hardware/08/08/03/197254.shtml">Slashdotted!</A></td></tr>
 <tr><td><em>August 4, 2008:</em></td><td>Made a plain-C package available, to support 64-bit OSes (as well as OS/X and Cygwin users).<br></td></tr>
 <tr><td><em>March 9, 2009:</em></td><td>Made a FUSE-based filesystem that transparently uses these tools.<br></td></tr>
 <tr><td width="20%"><em>June 14, 2010:</em></td><td>Fixed memory issues reported by Valgrind - now works with all GCC versions.</td></tr>
@@ -104,8 +100,8 @@
 
   <h2>Algorithm</h2>
   The idea behind this process is 
-  <a href="http://www.wikipedia.org/wiki/Error-correcting_code">error correcting codes</a>, like for
-  example the ubiquitous <a href="http://www.wikipedia.org/wiki/Reed_Solomon">Reed-Solomon</a>.
+  <a href="https://www.wikipedia.org/wiki/Error-correcting_code">error correcting codes</a>, like for
+  example the ubiquitous <a href="https://www.wikipedia.org/wiki/Reed_Solomon">Reed-Solomon</a>.
   With Reed-Solomon, <i>parity</i> bytes are used to protect a block of data 
   from a specified maximum number of errors per block. In the tools 
   described below, a block of 223 bytes is shielded with 32 bytes of parity. 
@@ -388,7 +384,7 @@ And yes, they have already saved my data a couple of times.
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Oct 10 14:22:49 2020</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

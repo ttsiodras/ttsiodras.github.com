@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Repairing an SLS 2200 Solar Charger Powerbank</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Repairing an SLS 2200 Solar Charger Powerbank</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(September 2021)</em></p>
 
@@ -215,8 +211,8 @@ var hasWebM = element.canPlayType('video/webm');
 var hasMP4 = element.canPlayType('video/mp4');
 if (hasWebM || hasMP4) {
     var format = hasWebM?'webm':'mp4';
-    var width = hasWebM?800:800;
-    var height = hasWebM?450:450;
+    var width = 800;
+    var height = 450;
     document.write("<video controls poster='powerbank-fixed.jpg' " + 
                    "width='" + width + "' " +
                    "height='auto'" +
@@ -225,13 +221,7 @@ if (hasWebM || hasMP4) {
                    "type='video/" + format + "'>No HTML5 video...<" +
                    "/video>");
 } else {
-    // For the old generation, throw up a Flash control,
-    // offering the same MP4 content.
-    document.write(
-        "<embed src='flvplayer.swf' width='800' height='450' " +
-        "       bgcolor='#FFFFFF' type='application/x-shockwave-flash'" +
-        "       pluginspage='http://www.macromedia.com/go/getflashplayer' " +
-        "       flashvars='file=powerbank-fixed.mp4&autostart=false' />");
+    document.write("<p>Your browser can't render mp4 or webm videos.");
 }
 </script>
 <noscript>
@@ -278,7 +268,7 @@ helps at all in the cloudy Netherlands :-)</p>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Sep 11 17:39:46 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 11:41:25 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

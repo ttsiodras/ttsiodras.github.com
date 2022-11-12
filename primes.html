@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>The Ulam spiral (Python and PyPy)</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">The Ulam spiral (Python and PyPy)</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(January 2014)</em></p>
 
@@ -30,8 +26,8 @@
 
 <div class="tldr">
 <b>For the TL;DR crowd:</b>
-<p>Yesterday, I found <a href="http://www.youtube.com/watch?v=iFuR97YcSLM">this Youtube video</a> about 
-the Ulam prime spiral ; I read the relevant <a href="http://en.wikipedia.org/wiki/Ulam_spiral">Wikipedia entry</a>,
+<p>Yesterday, I found <a href="https://www.youtube.com/watch?v=iFuR97YcSLM">this Youtube video</a> about 
+the Ulam prime spiral ; I read the relevant Wikipedia entry,
 and reliving my first programming memories from childhood, reimplemented it (this time in Python,
 not BASIC :&#x2011;)</p>
 
@@ -62,17 +58,14 @@ but the mathematical nature of the article, oh, that I could definitely understa
 <p>I was hooked. This was magic! </p>
 
 <p>A year later, at the age of 14, one of my brothers gave me the best present ever:
-he bought a <a href="http://en.wikipedia.org/wiki/ZX_Spectrum#ZX_Spectrum_16K.2F48K">Sinclair ZX Spectrum 48K</a>...
+he bought a <a href="https://en.wikipedia.org/wiki/ZX_Spectrum#ZX_Spectrum_16K.2F48K">Sinclair ZX Spectrum 48K</a>...
 and my life found purpose: I wanted to code - more than anything else in the world.</p>
 
 <h2>Memory trigger</h2>
 
 <p>Decades later, that young kid still lives in me. The <em>rewards</em> are now
 far easier to get ; I just lie on my couch, and use my tablet
-to enjoy
-<a href="http://www.youtube.com/user/minutephysics">MinutePhysics</a>,
-<a href="http://www.youtube.com/user/1veritasium">Veritasium</a> and
-<a href="http://www.youtube.com/user/numberphile">Numberphile</a> <em>(which
+to enjoy MinutePhysics, Veritasium and Numberphile <em>(which
 is a Greek-derived word, translating as "someone who loves numbers")</em>.</p>
 
 <p>While visiting Numberphile yesterday, I found a video about prime spirals.
@@ -80,12 +73,35 @@ It awoke that long forgotten memory of my first contact with programming - calcu
 As I was watching the video, I knew I would not be able to resist writing the code
 to draw these prime spirals, and verify them for myself.</p>
 
-<p>Have a look - or read the relevant <a href="http://en.wikipedia.org/wiki/Ulam_spiral">Wikipedia entry</a>:</p>
+<p>Have a look - or read the relevant <a href="https://en.wikipedia.org/wiki/Ulam_spiral">Wikipedia entry</a>:</p>
 
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/iFuR97YcSLM?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/iFuR97YcSLM?autoplay=1' class='full'>
+                <img src='iFuR97YcSLM.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <div style="text-align: center">
   <em>Prime spirals (from the Numberphile Youtube channel)</em>
@@ -132,44 +148,6 @@ expressions.</p>
 <span class="keyword">if</span><span class="normal"> __name__ </span><span class="symbol">==</span><span class="normal"> </span><span class="string">"__main__"</span><span class="symbol">:</span>
 <span class="normal">    </span><span class="function">main</span><span class="symbol">()</span>
 </tt></pre>
-</div>
-
-<p>My <a href="myvim.html#slime">SLIME</a>-y Python environment showed that this indeed provided the primes up to 100:</p>
-
-<div>
-<center>
-<script type="text/javascript">
-// Apple devices (e.g. iPhone 3GS) need HW-accelerated MP4, which must
-// also be baseline encoded (translation: fat) and can only have
-// a height up to 496 pixels (translation: blurry). Sigh.
-var element = document.createElement('video');
-var hasWebM = element.canPlayType('video/webm');
-var hasMP4 = element.canPlayType('video/mp4');
-if (hasWebM || hasMP4) {
-    var format = hasWebM?'webm':'mp4';
-    var width = hasWebM?640:496;
-    var height = hasWebM?780:508;
-    document.write("<video controls " + 
-                   "width='" + width + "' " +
-                   "height='" + height + "'" +
-                   "src='pythonPrimes." + format + "'" +
-                   "type='video/" + format + "'><" +
-                   "/video>");
-} else {
-    // For the old generation, throw up a Flash control,
-    // offering the same MP4 content.
-    document.write(
-        "<embed src='flvplayer.swf' width='496' height='758' " +
-        "       bgcolor='#FFFFFF' type='application/x-shockwave-flash'" +
-        "       pluginspage='http://www.macromedia.com/go/getflashplayer' " +
-        "       flashvars='file=pythonPrimes.mp4&autostart=false' />");
-}
-</script>
-<br>
-<em>My <a href="myvim.html#slime">Python/VIM</a> environment.
-If your browser doesn't show the video above,<br>you can <a href="pythonPrimes.webm">download</a>
-and watch it with an offline video player (e.g. <a href="http://www.videolan.org/vlc/">VLC</a>).</em>
-</center>
 </div>
 
 <p>The code is quite simple: the purpose of the function is to yield primes,
@@ -303,10 +281,11 @@ which would clear up the inner loop further - into something like this:
 <p>And that was it.</p>
 
 <p>The <code>screen</code> dictionary filled up with the pixel data,
-so I could now save it in any image format I wanted. To abide by my rules 
-(no external dependencies) but also quickly test what I did, I saved the data in a .pgm file - a simple,
-grayscale format, expecting <em>width x height</em> bytes (you now see why I used 0 for black,
-and 255 for white - it's what .pgm expects), with a simple header up front to provide
+so I could now save it in any image format I wanted.
+To abide by my own rules - no external dependencies - but also quickly test what I did,
+I saved the data in a <em>.pgm</em> file. PGM is a simple, grayscale format:
+it expects <em>width x height</em> bytes <em>(so you now see why I used 0 for black,
+and 255 for white - it's what .pgm expects!)</em>, with a simple header up front to provide
 the image dimensions:</p>
 
 <div class='codegenWrapper'>
@@ -458,7 +437,7 @@ there's this "pebbling a chessboard" that begs for a Javascript interface... :&#
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Oct 21 20:14:05 2017</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 11:41:25 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>The crossing ladders puzzle</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">The crossing ladders puzzle</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             (<em>July 2007</em>)
 <p>
@@ -339,7 +335,7 @@ Now <I>that</I> I can solve; using any of a number of ways...
 <H2><A NAME="SECTION00030000000000000000">
 Python</A>
 </H2>
-First, the one I like the most: Using <a href="http://www.python.org/">Python</a>.
+First, the one I like the most: Using <a href="https://www.python.org/">Python</a>.
 
 <P>
 Midpoint subdivision is easy: starting from two places where the above
@@ -459,7 +455,7 @@ So: two complex numbers, a negative one, and just as Python said... 105.
 <H2><A NAME="SECTION00050000000000000000">
 Octave</A>
 </H2>
-The easiest way - no coding at all - use <a href="http://www.gnu.org/software/octave/">Octave</a>, 
+The easiest way - no coding at all - use <a href="https://octave.org/">Octave</a>, 
 an open source alternative to Matlab:
 <PRE class="o">
 a = [ 1, -60, -9261, 555660, -8334900 ]
@@ -746,7 +742,7 @@ to locate the "lake" that leads all the way down to zero error.<p>
 Time to mimic nature...
 <h2>Particle Swarm Optimization</h2>
 After a suggestion from Ron Kneusel, I read about
-<a href="http://en.wikipedia.org/wiki/Particle_swarm_optimization">Particle Swarm Optimization</a> (PSO). 
+<a href="https://en.wikipedia.org/wiki/Particle_swarm_optimization">Particle Swarm Optimization</a> (PSO). 
 The link points to the Wikipedia article, where I saw that PSO solves the "getting trapped in a local
 minimum" problem in an unexpected way:<p>
 It mimics nature!<p>
@@ -985,7 +981,7 @@ There - now that's what I wanted. No help from my side, no clue whatsoever - as 
 But... I'd really prefer doing this with an open-source tool.<p>
 I don't want to depend on a closed source product that might someday disappear...
 <h2>Maxima</h2>
-<a href="http://maxima.sourceforge.net">Maxima</a> is a computer algebra system, implemented in Lisp. Very impressive piece of software... Look:
+<a href="https://maxima.sourceforge.io/">Maxima</a> is a computer algebra system, implemented in Lisp. Very impressive piece of software... Look:
 <pre>
 (%i1) eq1: (e+f)^2+d^2 = 119^2$
 (%i2) eq2: (e+f)^2+c^2 = 70^2$
@@ -1015,7 +1011,7 @@ d = - 98.94919786096257, e = 20.04252733900364, f = - 86.14893617021276],
 This was what I wanted, all along. An open-source tool that solves a non-linear set of equations without any hints from me.<p>
 And it's not the only one...
 <h2>Sage</h2>
-<a href="http://www.sagemath.org/">SAGE</a> is a big open-source project that 
+<a href="https://www.sagemath.org/">SAGE</a> is a big open-source project that 
 provides Python bridges to the functionality offered by most math-related 
 open source projects.<p>
 Since it's main application uses the Python interpreter, I started with 
@@ -1106,7 +1102,7 @@ approximate the function derivatives, so it is better to help
 by providing functions that are easier to differentiate).
 <h2>Microsoft's open-source z3</h2>
 After F#, PTVS and z3... I am starting to really appreciate Microsoft's R&amp;D department.
-Download the open-source <a href="http://z3.codeplex.com/">z3</a> library, compile and 
+Download the open-source <a href="https://github.com/Z3Prover/z3">z3</a> library, compile and 
 install it - and your Python interpreter will be able to execute this code...
 
 <div class='codegenWrapper'>
@@ -1162,7 +1158,7 @@ can be used to address any non-linear system of equations.
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Apr 17 21:45:15 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

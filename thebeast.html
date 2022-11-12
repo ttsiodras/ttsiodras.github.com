@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Tinkering with electronics</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Tinkering with electronics</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(August 2017)</em></p>
 
@@ -40,10 +36,33 @@ spend some quality time hacking with them... </p>
 <p>I configured <a href="https://www.youtube.com/watch?v=sNIMCdVOHOM">an ATmega328P on a breadboard</a>,
 and had it do <a href="https://www.youtube.com/watch?v=nsqmnkfZtSw">real-time 3D graphics on a SPI-controlled OLED</a>:</p>
 
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/nsqmnkfZtSw" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/nsqmnkfZtSw?autoplay=1' class='full'>
+                <img src='nsqmnkfZtSw.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <div style="text-align: center">
 <em>Real-time 3D on an ATmega328P on a SPI-controlled OLED</em>
@@ -101,7 +120,7 @@ kind of thing again. Admittedly, though, storing the 3D coordinates of the statu
 </div>
 
 <p>Even my <a target="_blank"
-href="http://en.wikipedia.org/wiki/ZX_Spectrum#ZX_Spectrum_16K.2F48K">ZX Spectrum</a> back in 1986 had
+href="https://en.wikipedia.org/wiki/ZX_Spectrum#ZX_Spectrum_16K.2F48K">ZX Spectrum</a> back in 1986 had
 48K of RAM, instead of the ATmega328P's puny 2K! :-)</p>
 
 <p>Then again, it's 8MHz brain may in fact be a good match for the Z80 - I plan to pit them against each
@@ -373,10 +392,33 @@ to make sure I could fit the 1602 screen snugly inside.</p>
 
 <p>The end result:</p>
 
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/e7rA3GDg8qA" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/e7rA3GDg8qA?autoplay=1' class='full'>
+                <img src='e7rA3GDg8qA.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <div style="text-align: center">
 <em>PI(D) fan controller, I2C 1602 screen, power-off button</em>
@@ -456,13 +498,36 @@ programming.</p>
 CPU core running inside that FPGA. Which sounds awesome :-)</p>
 
 <p><strong>UPDATE</strong>: <a href="https://github.com/ttsiodras/grlib-gpl">Done!</a> I ported a Leon3 design
-from Gaisler's GPL version of the GRLIB, inside my FPGA - <a href="https://youtu.be/Ylixb0AWAkQ">and then compiled and
-executed a program on a CPU that I "compiled" myself</a> :-)</p>
+from Gaisler's GPL version of the GRLIB, inside my FPGA - and then compiled and
+executed a program on a CPU that I "compiled" myself :-)</p>
 
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Ylixb0AWAkQ" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/Ylixb0AWAkQ?autoplay=1' class='full'>
+                <img src='Ylixb0AWAkQ.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <div style="text-align: center">
 <em>My own Leon3 CPU, running in my FPGA</em>
@@ -496,7 +561,7 @@ executed a program on a CPU that I "compiled" myself</a> :-)</p>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jul 10 19:55:28 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 11:41:25 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

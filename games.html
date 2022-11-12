@@ -9,29 +9,50 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>SDL hacks</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">SDL hacks</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
-            <b><em>Summer 2009:</em></b> <A href="http://science.slashdot.org/story/09/08/16/189257/Simple-Portable-Physics-Simulations">Slashdotted!</A><br>
+            <b><em>Summer 2009:</em></b> <A href="https://science.slashdot.org/story/09/08/16/189257/Simple-Portable-Physics-Simulations">Slashdotted!</A><br>
 <b><em>Xmas 2013:</em></b> I added a <a href="wavePhysics.html">Javascript port</a> of my wave simulation.<p>
 I want to "lure" my nephews and nieces towards science and engineering, and one of
 the things I've done towards that goal is to code some real-time physics simulators.
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/0FrAZis6Wfk?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/0FrAZis6Wfk?autoplay=1' class='full'>
+                <img src='0FrAZis6Wfk.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
 <div style="text-align: center">
-  <em>Modelling waves...</em>
+  <em>Modelling waves...</em><br>&nbsp;<br>
 </div>
   All the code I wrote is available below, and compiles under Linux, 
   Free/Net/OpenBSD, Mac OS/x and Windows (with GCC/MinGW), with the usual...
@@ -48,10 +69,10 @@ use it anyway...
 For the specifics of each "demo", check the README inside each source package.
 <h1>Download</h1>
   <h2>Explosion/fireworks simulator</h2>
-  Download <a href="explosions-1.0a.tar.bz2">source code</a>, and <a href="explosions-1.0a-win32.7z">Win32 binary</a> (compressed <a href="http://www.7-zip.org/">with 7-zip</a>).<p>Click and hold-down the left mouse button to create a never ending supply of "debris".
+  Download <a href="explosions-1.0a.tar.bz2">source code</a>, and <a href="explosions-1.0a-win32.7z">Win32 binary</a> (compressed <a href="https://www.7-zip.org/">with 7-zip</a>).<p>Click and hold-down the left mouse button to create a never ending supply of "debris".
 
   <h2>One-dimensional wave simulator</h2>
-  Download <a href="wave-1.0a.tar.bz2">source code</a>, and <a href="wave-1.0a-win32.7z">Win32 binary</a> (compressed <a href="http://www.7-zip.org/">with 7-zip</a>).<p>
+  Download <a href="wave-1.0a.tar.bz2">source code</a>, and <a href="wave-1.0a-win32.7z">Win32 binary</a> (compressed <a href="https://www.7-zip.org/">with 7-zip</a>).<p>
   Hit SPACE to pull down the string at a distance of 1/4 its full length (from the left). See if you can hit SPACE at the proper frequency (natural structural frequency) to maximize the wave amplitude... Can you make it reach the right side?
 
   <h2>Two-dimensional waves simulator - a.k.a. "water"</h2>
@@ -59,7 +80,7 @@ For the specifics of each "demo", check the README inside each source package.
   <img hspace="10" vspace="10" alt="2D waves" src="waves.png"><br>
   <em>Waves... (they look much better<br>when they move :&#x2011;)</em>
 </div>
-  Download <a href="waves-1.0a.tar.bz2">source code</a>, and <a href="waves-1.0a-win32.7z">Win32 binary</a> (compressed <a href="http://www.7-zip.org/">with 7-zip</a>).<p>
+  Download <a href="waves-1.0a.tar.bz2">source code</a>, and <a href="waves-1.0a-win32.7z">Win32 binary</a> (compressed <a href="https://www.7-zip.org/">with 7-zip</a>).<p>
   Click (and hold) the left mouse button to "pull" the water at the point where you click. Draging the mouse makes for nice waves that reflect around the borders of the "pool"...
 
   <h2>Snow "generator"</h2>
@@ -369,7 +390,7 @@ f_{n+1}(i,j) = 0.99 ( \frac{f_n(i-1,j) + f_n(i+1,j) + f_n(i,j-1) + f_n(i,j+1)}{2
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Oct 21 20:14:05 2017</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

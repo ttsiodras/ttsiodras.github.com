@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Cover me!</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Cover me!</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(April 2016)</em></p>
 
@@ -51,7 +47,7 @@ my morning catching up on my favorite programming forums:
 and <a href="https://news.ycombinator.com">Hacker News</a>.</p>
 
 <p>In both forums,
-<a href="http://blog.dantup.com/2016/04/have-software-developers-given-up/" target="_blank">
+<a href="https://blog.dantup.com/2016/04/have-software-developers-given-up/" target="_blank">
 <em>"Have software developers given up?"</em></a>
 was on top of the list... Danny, the author of the piece, illustrates in
 horrific-after-horrific screenshot the abysmal quality of software today... 
@@ -71,13 +67,7 @@ if (hasWebM || hasMP4) {
                    "type='video/" + format + "' autoplay='autoplay' loop='true'>&lt;" +
                    "/video>");
 } else {
-    // For the old generation, throw up a Flash control,
-    // offering the same MP4 content.
-    document.write(
-        "<embed src='flvplayer.swf' width='320' height='240' " +
-        "       bgcolor='#FFFFFF' type='application/x-shockwave-flash'" +
-        "       pluginspage='http://www.macromedia.com/go/getflashplayer' " +
-        "       flashvars='file=Data-Win95-crash.mp4&amp;autostart=true&amp;loop=true' />");
+    document.write("<p>Your browser can't render mp4 or webm videos.");
 }
 </script>
 </center>
@@ -323,7 +313,7 @@ very easy with LCOV.</p>
 <p>You may be wondering about how these <code>.gcda</code> files are generated.
 If you work with non-embedded platforms, the best answer is probably
 "<em>by magic</em>" ; this answer covers your needs, so go ahead with it -
-<a href="http://threevirtues.com/">laziness is a virtue</a>. Write your tests, reach
+<a href="https://thethreevirtues.com/">laziness is a virtue</a>. Write your tests, reach
 100% statement and branch coverage, feel proud. Smile.</p>
 
 <p>But what about <a href="https://en.wikipedia.org/wiki/St_Crispin%27s_Day_Speech">those few, those happy few</a>,
@@ -634,7 +624,7 @@ you'll understand.</p></li>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Feb 5 12:13:09 2022</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 11:41:25 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

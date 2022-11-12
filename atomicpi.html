@@ -9,7 +9,6 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
 <script type="text/javascript" src="prototype.js"></script>
 <script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
@@ -20,7 +19,7 @@
     <div class="well" id="Page">
         <div id="Banner">Atomic PI</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(May 2019)</em></p>
 
@@ -116,10 +115,33 @@ the power to the Atomic PI.</p>
 power plug fit in) and soldered two wires on the power pins - driving the output directly
 to the Atomic PI's pin 3 (5V) and pin 6 (GND).</p>
 
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/JSh3ww7J6-4?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/JSh3ww7J6-4?autoplay=1' class='full'>
+                <img src='JSh3ww7J6-4.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <div style="text-align: center">
   <em>First step: "stealing" power from an Arduino</em>
@@ -160,7 +182,10 @@ my Arduino board, and put my adjustable buck PSU in the loop - so I could measur
 
 <div style="clear:both; text-align:center; margin: 0 auto; max-width: 90%">
 <a href="atomic_pi_PSU.jpg" rel="lightbox" title="Idle power measurements on Atomic PI: 5V x 0.7A = 3.5W">
-<img src="atomic_pi_PSU.jpg" alt="Power measurements on Atomic PI"></a><p>
+<picture>
+  <source srcset="atomic_pi_PSU.webp" type="image/webp">
+  <img src="atomic_pi_PSU.jpg" alt="Power measurements on Atomic PI"></a><p>
+</picture>
 <em>Idle power measurements on Atomic PI: 5V x 0.7A = 3.5W</em>
 </div>
 
@@ -193,10 +218,33 @@ a fallback of a serial port - just as I had for my ARM SBCs.</p>
 <p>Connector CN10 of the board offered the required 3 pins: TX, RX and GND. After connecting
 them to a PL2303HX USB/TTL, I was able to see my machine boot up over <code>minicom</code>...</p>
 
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/8paRaO61OpY?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/8paRaO61OpY?autoplay=1' class='full'>
+                <img src='8paRaO61OpY.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <div style="text-align: center">
   <em>Monitoring a boot over a serial port</em>
@@ -242,10 +290,33 @@ On the Atomic PI in particular, it will allow you to enter and modify your BIOS 
 
 <p>The end result, including <a href="remotepower.html">remote-controlled poweron/poweroff functionality</a>:</p>
 
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/kPj1apA3Yo0?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/kPj1apA3Yo0?autoplay=1' class='full'>
+                <img src='kPj1apA3Yo0.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <div style="text-align: center">
   <em>Remote serial port</em>
@@ -264,13 +335,19 @@ from a normal 5.5x2.5mm plug. It also has a switch and a power LED.</p>
 
 <div style="clear:both; text-align:center; margin: 0 auto; max-width: 90%">
 <a href="top-side-of-adapter-hi.jpg" rel="lightbox" title="Adapter from 5.5x2.5mm jack, with switch and LED">
-<img src="top-side-of-adapter-hi.jpg" alt="Adapter from 5.5x2.5mm jack, with switch and LED"></a><p>
+<picture>
+  <source srcset="top-side-of-adapter-hi.webp" type="image/webp">
+  <img src="top-side-of-adapter-hi.jpg" alt="Adapter from 5.5x2.5mm jack, with switch and LED"></a><p>
+</picture>
 <em>Adapter from 5.5x2.5mm jack, with switch and LED</em>
 </div>
 
 <div style="clear:both; text-align:center; margin: 0 auto; max-width: 90%">
 <a href="bottom-side-of-adapter-hi.jpg" rel="lightbox" title="Bottom-side of adapter">
-<img src="bottom-side-of-adapter-hi.jpg" alt="Bottom-side of adapter"></a><p>
+<picture>
+  <source srcset="bottom-side-of-adapter-hi.webp" type="image/webp">
+  <img src="bottom-side-of-adapter-hi.jpg" alt="Bottom-side of adapter"></a><p>
+</picture>
 <em>Bottom-side of adapter</em>
 </div>
 
@@ -330,23 +407,67 @@ it will serve me well.</p>
 <br>Below you will see a couple of videos demonstrating both features - for details,
 check out the linked blog post.</p>
 
-<div>
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/6m-Zd31SrOE?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/6m-Zd31SrOE?autoplay=1' class='full'>
+                <img src='6m-Zd31SrOE.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <div style="text-align: center">
   <em>My custom-programmed ESP-01 controls a relay,<br>
 and allows me to remotely poweron/poweroff my AtomicPI</em>
 </div>
 
-<p>&nbsp;<br></p>
-
+<p>&nbsp;<br>
+<center>
 <div class="video-container">
-<iframe width="720" height="720" src="https://www.youtube.com/embed/kPj1apA3Yo0?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/kPj1apA3Yo0?autoplay=1' class='full'>
+                <img src='kPj1apA3Yo0.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <div style="text-align: center">
   <em>It also allows me to connect remotely to the Atomic PI's serial port.</em>
@@ -386,7 +507,7 @@ and allows me to remotely poweron/poweroff my AtomicPI</em>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Apr 17 21:45:15 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 20:33:36 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

@@ -9,32 +9,53 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>A naive simulator of gravity, written in Python</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">A naive simulator of gravity, written in Python</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             
-<em>(Coded during a 2010 summer night... updated with Runge-Kutta solver during Xmas 2012 weekend... <a href="http://redd.it/15bqd4">Reddit-ed</a>)</em>
+<em>(Coded during a 2010 summer night... updated with Runge-Kutta solver during Xmas 2012 weekend... <a href="https://redd.it/15bqd4">Reddit-ed</a>)</em>
 <p>
 I've always been fascinated by space - ever since I read 
 "The Family of the Sun", when I was young. And I always wanted
 to simulate what I've read about Newton's law of gravity, and see
 what happens in... a universe of my own making... :&#x2011;)
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/a6oAkSVHg7Y?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/a6oAkSVHg7Y?autoplay=1' class='full'>
+                <img src='a6oAkSVHg7Y.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
 <div style="text-align: center; margin-bottom:1em">
-  <em>First with 30 planets, then with just one (to show stable orbit, thanks to <a href="http://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">RK4</a>)</em>
+  <em>First with 30 planets, then with just one (to show stable orbit, thanks to <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">RK4</a>)</em>
 </div>
 So eventually, I sat down and did it. The <a href="gravityRK4.py">following code</a> "sprays" planets randomly, inside a
 900x600 window (the values are in the code, change them at will).
@@ -53,7 +74,7 @@ My <a href="gravity.py">original version</a> used Euler integration - i.e. assum
         self._vx += self._ax
         self._vy += self._ay
 </pre>
-...it just applied a crude form of Euler's method in updating position and velocity. I always meant to update the code with a more stable solution... and I finally found some time to hack it, during the Xmas 2012 weekend: the code now uses the <a href="http://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">RK4</a> solution of the velocity / acceleration differential equation. I based the patch on the excellent work of <a href="http://gafferongames.com">Glenn Fiedler</a> (definitely worth checking out, if you like this sort of thing). 
+...it just applied a crude form of Euler's method in updating position and velocity. I always meant to update the code with a more stable solution... and I finally found some time to hack it, during the Xmas 2012 weekend: the code now uses the <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">RK4</a> solution of the velocity / acceleration differential equation. I based the patch on the excellent work of <a href="https://gafferongames.com">Glenn Fiedler</a> (definitely worth checking out, if you like this sort of thing). 
 <p>
 And now... I can observe stable orbits - and have long-term fun watching chaotic solar systems calm down into peaceful ones like our own :&#x2011;)
 <h2>Download / usage</h2>
@@ -378,7 +399,7 @@ Enjoy!
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jul 20 15:34:11 2019</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

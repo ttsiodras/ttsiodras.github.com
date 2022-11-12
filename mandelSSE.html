@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>A realtime Mandelbrot zoomer in SSE assembly and CUDA</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">A realtime Mandelbrot zoomer in SSE assembly and CUDA</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
               <em>(Written around 2002, enhanced with OpenMP and CUDA in 2009)</em><br>&nbsp;<br>
 <a href="https://github.com/ttsiodras/MandelbrotSSE"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a>
@@ -99,7 +95,7 @@
   moving of pixel data back-and-forth between the CPU and the GPU: they are
   calculated on the GPU global memory, and they are drawn from that (via a texture).
   <p>If you are working under Windows, a 
-  <a href="mandelcuda-1.0-win32.7z">precompiled Windows binary is here</a> (compressed <a href="http://www.7-zip.org/">with 7-zip</a>).
+  <a href="mandelcuda-1.0-win32.7z">precompiled Windows binary is here</a> (compressed <a href="https://www.7-zip.org/">with 7-zip</a>).
   Make sure you disable Vertical Sync in order to get the maximum frame rate.
   <h2>Code comparison</h2>
   Just so you understand what I meant by "getting a speedup with clearer
@@ -222,7 +218,7 @@
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Fri Jul 15 21:05:35 2022</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

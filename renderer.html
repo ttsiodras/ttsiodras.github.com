@@ -9,7 +9,6 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
 <script type="text/javascript" src="prototype.js"></script>
 <script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
@@ -20,7 +19,7 @@
     <div class="well" id="Page">
         <div id="Banner">TTSIOD Renderer 2.x - Basic 3D algorithms</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <div class="toc">
 <ul class="nav nav-tabs nav-stacked">
@@ -40,14 +39,14 @@
 <a href="https://github.com/ttsiodras/renderer"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a>
 <h2>Recent changes:</h2>
 <table border="0" summary="Changelog">
-<tr valign="top"><td><em>April 2012:</em></td><td> Cleaned up triangle setup code via <a href="http://stackoverflow.com/questions/264269">X-Macros</a><br></td></tr>
-<tr valign="top"><td><em>August 2011:</em></td><td> Added Intel's Morphological Anti-aliasing (<a href="http://software.intel.com/en-us/articles/mlaa-efficiently-moving-antialiasing-from-the-gpu-to-the-cpu/">MLAA</a>)<br></td></tr>
-<tr valign="top"><td><em>February 2011:</em></td><td> <A href="http://redd.it/fgbfr">CUDA "port" of raytracer mode posted to Reddit</A><br></td></tr>
+<tr valign="top"><td><em>April 2012:</em></td><td> Cleaned up triangle setup code via <a href="https://stackoverflow.com/questions/264269">X-Macros</a><br></td></tr>
+<tr valign="top"><td><em>August 2011:</em></td><td> Added Intel's Morphological Anti-aliasing (<a href="https://web.archive.org/web/20111130045241/http://software.intel.com/en-us/articles/mlaa-efficiently-moving-antialiasing-from-the-gpu-to-the-cpu/">MLAA</a>)<br></td></tr>
+<tr valign="top"><td><em>February 2011:</em></td><td> <A href="https://redd.it/fgbfr">CUDA "port" of raytracer mode posted to Reddit</A><br></td></tr>
 <tr valign="top"><td width="20%"><em>January 2011:</em></td><td> Added raytracing mode:<br>reflections, refractions, shadows, ambient occlusion and anti-aliasing.<br></td></tr>
-<tr valign="top"><td><em>December 2010:</em></td><td> <A href="http://redd.it/euxzx">CUDA "port" of raycaster mode posted to Reddit</A><br></td></tr>
-<tr valign="top"><td><em>July 2010:</em></td><td> <A href="http://www.reddit.com/r/programming/comments/csg3a/a_simple_3d_benchmark_in_html5javascript/">Javascript "port" of points-only mode posted to Reddit</A><br> </td></tr>
+<tr valign="top"><td><em>December 2010:</em></td><td> <A href="https://redd.it/euxzx">CUDA "port" of raycaster mode posted to Reddit</A><br></td></tr>
+<tr valign="top"><td><em>July 2010:</em></td><td> <A href="https://www.reddit.com/r/programming/comments/csg3a/a_simple_3d_benchmark_in_html5javascript/">Javascript "port" of points-only mode posted to Reddit</A><br> </td></tr>
 <tr valign="top"><td><em>May 2010:</em></td><td> <A href="https://openbenchmarking.org/test/pts/ttsiod-renderer#metrics">Added to the Phoronix Test Suite</A><br></td></tr>
-<tr valign="top"><td><em>April 2010:</em></td><td> <A href="http://www.reddit.com/r/programming/comments/blxpi/recreational_programming_a_swonly_3d_renderer/">Reddit-ed!</A><br></td></tr>
+<tr valign="top"><td><em>April 2010:</em></td><td> <A href="https://www.reddit.com/r/programming/comments/blxpi/recreational_programming_a_swonly_3d_renderer/">Reddit-ed!</A><br></td></tr>
 <tr valign="top"><td><em>August 2017:</em></td><td> <A href="https://github.com/ttsiodras/3D-on-an-ATmega328p">Ported to an ATmega328p</a> with an OLED screen (<a href="https://hackaday.com/2017/08/08/atmega328-3d/">Hackaday-ed</A>).<br></td></tr>
 <tr valign="top"><td><em>August 2020:</em></td><td> <A href="https://github.com/ttsiodras/3D-on-a-ZX-Spectrum-48K">Ported to a ZX Spectrum 48K</a> (<a href="https://hackaday.com/2020/08/17/3d-on-the-zx-spectrum-48k/">Hackaday-ed</A>).<br></td></tr>
 </table>
@@ -74,14 +73,42 @@
   and the ray intersections for the raytracers. And as for speed, we are now firmly in the age of multi-core CPUs - so 
   software rasterizing can (finally) do per-pixel lighting and soft-shadows in real-time, while raytracing can generate 
   beautiful images in a matter of seconds.
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/M2cFz6190ZM?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/M2cFz6190ZM?autoplay=1' class='full'>
+                <img src='M2cFz6190ZM.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
   The renderer allows switching between rasterizing and raytracing in real-time - so one navigates quickly with the 
   rasterizers, and requests a raytracing when the viewpoint is interesting.
   <div class="rightFloat scrollableContainer">
-  <img hspace="10" vspace="10" alt="Rendered statue" src="ajax-small.gif"><br>
+  <picture>
+    <source srcset="ajax-small.webp" type="image/webp">
+    <img hspace="10" vspace="10" alt="Rendered statue" src="ajax-small.gif"><br>
+  </picture>
   <em>On a 4-core Phenom, the shadow-mapped<br>version runs at 60 frames/sec.<br>The raytraced version: 3 sec/frame ;&#x2011;)</em>
   </div>
 <a name="features"></a>
@@ -105,7 +132,7 @@
   <ul>
   <li><b>.3ds</b>, i.e. the well known 3D Studio format (via lib3ds)
   <li><b>.tri</b>, a simple binary dump of vertex and triangle data
-  <li><b>.ply</b> (only the ASCII kind, as saved from <a href="http://meshlab.sourceforge.net/">MeshLab</a> and <a href="http://freshmeat.net/projects/shadevis/">shadevis</a>)
+  <li><b>.ply</b> (only the ASCII kind, as saved from <a href="https://www.meshlab.net/">MeshLab</a> and shadevis)
   </ul>
   <p>Implementation wise, the code...
   <ul>
@@ -116,10 +143,10 @@
   <li>Includes a separate <tt>VisualC</tt> directory for Windows/MSVC users, 
   with all dependencies pre-packaged for easy compilation
   <li>Can be configured to use 
-  <a href="http://www.openmp.org">OpenMP</a>, provided that your compiler's
+  <a href="https://www.openmp.org">OpenMP</a>, provided that your compiler's
   support for OpenMP is mature enough (e.g. GCC since version 4.3.2)
   <li>Can be configured to use 
-  <a href="http://www.threadingbuildingblocks.org">Intel Threading Building 
+  <a href="https://github.com/oneapi-src/oneTBB">Intel Threading Building 
   Blocks</a>, thus taking advantage of multi-core CPUs and executing faster
   <li>Uses C++ template-based metaprogramming, in order
   to move as much rendering logic as possible from run-time to compile-time.
@@ -195,7 +222,10 @@
   ...and finally, this is how refractions create a glass dragon (<em>31 seconds to render on a Core2Duo</em>):
 
   <div class="scrollableContainer">
-  <img hspace="20" vspace="10" alt="Glass dragon" src="glassDragon.gif">
+  <picture>
+    <source srcset="glassDragon.webp" type="image/webp">
+    <img hspace="20" vspace="10" alt="Glass dragon" src="glassDragon.gif">
+  </picture>
   </div>
 
   Which brings us to the matter of speed, again: The program allows changing the rendering mode at runtime, and
@@ -273,17 +303,22 @@ rays will be spawned from the intersection point, and they will be used to
 calculate the ratio of ambient light at that point.
 <p>The difference is very clear:
   <div class="scrollableContainer">
-  <img hspace="10" vspace="10" alt="With and without ambient occlusion" 
-  src="WithAndWithoutAmbientOcclusion.gif"><br>
+  <picture>
+    <source srcset="WithAndWithoutAmbientOcclusion.webp" type="image/webp">
+    <img hspace="10" vspace="10" alt="With and without ambient occlusion" src="WithAndWithoutAmbientOcclusion.gif"><br>
+  </picture>
   <em>With and without ambient occlusion</em></div>
   Here's an ambient-occlusion raytracing of Sponza (<em>with 32 ambient rays cast per pixel</em>):
   <div class="scrollableContainer">
-  <img hspace="20" vspace="10" alt="Ambient Sponza" src="ambientSponza.gif"><br>
-</div>
+    <picture>
+      <source srcset="ambientSponza.webp" type="image/webp">
+      <img hspace="20" vspace="10" alt="Ambient Sponza" src="ambientSponza.gif"><br>
+    </picture>
+  </div>
   ...and another of a conference room:
   <div class="scrollableContainer">
-  <img hspace="20" vspace="10" alt="Conference" src="conference.jpg">
-</div>
+    <img hspace="20" vspace="10" alt="Conference" src="conference.jpg">
+  </div>
 <a name="downloads"></a>
   <h2>Download, compile and run</h2>
   <div class="redBox">
@@ -304,8 +339,8 @@ calculate the ratio of ambient light at that point.
   So make sure you check the runtime performance of the renderer by exercising direct control
   over the number of threads (via OMP_NUM_THREADS).
   </div>
-  The code is under the GPL, and lives in <a href="https://github.com/ttsiodras/renderer">GitHub</a>. Here's <a href="https://github.com/ttsiodras/renderer/archive/v2.3c.tar.gz">a tarball with the latest source code</a> (last update: 2.3c, Apr 2021).
-  <a href="renderer-2.x.latest-mingw32.7z">Windows binaries</a> are also available (compiled with TDM/MinGW and Pthread-W32, and compressed with <a href="http://www.7-zip.org/">7-zip</a>).
+  The code is under the GPL, and lives in <a href="https://github.com/ttsiodras/renderer">GitHub</a>. Here's <a href="https://github.com/ttsiodras/renderer/archive/v2.3d.tar.gz">a tarball with the latest source code</a> (last update: 2.3d, Nov 2022).
+  <a href="renderer-2.x.latest-mingw32.7z">Windows binaries</a> are also available (compiled with TDM/MinGW and Pthread-W32, and compressed with <a href="https://www.7-zip.org/">7-zip</a>).
   <p><b>For Windows/MSVC users:</b>
 <p>Just open the project solution (under <tt>VisualC/</tt>) and compile for
 Release mode. It is configured by default to use Intel TBB for multithreading,
@@ -360,7 +395,7 @@ OpenMP) you can switch from TBB to OpenMP:
   so if you do use it, your only available option with multicore machines is
   Intel TBB (which works fine). You can, however, download the latest GCC from
   ports, if you use FreeBSD, or from 
-  <a href="http://hpc.sourceforge.net">High Performance Computing</a> for Mac OS/X -
+  <a href="https://hpc.sourceforge.net">High Performance Computing</a> for Mac OS/X -
   they both offer the latest GCC series. Results are much better this way: OpenMP works fine,
   and support for the SSE-based <tt>-mrecip</tt> option boosts the speed by more than 30%.
   </td></tr></table><br>
@@ -422,8 +457,8 @@ Usage: renderer [OPTIONS] [FILENAME]
   The rasterizer output is looking much better if the model carries pre-calculated
   ambient occlusion information per vertex. To do this:
   <ol>
-  <li>Use <a href="http://meshlab.sourceforge.net/">MeshLab</a> to convert your 3D object to .PLY.
-  <li>Load it up in <a href="http://ostatic.com/shadevis">shadevis</a> and hit ENTER 
+  <li>Use <a href="https://www.meshlab.net/">MeshLab</a> to convert your 3D object to .PLY.
+  <li>Load it up in shadevis and hit ENTER 
   to have shadevis calculate the ambient occlusion factors per vertex. After that, 
   hit 'D' as many times as necessary to lower the diffuse light to 0%, and hit 'a' 
   to pump up the ambient to 100%. Hit 'S' to save the object.
@@ -570,7 +605,7 @@ using dynamic thread scheduling.
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jul 10 19:55:28 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Nov 12 10:06:16 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Python "compile-time" type checking</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Python "compile-time" type checking</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(August 2012)</em></p>
 
@@ -35,7 +31,7 @@ But nowadays, we have something much better: Just use <a href="http://mypy-lang.
 
 <p>That being said, I do appreciate compile-time safety. I love it that C++ or OCaml compilers will "bark" - during compile time, not run-time - when a string is passed to a function expecting an integer. Python unfortunately will just crash and burn at runtime.</p>
 
-<p>To compensate, I use tools - I've added flake8 support to <a href="myvim.html">my VIM settings</a>, so I can catch many errors by simply pressing F7 while I edit my code. <a href="http://pychecker.sourceforge.net/">PyChecker</a> is also a mandatory part of my release process. But neither of them can catch this:</p>
+<p>To compensate, I use tools - I've added flake8 support to <a href="myvim.html">my VIM settings</a>, so I can catch many errors by simply pressing F7 while I edit my code. <a href="https://pychecker.sourceforge.net/">PyChecker</a> is also a mandatory part of my release process. But neither of them can catch this:</p>
 
 <div class='codegenWrapper'>
 <pre><tt><span class="keyword">def</span><span class="normal"> </span><span class="function">foo</span><span class="symbol">(</span><span class="normal">a</span><span class="symbol">):</span>
@@ -140,7 +136,7 @@ At line 14 you are calling &#39;foo&#39; with:  &lt;class &#39;_ast.Name&#39;&gt
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Tue Nov 8 19:47:06 2016</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 11:41:25 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>A circuit to charge a LiPo and drive a load at the same time</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">A circuit to charge a LiPo and drive a load at the same time</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(August 2022)</em></p>
 
@@ -143,20 +139,32 @@ Once I managed that, my multimeter showed that when I connected my
 TP4056 to my USB powerbank, the MOSFET's source ended up at 4.6V...</p>
 
 <div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
-<img src="Load.sharing.2.jpg" alt="P-channel MOSFET to the rescue">
+<picture>
+  <source srcset="Load.sharing.2.webp" type="image/webp">
+  <img src="Load.sharing.2.jpg" alt="P-channel MOSFET to the rescue">
+</picture>
 </div>
 
 <p>...and when the powerbank was unplugged, the Source dropped to 3.65V
 <em>(as expected; that was indeed my LiPo's charge level at the time)</em>:</p>
 
 <div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
-<img src="Load.sharing.3.jpg" alt="P-channel MOSFET to the rescue">
+<picture>
+  <source srcset="Load.sharing.3.webp" type="image/webp">
+  <img src="Load.sharing.3.jpg" alt="P-channel MOSFET to the rescue">
+</picture>
 </div>
 
 <p>In plain words: <strong>it worked</strong> :-)</p>
 
 <p>In this prototype, the Source of the FET is then connected to a B6288-based
-boost converter - that takes the voltage up to 5V. That is then used
+boost converter...</p>
+
+<div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
+<img src="boost.jpg" alt="Boost converter">
+</div>
+
+<p>...that takes the voltage up to 5V. That is then used
 to feed the Arduino and all the rest - and it works regardless of whether
 the boost converter sees V<em>(battery)</em> or 4.7V as an input.</p>
 
@@ -195,7 +203,7 @@ and many interesting discussions he has with people that doubt his design.</p>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Aug 7 14:50:41 2022</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 20:33:36 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

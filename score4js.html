@@ -9,17 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
 <title>Porting Score4 to Javascript: The Browser Wars</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Porting Score4 to Javascript: The Browser Wars</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(July 2011)</em>
 <h2>A Javascript port of my Score4 AI engine</h2>
@@ -29,7 +26,7 @@
   with configurable depth search and an arguably better looking interface.
 </table>
 <table border="1" frame="box" cellpadding="10" summary="for TL;DR people" bgcolor="#80DD80">
-<tr><td><b>For the TL;DR crowd:</b> A couple of weeks ago I implemented <a href="score4.html">the AI Minimax algorithm</a>, in order to play a game called <a href="http://en.wikipedia.org/wiki/Connect_Four">Score4/ConnectFour</a>. Below you will find my Javascript port of that code: just click with the mouse on any column you wish, thus dropping green chips in the board. The goal is to form a line of four green ones - the computer will be trying to form a line of 4 red ones.</td></tr></table>
+<tr><td><b>For the TL;DR crowd:</b> A couple of weeks ago I implemented <a href="score4.html">the AI Minimax algorithm</a>, in order to play a game called <a href="https://en.wikipedia.org/wiki/Connect_Four">Score4/ConnectFour</a>. Below you will find my Javascript port of that code: just click with the mouse on any column you wish, thus dropping green chips in the board. The goal is to form a line of four green ones - the computer will be trying to form a line of 4 red ones.</td></tr></table>
 &nbsp;<br>
     <div align="center">
         <canvas id="board" width="567" height="487" style="border:1px solid #c3c3c3; position:relative">
@@ -40,7 +37,7 @@
         <button id="reset" type="button" onClick="reset();"><b>Reset</b></button> to restart the game...
     </div>
 <h2>Minimax in Javascript - run browser, run!</h2>
-A couple of weeks ago I implemented <a href="score4.html">the AI Minimax algorithm</a>, and then used it to play the <a href="http://en.wikipedia.org/wiki/Connect_Four">Score4/ConnectFour</a> game.
+A couple of weeks ago I implemented <a href="score4.html">the AI Minimax algorithm</a>, and then used it to play the <a href="https://en.wikipedia.org/wiki/Connect_Four">Score4/ConnectFour</a> game.
 <p>
 I wrote the code in both functional (OCaml/F#) and imperative (C#/C++) styles, and got different <a href="score4.html#lessons">speed results</a> from each one of them. Naturally, C/C++ was the fastest one by far: more than 5 times faster that the next best performer (OCaml). People from Reddit and Hacker News joined in, with implementations in Python, Java, Go, Haskell and D(!). I placed all the code on <a href="https://github.com/ttsiodras/Score4">Github</a>, so it is easy to compare the various implementations and see how the code works.
 <p>
@@ -388,7 +385,7 @@ reset();
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Sep 13 09:55:11 2015</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

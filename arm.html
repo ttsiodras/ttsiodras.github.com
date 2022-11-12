@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Building a tiny ARM-based server</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Building a tiny ARM-based server</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(November 2013)</em></p>
 
@@ -64,8 +60,8 @@ I lived without it :&#x2011;)
 
 <h1>Building a tiny ARM-based server</h1>
 
-<p>About a year ago, a no longer functional <a href="http://en.wikipedia.org/wiki/Network-attached_storage">NAS device</a>
-made by Western Digital came into my hands - a&nbsp;<a href="http://en.wikipedia.org/wiki/Western_Digital_My_Book">MyBook World Edition</a>.
+<p>About a year ago, a no longer functional <a href="https://en.wikipedia.org/wiki/Network-attached_storage">NAS device</a>
+made by Western Digital came into my hands - a&nbsp;<a href="https://en.wikipedia.org/wiki/Western_Digital_My_Book">MyBook World Edition</a>.
 This is a rather old, low-powered, ARM-based file server... and even though it is
 considered obsolete by today's standards, I knew the moment I got it that I
 would very much enjoy hacking it to do my bidding :&#x2011;)</p>
@@ -80,7 +76,7 @@ in practising both.</p>
 Following in the tradition of many engineers before me, I slaved over it for
 half an hour and succeeded in disassembling it - only to realize afterwards
 that other kind souls had
-<a href="http://www.instructables.com/id/Disassembling-MyBook-World-Edition/">documented the process</a>.
+<a href="https://www.instructables.com/id/Disassembling-MyBook-World-Edition/">documented the process</a>.
 Oh well - figuring things out on your own is the best part about
 all this :&#x2011;)</p>
 
@@ -194,7 +190,7 @@ IDE read: device 0 block # 63, count 1 ... 1 blocks read: OK
 
 <p>Having access to the Western Digital provided Linux of the board was a very good start.
 I then succeeded in using the GPL sources from Western Digital to
-built my own kernel and <a href="http://www.busybox.net/">busybox</a>-based mini-distro.
+built my own kernel and <a href="https://www.busybox.net/">busybox</a>-based mini-distro.
 I wanted more than just a toy, though ;
 and since I use Debian at work, I followed Mario's consolidated version of instructions
 (<em>'Quick install steps'</em>), and in 15min, installed the <code>debootstrap</code>-ed main parts
@@ -215,7 +211,7 @@ systems that keep running slower and slower, and can only eventually be
 "rescued" with... clean reinstalls. In contrast, under UNIXes (Linux, the BSDs,
 etc) your applications' settings are simple files and folders under /etc and
 $HOME...  Personally, I have always kept them under revision control (e.g
-<a href="http://github.com/ttsiodras/dotfiles">my main dot files</a> and
+<a href="https://github.com/ttsiodras/dotfiles">my main dot files</a> and
 <a href="vim.html">vim configuration</a>), happily migrating them over the last 15 years
 across the many machines I've worked with. Backing them up and restoring them,
 e.g.  when I need to work on a brand-new machine at work, is simply a matter of
@@ -285,7 +281,7 @@ and instead used a native C client,
 
 <pre><code># apt-get install gcc
 ...
-# wget http://.../inadyn.v1.96.2.zip
+# wget https://.../inadyn.v1.96.2.zip
 # unzip inadyn.v1.96.2.zip
 # cd inadyn
 # make
@@ -316,7 +312,7 @@ UBER-SECRET.dyndns.org has address AA.BB.CC.DD
 
 <p><strong>Update, a year later</strong>: <em>DynDNS removed its free plan, so I registered
 to two more free DNS providers, <a href="https://entrydns.net/">EntryDNS</a> and 
-<a href="http://duckdns.org/">DuckDNS</a>. They both work via 'magic' web requests,
+<a href="https://duckdns.org/">DuckDNS</a>. They both work via 'magic' web requests,
 so I simply set up two cron jobs (running every 5 min) that invoke <code>curl</code>,
 passing in the string that identifies my machine.</em></p>
 
@@ -377,7 +373,7 @@ via <code>ssh -D ...</code>) is impossible, because there are firewalls in place
 allow HTTP traffic.</p>
 
 <p>Initially, I tried exposing the server over HTTPS's port (443), but that was
-not enough.  I ended up using <a href="http://www.rutschle.net/tech/sslh.shtml">sslh</a>,
+not enough.  I ended up using <a href="https://www.rutschle.net/tech/sslh/README.html">sslh</a>,
 which cleverly sits between a port and a number of daemons. In my case, since
 it speaks enough of the SSH and HTTPS protocols, it can determine when an
 incoming connection is hunting for SSH responses, and when for HTTPS responses
@@ -397,7 +393,7 @@ download folder from my jailbroken Android tablet (over Samba - i.e. with
 the usual <code>mount -t cifs ...</code>), and enjoy watching without network 'hiccups'.</p>
 
 <p>In case you're wondering, I am currently watching Drew Neil's amazing <a href="http://vimcasts.org/">Vimcasts</a>
-series, and <a href="http://egghead.io/lessons">egghead.io's videos on AngularJS</a>.
+series, and <a href="https://egghead.io/lessons">egghead.io's videos on AngularJS</a>.
 Scrapping is relatively easy - I scrap enough HTML to find the video URLs,
 and then feed them to a <code>wget</code> with a rate limit - so that I don't overload
 the kind people that share these treasures.</p>
@@ -434,7 +430,7 @@ death...</p>
 the custom WD 2.6.17 to newer kernels, I can try something else: I can compile
 the Wheezy's GLIBC to support older kernels - including this one!</p>
 
-<p>I <a href="http://stackoverflow.com/questions/26527199/cross-compiling-glibc-for-my-arm-soc">asked for help on StackOverflow and UnixStackexchange</a> with this, but eventually I figured it out on my own and
+<p>I <a href="https://stackoverflow.com/questions/26527199/cross-compiling-glibc-for-my-arm-soc">asked for help on StackOverflow and UnixStackexchange</a> with this, but eventually I figured it out on my own and
 posted my own answer. I basically used <code>crosstool-ng</code> to cross-compile GLIBC
 on my Core i5 and generated the ARM-ie version of GLIBC that could run on my
 2.6.17.</p>
@@ -515,7 +511,7 @@ and help in everything electronics-related.</em></a>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Oct 20 14:27:33 2019</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 11:41:25 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

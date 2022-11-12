@@ -9,7 +9,6 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
 <script type="text/javascript" src="prototype.js"></script>
 <script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
@@ -20,7 +19,7 @@
     <div class="well" id="Page">
         <div id="Banner">Useful old technologies: ASN.1</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(July 2013)</em></p>
 
@@ -237,9 +236,9 @@ combinations of CPUs, platforms, etc.</p></li>
 details by automating the handling of different types in the <code>pickle</code>
 module. Wouldn't it be fabulous if we had this kind of machinery across <em>different</em> languages?</p>
 
-<p>Guess what - we do. Since the 1980's, in fact - it's called <a href="http://en.wikipedia.org/wiki/Abstract_Syntax_Notation_One">ASN.1</a>.</p>
+<p>Guess what - we do. Since the 1980's, in fact - it's called <a href="https://en.wikipedia.org/wiki/Abstract_Syntax_Notation_One">ASN.1</a>.</p>
 
-<p>The <a href="http://xkcd.com/927">idea behind it</a> is very simple: specify your exchanged message data types in a data description language:</p>
+<p>The <a href="https://xkcd.com/927">idea behind it</a> is very simple: specify your exchanged message data types in a data description language:</p>
 
 <div class='codegenWrapper'>
 <pre><tt><span class="normal">Message </span><span class="symbol">::=</span><span class="normal"> </span><span class="type">SEQUENCE</span><span class="normal"> {</span>
@@ -258,12 +257,12 @@ module. Wouldn't it be fabulous if we had this kind of machinery across <em>diff
 
 <h3>A hands-on example</h3>
 
-<p>First, download the <a href="http://download.tuxfamily.org/taste/DMT/DMT-latest.tgz">Data Modelling Tools</a> ; a tool suite that contains a free, <a href="https://github.com/ttsiodras/asn1scc">open-source</a> ASN.1 compiler
+<p>First, download the <a href="https://download.tuxfamily.org/taste/DMT/DMT-latest.tgz">Data Modelling Tools</a> ; a tool suite that contains a free, <a href="https://github.com/ttsiodras/asn1scc">open-source</a> ASN.1 compiler
 developed under the supervision of the European Space Agency.</p>
 
 <p>Installing it is easy:</p>
 
-<pre><code>$ wget http://download.tuxfamily.org/taste/DMT/DMT-latest.tgz
+<pre><code>$ wget https://download.tuxfamily.org/taste/DMT/DMT-latest.tgz
 ...
 $ tar zxvf DMT-latest.tgz
 ...
@@ -425,7 +424,7 @@ $ echo $?
 
 <p>And that's the main idea. You can use this generated C code in your projects - it will just <em>work</em>. There are no external dependencies, no libraries to speak of, the code is there, open, for you to use as you please. Note that the encoders will <em>properly</em> handle all manner of potential mischief: endianess of the platform you compile it on, word sizes, etc. You can be sure that by using ASN.1, your encoded messages (that is, the representations inside the ByteStreams) can be sent to whatever platform you fancy, and they will decode fine, into the receiving platform's variables.</p>
 
-<p>(<em>Note: ASN1SCC is made <a href="http://web1.see.asso.fr/erts2012/Site/0P2RUC89/7C-4.pdf">specifically for embedded, safety-critical systems</a>, so it only addresses ASN.1 grammars containing bounded (in size) messages. ASN.1 itself has no such limitation - e.g. you can model open-ended SEQUENCEOFs with it</em>).</p>
+<p>(<em>Note: ASN1SCC is made <a href="7C-4.pdf">specifically for embedded, safety-critical systems</a>, so it only addresses ASN.1 grammars containing bounded (in size) messages. ASN.1 itself has no such limitation - e.g. you can model open-ended SEQUENCEOFs with it</em>).</p>
 
 <h2>What if I have more than one message? Complex ones?</h2>
 
@@ -464,7 +463,7 @@ $ echo $?
 </tt></pre>
 </div>
 
-<p>The language is fairly simple, so you should be able to figure out what is going on. If not, you can study <a href="http://www.oss.com/asn1/resources/books-whitepapers-pubs/asn1-books.html#dubuisson">Olivier Dubuisson's freely available book</a> for an extensive treatment of ASN.1 - all the way up to advanced features.</p>
+<p>The language is fairly simple, so you should be able to figure out what is going on. If not, you can study <a href="https://www.oss.com/asn1/resources/books-whitepapers-pubs/asn1-books.html#dubuisson">Olivier Dubuisson's freely available book</a> for an extensive treatment of ASN.1 - all the way up to advanced features.</p>
 
 <p>Processing this grammar with any ASN.1 compiler (including ASN1SCC), you would be all set to use the ready-made message definitions for <code>AComplexMessage</code>, <code>TypeEnumerated</code>, ... and their corresponding encoders/decoders.</p>
 
@@ -472,7 +471,7 @@ $ echo $?
 
 <h2>And this works for any language?</h2>
 
-<p>Yes, there are ASN.1 compilers for almost any language you can think of. ASN1SCC in particular, has been developed under the supervision of the European Space Agency, and it targets C and Ada, with specific emphasis on embedded, safety-critical systems - for which it does some <a href="http://web1.see.asso.fr/erts2012/Site/0P2RUC89/7C-4.pdf">pretty amazing things</a>:</p>
+<p>Yes, there are ASN.1 compilers for almost any language you can think of. ASN1SCC in particular, has been developed under the supervision of the European Space Agency, and it targets C and Ada, with specific emphasis on embedded, safety-critical systems - for which it does some <a href="7C-4.pdf">pretty amazing things</a>:</p>
 
 <ul>
 <li>it never uses any heap - no <code>malloc</code> is ever called; what would you do in space when your satellite runs out of heap? Blue screen? :&#x2011;)</li>
@@ -495,7 +494,7 @@ $ echo $?
 <ul>
 <li>you don't care for performance or safety requirements, and XML parsing is cheap in your problem domain</li>
 <li>you have lots of memory to waste and don't care about optimal message representations</li>
-<li>you want to easily peek into the encoded streams and figure out things during debugging (but read below for XER, and also note that <a href="http://wiki.wireshark.org/Asn2wrs">wireshark has an ASN.1 inspector</a>)</li>
+<li>you want to easily peek into the encoded streams and figure out things during debugging (but read below for XER, and also note that <a href="https://wiki.wireshark.org/Asn2wrs">wireshark has an ASN.1 inspector</a>)</li>
 <li>you have other development dependencies, like extensive use of XPath...</li>
 </ul>
 
@@ -528,7 +527,7 @@ $ echo $?
 
 <h2>And then, you realize you can do some magic...</h2>
 
-<p>Equally important - and this is a matter for another blog post, but consider this a teaser - by using ASN.1 to define your messages, you can then automatically create many things <em>that are depending on the message definitions</em>: in the case of <a href="http://semantix.gr/taste">the work I've done</a> for the European Space Agency, we've built automatic translators of ASN.1 messages towards...</p>
+<p>Equally important - and this is a matter for another blog post, but consider this a teaser - by using ASN.1 to define your messages, you can then automatically create many things <em>that are depending on the message definitions</em>: in the case of <a href="https://taste.tools">the work I've done</a> for the European Space Agency, we've built automatic translators of ASN.1 messages towards...</p>
 
 <ul>
 <li><p>Code generated by modelling tools: building automatic 'translators' of code generated by modelling tools to/from ASN.1, we can then use ASN.1 as the center of a star-formation, and have code generated by one modelling tool automatically "speak" to code generated by another, at runtime:</p>
@@ -536,7 +535,7 @@ $ echo $?
 <ul>
 <li>Simulink Real-time workshop</li>
 <li>SCADE</li>
-<li>ObjectGeode and <a href="http://www.opengeode.net">OpenGeode</a></li>
+<li>ObjectGeode and <a href="https://www.opengeode.net">OpenGeode</a></li>
 <li>Real-time Developer Studio</li>
 </ul></li>
 <li><p>SQL databases: we can automatically store and retrieve arbitrarily complex ASN.1 messages inside automatically constructed databases (no, not via BLOBs - with tables that perfectly mirror the relationships between types using foreign keys: </p>
@@ -545,17 +544,17 @@ $ echo $?
 <li>PostgreSQL</li>
 <li>MySQL</li>
 <li>SQLite</li>
-<li>...and many other SQLAlchemy-supported DB engines (<em><a href="http://taste.tuxfamily.org/wiki/index.php?title=Technical_topic:_ASN.1_and_SQL_mapping">more details</a> in the TASTE wiki</em>).</li>
+<li>...and many other SQLAlchemy-supported DB engines (<em><a href="https://taste.tuxfamily.org/wiki/index.php?title=Technical_topic:_ASN.1_and_SQL_mapping">more details</a> in the TASTE wiki</em>).</li>
 </ul></li>
 <li><p><a href="AutoGUI2.png" rel="lightbox" title="Automatic GUIs">Automatically generated graphical user interfaces</a> receiving and sending TM/TCs (Telemetry and Telecommands) to and from our satellites.</p></li>
-<li><p><a href="http://semantix.gr/assert/mscTracer.png" rel="lightbox" title="Automatic Tracers">Automatically generated graphical message tracers</a> to allow for graphical monitoring of what happens to a running system  - and why.</p></li>
+<li><p><a href="https://semantix.gr/assert/mscTracer.png" rel="lightbox" title="Automatic Tracers">Automatically generated graphical message tracers</a> to allow for graphical monitoring of what happens to a running system  - and why.</p></li>
 <li><p><a href="icd.png" rel="lightbox" title="Automatic Interface Control Documents (ICDs)">Automatically generated Interface Control Documents (ICDs)</a> that describe the binary representation of the stream -  for those people, that for whatever reason, choose to write encoders/decoders on their own:</p></li>
-<li><p>...and loads more. Visit <a href="http://www.semantix.gr/assert/">this</a> for a 5 min showcase, or <a href="http://taste.tuxfamily.org">the official site</a> for more info. You can also peruse the <a href="http://download.tuxfamily.org/taste/snapshots/doc/taste-documentation-current.pdf">manual</a> and see how ASN.1 (and AADL) allowed us to describe complex real-time embedded systems and their messages, in succinct ways that generate optimal code.</p></li>
+<li><p>...and loads more. Visit <a href="https://taste.tools/#showcase">this</a> for a 5 min showcase, or <a href="https://taste.tools/">the official site</a> for more info. You can also peruse the <a href="https://download.tuxfamily.org/taste/snapshots/doc/taste-documentation-current.pdf">manual</a> and see how ASN.1 (and AADL) allowed us to describe complex real-time embedded systems and their messages, in succinct ways that generate optimal code.</p></li>
 </ul>
 
 <h3>Two examples of ASN.1-based mappers: A SWIG-based python wrapper, and a SQL exporter</h3>
 
-<p>The following is a hands-on example of how our <a href="http://www.swig.org/">SWIG</a>-based Python mapper - bundled in our DMT tools - wraps around the UPER C functions generated by ASN1SCC, and allows Python code to speak with ASN.1 UPER encoded data:</p>
+<p>The following is a hands-on example of how our <a href="https://www.swig.org/">SWIG</a>-based Python mapper - bundled in our DMT tools - wraps around the UPER C functions generated by ASN1SCC, and allows Python code to speak with ASN.1 UPER encoded data:</p>
 
 <pre><code>$ cat sample.asn
 </code></pre>
@@ -714,7 +713,7 @@ $ cat sample.sql
 
 <ol>
 <li><p><a name="nevermindthem"></a>If you are unfortunate enough to come into contact with lots of Telecom standards, you will often see how a simple and useful idea can become ridiculously complex as feature creep takes hold. To whatever extent you can, resist this - in the case of ASN.1, I humbly suggest that you use only the basic principles: type specification and constraints.</p></li>
-<li><p><a name="fsharp"></a>The compiler is an F# application, so it can run (via <a href="http://www.mono-project.com/">Mono</a>) under Linux and OS X, or natively under Windows (to put it simply: it works on all major platforms). Why it is written in F# is a matter for another blog post - suffice to say, <a href="http://ocaml.org/">OCaml</a> (the mother of F#) is a language with a strong type system that prevents <strong>many</strong> potential issues, detecting them at compile-time. It is very important for any code generator (and an ASN.1 compiler is exactly that!) to detect as many errors as possible at compile-time.</p></li>
+<li><p><a name="fsharp"></a>The compiler is an F# application, so it can run (via <a href="https://www.mono-project.com/">Mono</a>) under Linux and OS X, or natively under Windows (to put it simply: it works on all major platforms). Why it is written in F# is a matter for another blog post - suffice to say, <a href="https://ocaml.org/">OCaml</a> (the mother of F#) is a language with a strong type system that prevents <strong>many</strong> potential issues, detecting them at compile-time. It is very important for any code generator (and an ASN.1 compiler is exactly that!) to detect as many errors as possible at compile-time.</p></li>
 <li><p><a name="ByteStream"></a>Since ASN1SCC targets embedded platforms, memory is an issue (we don't want to allocate stuff from the heap, since the heap may run out - when you're in space, what can you do if you run out of heap?...). The compiler therefore emits <code>#define</code>s that allow us to reserve the necessary memory during compile-time:</p></li>
 </ol>
 
@@ -753,7 +752,7 @@ $ cat sample.sql
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Feb 21 12:56:49 2016</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:39:34 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

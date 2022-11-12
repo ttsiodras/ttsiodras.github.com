@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Offline playback of Youtube videos and their annotations </title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Offline playback of Youtube videos and their annotations </div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(March 2012)</em></p>
 
@@ -49,8 +45,8 @@ video and its annotations data) and play them back "in tandem"?</p>
 even in HD, is not good enough for 1024x768 XTerm sessions with VIM...</li>
 </ul>
 
-<p>It's my fault, of course - I assumed that if <a href="http://vimeo.com/37875339">Vimeo</a> 
-can handle it, so would <a href="http://www.youtube.com/watch?v=o0BgAp11C9s">Youtube</a> - 
+<p>It's my fault, of course - I assumed that if <a href="https://vimeo.com/37875339">Vimeo</a> 
+can handle it, so would <a href="https://www.youtube.com/watch?v=o0BgAp11C9s">Youtube</a> - 
 but I was wrong. How can I salvage the effort I spent on my video annotations,
 and use it with my high-res video (which I still have on my hard drive)?</p>
 
@@ -61,13 +57,13 @@ and use it with my high-res video (which I still have on my hard drive)?</p>
 <p>Googling a bit, I soon find out about this:</p>
 
 <pre><code>$ wget -O annotations.xml \
-    'http://www.youtube.com/annotations_auth/read2?feat=TCS&amp;video_id=VIDEO_ID'
+    'https://www.youtube.com/annotations_auth/read2?feat=TCS&amp;video_id=VIDEO_ID'
 </code></pre>
 
 <p>...where <code>VIDEO_ID</code> is the video identification part from Youtube videos, i.e. the part in red in the link below:</p>
 
 <div align="center">
-http://www.youtube.com/watch?v=<font color="red">o0BgAp11C9s</font>
+https://www.youtube.com/watch?v=<font color="red">o0BgAp11C9s</font>
 </div>
 
 <p><strong>Update, October 2013</strong>: <em>It seems this service has moved now to...</em></p>
@@ -144,9 +140,9 @@ http://www.youtube.com/watch?v=<font color="red">o0BgAp11C9s</font>
 <em>bmovl distortion in current MPlayer (2012/03)</em>
 </div>
 
-<p>This looks like an off-by-one error - each new scanline moves one pixel to the left, so the box ends up "tilted". Surely this is a bug, <a href="http://lists.mplayerhq.hu/pipermail/mplayer-users/2012-March/084269.html">so I report it to the MPlayer folks</a> and <a href="https://web.archive.org/web/20151027103702/https://trac.mplayerhq.hu/ticket/2051">open a Bugzilla ticket</a>.</p>
+<p>This looks like an off-by-one error - each new scanline moves one pixel to the left, so the box ends up "tilted". Surely this is a bug, <a href="https://lists.mplayerhq.hu/pipermail/mplayer-users/2012-March/084269.html">so I report it to the MPlayer folks</a> and <a href="https://web.archive.org/web/20151027103702/https://trac.mplayerhq.hu/ticket/2051">open a Bugzilla ticket</a>.</p>
 
-<p>A day later, <a href="http://lists.mplayerhq.hu/pipermail/mplayer-users/2012-March/084300.html">a gentleman replies</a> - he indicates that a related <a href="patch.bmovl.gz">patch</a> is in the pipeline for inclusion in MPlayer... </p>
+<p>A day later, <a href="https://lists.mplayerhq.hu/pipermail/mplayer-users/2012-March/084300.html">a gentleman replies</a> - he indicates that a related <a href="patch.bmovl.gz">patch</a> is in the pipeline for inclusion in MPlayer... </p>
 
 <p>I checkout the latest MPlayer from the official repos, apply the patch on it...</p>
 
@@ -204,10 +200,10 @@ $ convert annotation.png light.png -compose hardlight \
 <ol>
 <li><p>The user downloads his video from youtube (via <a href="https://youtube-dl.org/">youtube-dl</a> or whatever other Youtube downloader):</p>
 
-<p>$ youtube-dl -o vimPower.flv 'http://www.youtube.com/watch?v=o0BgAp11C9s'</p></li>
+<p>$ youtube-dl -o vimPower.flv 'https://www.youtube.com/watch?v=o0BgAp11C9s'</p></li>
 <li><p>The video's annotation data are next:</p>
 
-<p>$ wget -O annotations.xml 'http://www.youtube.com/annotations<em>auth/read2?feat=TCS&amp;video</em>id=o0BgAp11C9s'</p></li>
+<p>$ wget -O annotations.xml 'https://www.youtube.com/annotations<em>auth/read2?feat=TCS&amp;video</em>id=o0BgAp11C9s'</p></li>
 <li><p>Then he runs my tiny Python script:</p>
 
 <p>$ youtubeAnnotations.py annotations.xml vimPower.flv</p></li>
@@ -249,7 +245,7 @@ $ convert annotation.png light.png -compose hardlight \
 </tt></pre>
 </div>
 
-<p><a href="https://github.com/ttsiodras/Youtube-Video-Annotations-Player">Here's the script</a>: it works for my VIM video, and I have also tested it on a few other Youtube videos. You can see the results (a) in the <a href="myvim.html#vimeovim">Vimeo version of my VIM advocacy</a> or (b) download a <a href="http://www.mediafire.com/file/ge1imhbivswsixr/Vim.C.and.C++.flv">full-HD version of the same video</a>. If you do decide to use this script, remember that you must also <a href="patch.bmovl.gz">patch</a> your MPlayer, since the <tt>bmovl</tt> filter is currently (2012/03) broken.</p>
+<p><a href="https://github.com/ttsiodras/Youtube-Video-Annotations-Player">Here's the script</a>: it works for my VIM video, and I have also tested it on a few other Youtube videos. You can see the results in a <a href="myvim.html#vimeovim">Vimeo video with my VIM advocacy</a>. If you do decide to use this script, remember that you must also <a href="patch.bmovl.gz">patch</a> your MPlayer, since the <tt>bmovl</tt> filter is currently (2012/03) broken.</p>
 
 <p>Enjoy!</p>
 
@@ -275,7 +271,7 @@ $ convert annotation.png light.png -compose hardlight \
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jul 10 19:55:28 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 11:41:25 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

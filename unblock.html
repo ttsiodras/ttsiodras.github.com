@@ -9,32 +9,28 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Solving the "Unblock Me" puzzle</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Solving the "Unblock Me" puzzle</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
-            <p><em>(October 2012, <a href="http://redd.it/11wip6">Reddit-ed</a>)</em></p>
+            <p><em>(October 2012, <a href="https://redd.it/11wip6">Reddit-ed</a>)</em></p>
 
 <h2>Solving the "Unblock Me" puzzle</h2>
 
 <p><a href="https://github.com/ttsiodras/UnblockMeSolver"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a></p>
 
 <table border="1" frame="box" cellpadding="10" summary="for TL;DR people" bgcolor="#80DD80"> <tr><td><b>For the TL;DR crowd:</b>
-I liked playing the <b>Unblock-Me</b> puzzle, so I coded an automatic solver, that works on screenshots taken from my phone. The code <a href="https://github.com/ttsiodras/UnblockMeSolver">is on GitHub</a>, and here is <a href="http://www.youtube.com/watch?v=6hfF_6KlAQk">a video of the results</a>.</td></tr></table>
+I liked playing the <b>Unblock-Me</b> puzzle, so I coded an automatic solver, that works on screenshots taken from my phone. The code <a href="https://github.com/ttsiodras/UnblockMeSolver">is on GitHub</a>, and here is <a href="https://www.youtube.com/watch?v=6hfF_6KlAQk">a video of the results</a>.</td></tr></table>
 
 <p><br>
 Even since I can remember, I've always been fascinated with puzzles. This fascination has manifested itself in temporary obsessions of various natures - <a href="ladders.html">mathematical</a>, <a href="amIsick.html">probabilistic</a>, <a href="knightstour.html">chess related</a>, <a href="score4.html">AI</a> ... you name it, I've probably wasted time playing with it&nbsp;:&#x2011;)</p>
 
-<p>A natural consequence is the kind of computer games I am drawn to... that is, puzzle games. I still consider <a href="http://en.wikipedia.org/wiki/Sokoban">Sokoban</a> the best puzzle game I've ever played (and finished) - but also love most of <a href="http://www.chiark.greenend.org.uk/~sgtatham/puzzles/">Simon Tatham's collection</a>. And recently, I started passing my half-hour train commutes to and from work, playing <strong>Unblock-Me</strong> on my iPhone.</p>
+<p>A natural consequence is the kind of computer games I am drawn to... that is, puzzle games. I still consider <a href="https://en.wikipedia.org/wiki/Sokoban">Sokoban</a> the best puzzle game I've ever played (and finished) - but also love most of <a href="https://www.chiark.greenend.org.uk/~sgtatham/puzzles/">Simon Tatham's collection</a>. And recently, I started passing my half-hour train commutes to and from work, playing <strong>Unblock-Me</strong> on my iPhone.</p>
 
 <div style="clear:both; text-align:center; max-width: 90%; margin: 0 auto;">
 <img src="unblock.jpg" alt="Would you like to play a game?"><br>
@@ -43,7 +39,7 @@ Even since I can remember, I've always been fascinated with puzzles. This fascin
 
 <p>This game is deceptively simple: you have to move horizontal blocks left or right, and vertical blocks up or down, in order to free ("unblock") the red block - i.e. allow it to escape from the exit to its right. The red block is always at the 3rd line, as is the exit. </p>
 
-<p>If you haven't played before, <a href="http://www.youtube.com/watch?v=9j2F2Tnrjc0">here's a link</a> to a random Youtube video I found with a quick search. Apparently I am not the only one who likes this puzzle; there are lots of similar videos, with players showcasing how they solved a level they had trouble with. <em>Obligatory warning: this game is very addictive, if you try it, there's no turning back</em>.</p>
+<p>If you haven't played before, <a href="https://www.youtube.com/watch?v=9j2F2Tnrjc0">here's a link</a> to a random Youtube video I found with a quick search. Apparently I am not the only one who likes this puzzle; there are lots of similar videos, with players showcasing how they solved a level they had trouble with. <em>Obligatory warning: this game is very addictive, if you try it, there's no turning back</em>.</p>
 
 <p>My brain has more or less adapted, and quickly solves most of the levels. But now that I am close to completing the Expert set, there are some levels that torture me for minutes!</p>
 
@@ -282,7 +278,7 @@ I also added a <tt>set&lt;Board&gt;</tt> that was checked upon SolveBoard entry,
 
 <span class="comment">// The brains of the operation - basically a Breadth-First-Search</span>
 <span class="comment">// of the problem space:</span>
-<span class="comment">//    http://en.wikipedia.org/wiki/Breadth-first_search</span>
+<span class="comment">//    https://en.wikipedia.org/wiki/Breadth-first_search</span>
 <span class="comment">//</span>
 <span class="type">void</span><span class="normal"> </span><span class="function">SolveBoard</span><span class="symbol">(</span><span class="normal">list</span><span class="symbol">&lt;</span><span class="normal">Block</span><span class="symbol">&gt;&amp;</span><span class="normal"> blocks</span><span class="symbol">)</span>
 <span class="cbracket">{</span>
@@ -445,14 +441,35 @@ I also added a <tt>set&lt;Board&gt;</tt> that was checked upon SolveBoard entry,
 </tt></pre>
 </div>
 
-<p>And to my immense delight, I saw it work:</p>
-
+<p>And to my immense delight, I saw it work:
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/6hfF_6KlAQk?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/6hfF_6KlAQk?autoplay=1' class='full'>
+                <img src='6hfF_6KlAQk.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
-
-<p>Never again shall I be blocked for long on a level&nbsp;:&#x2011;)</p>
+</center>
+Never again shall I be blocked for long on a level&nbsp;:&#x2011;)</p>
 
 <p>No, this is not cheating! It's a product of my own brain, addressing the same problem... in a different way. It just so happens... that I know how to extend my brain&nbsp;:&#x2011;)</p>
 
@@ -491,7 +508,7 @@ Why didn't I use OCaml for this? Or even C++11, which would drastically cut down
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jul 10 19:55:28 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 11:41:25 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

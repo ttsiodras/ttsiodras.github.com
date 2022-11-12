@@ -9,20 +9,16 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Optimizing code for the European Space Agency</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Optimizing code for the European Space Agency</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
-            <p><em>(June 2013, <a href="http://redd.it/1fl1n1">Reddit-ed</a>)</em></p>
+            <p><em>(June 2013, <a href="https://redd.it/1fl1n1">Reddit-ed</a>)</em></p>
 
 <h2>Optimizing code for the European Space Agency</h2>
 
@@ -81,7 +77,7 @@ explaining the optimizations I used to get the performance levels we needed
 
 <p>The StrayLight algorithm performs digital processing on data sent from satellites, clearing up unintended lighting effects recorded inside them. </p>
 
-<p>The prototype provided by <a href="http://www.esa.int">ESA</a> personnel, was implemented in the <a href="http://en.wikipedia.org/wiki/IDL_(programming_language)">IDL</a> programming language. IDL is a near-perfect match for its intended audience, offering an easy way for scientists and engineers to analyze and process data (scalars, vectors, matrices, etc, as well as ready-made library functions for FFTs, interpolations, convolutions,&nbsp;...)</p>
+<p>The prototype provided by <a href="https://www.esa.int">ESA</a> personnel, was implemented in the <a href="https://en.wikipedia.org/wiki/IDL_(programming_language)">IDL</a> programming language. IDL is a near-perfect match for its intended audience, offering an easy way for scientists and engineers to analyze and process data (scalars, vectors, matrices, etc, as well as ready-made library functions for FFTs, interpolations, convolutions,&nbsp;...)</p>
 
 <p>Moreover, the associated <em>REPL <a href="#note2">[2]</a></em> execution environment compiles the IDL code on the fly (in a manner very similar to that of a JIT engine <a href="#note3">[3]</a>). In collaboration with the highly optimized implementations of the underlying primitives, the end result offered by IDL is an excellent balance between code complexity and run-time speed.</p>
 
@@ -438,7 +434,7 @@ Having witnessed how much impact cache utilization had on our performance, we re
 
 <p>After concluding a first porting pass over all the steps of the algorithm, and having already achieved a nice speedup against <em>gdl</em>, we turned our attention to the parts that matterred the most: the ones that must be done per-frame. It quickly became clear to us that the PSF-calculations could be performed <em>only during the processing of the first input frame</em>, and then re-used for all subsequent input frames. This would leave only the convolution and the FFTs to be done per each input frame.</p>
 
-<p>For the FFTs, we decided to use FFTW - <em><a href="http://www.fftw.org">"The Fastest Fourier Transform in the West"</a></em> ; a library that is heavily optimized, to the point of using both multithreading <em>and</em> SIMD instructions. After applying it to our problem, benchmarking stages 10 and 11 - i.e. the convolution of the image with the PSF data and the subsequent FFTs - gave the following results:</p>
+<p>For the FFTs, we decided to use FFTW - <em><a href="https://www.fftw.org">"The Fastest Fourier Transform in the West"</a></em> ; a library that is heavily optimized, to the point of using both multithreading <em>and</em> SIMD instructions. After applying it to our problem, benchmarking stages 10 and 11 - i.e. the convolution of the image with the PSF data and the subsequent FFTs - gave the following results:</p>
 
 <div class='codegenWrapper'>
 <pre><tt><span class="normal">bash$ </span><span class="symbol">.</span><span class="normal">/src/strayLight</span>
@@ -633,7 +629,7 @@ Having witnessed how much impact cache utilization had on our performance, we re
 
 <p>Our StrayLight's convolution is by definition a <em>very</em> memory intensive operation: it accesses data from a big frame buffer, and writes to an equally big output one. To be exact: <tt>input_image_corrected</tt> is a 5271x813 float array, containing a grand total of 17MB of data (<em>each single precision floating point number occupies 4 bytes, so 5271x813x4 = 17141292 bytes</em>) - far too big, that is, to fit in current CPUs' caches. And that's not even taking into account the accesses to the kernels and the output writes to <tt>high_res_output_image</tt>.</p>
 
-<p>To investigate exactly how well the cache is utilized, we employed cachegrind (the cache analyzing part of <a href="http://www.valgrind.org">Valgrind</a>, a suite of tools for debugging and profiling:</p>
+<p>To investigate exactly how well the cache is utilized, we employed cachegrind (the cache analyzing part of <a href="https://www.valgrind.org">Valgrind</a>, a suite of tools for debugging and profiling:</p>
 
 <div class='codegenWrapper'>
 <pre><tt><span class="normal">$ valgrind --tool</span><span class="symbol">=</span><span class="normal">cachegrind src/strayLight</span>
@@ -686,7 +682,7 @@ This theory was further validated, when we attempted to add multi-threading (via
 
 <h2>3.5. Eigen</h2>
 
-<p>The introduction of the 4 shifted kernels complicated our convolution code. We therefore kept searching for an alternative, clearer way to make use of SSE instructions - and in the end, we used the ingenious <a href="http://eigen.tuxfamily.org">Eigen</a> C++ template library. Eigen provides C++ templates that actually determine where and how to emit SSE intrinsics during compilation-time (i.e. C++ templates that operate as code generators). </p>
+<p>The introduction of the 4 shifted kernels complicated our convolution code. We therefore kept searching for an alternative, clearer way to make use of SSE instructions - and in the end, we used the ingenious <a href="https://eigen.tuxfamily.org">Eigen</a> C++ template library. Eigen provides C++ templates that actually determine where and how to emit SSE intrinsics during compilation-time (i.e. C++ templates that operate as code generators). </p>
 
 <p>Our code was greatly simplified, and we retained the small speedup we gained with SSE intrinsics:</p>
 
@@ -1024,10 +1020,10 @@ This theory was further validated, when we attempted to add multi-threading (via
 <h2>Notes</h2>
 
 <ol>
-<li><a name="note1"></a>Task 2.2 of the European Space Agency's project, <em>"<a href="http://taste.tuxfamily.org">TASTE</a> Maintenance and Evolutions" - P12001, PFL-PTE / JK / ats / 412.2012i</em></li>
-<li><a name="note2"></a>REPL, <a href="http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop">Read-eval-print loop</a></li>
-<li><a name="note3"></a>JIT, <a href="http://en.wikipedia.org/wiki/Just-in-time_compilation">Just-in-Time compilation</a></li>
-<li><a name="note4"></a>Development was performed on an AMD Phenom II X6 running at 3.2 GHz. The machine was equipped with 8GB of DDR3 RAM, and a GeForce GTX 650 Ti with 1GB GDDR5 memory. It was also running the stable branch of Debian Linux, with the <a href="http://gnudatalanguage.sourceforge.net/">GNU Data Language</a> <em>gdl</em> interpreter installed.</li>
+<li><a name="note1"></a>Task 2.2 of the European Space Agency's project, <em>"<a href="https://taste.tools">TASTE</a> Maintenance and Evolutions" - P12001, PFL-PTE / JK / ats / 412.2012i</em></li>
+<li><a name="note2"></a>REPL, <a href="https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop">Read-eval-print loop</a></li>
+<li><a name="note3"></a>JIT, <a href="https://en.wikipedia.org/wiki/Just-in-time_compilation">Just-in-Time compilation</a></li>
+<li><a name="note4"></a>Development was performed on an AMD Phenom II X6 running at 3.2 GHz. The machine was equipped with 8GB of DDR3 RAM, and a GeForce GTX 650 Ti with 1GB GDDR5 memory. It was also running the stable branch of Debian Linux, with the <a href="https://gnudatalanguage.sourceforge.net/">GNU Data Language</a> <em>gdl</em> interpreter installed.</li>
 <li><a name="note5"></a>Unless frame size changes at run-time.</li>
 <li><a name="note6"></a>To be exact: <tt>input_image_corrected</tt> is a 5271x813 float array, containing a grand total of 17MB of data (<em>each single precision floating point number occupies 4 bytes, so 5271x813x4 = 17141292 bytes</em>).</li>
 </ol>
@@ -1054,7 +1050,7 @@ This theory was further validated, when we attempted to add multi-threading (via
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Feb 21 12:56:49 2016</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 11:41:25 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

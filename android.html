@@ -11,16 +11,13 @@
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
 <link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Freeing my tablet (Android hacking, SW and HW)</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Freeing my tablet (Android hacking, SW and HW)</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(October 2016)</em></p>
 
@@ -50,7 +47,10 @@ nice Irish startup - while living in an apartment 30 meters by the sea :-)</p>
 for a swim.</p>
 
 <div style="clear:both; text-align:center; margin: 2em 0em 2em 0em">
-<img src="SanPawl.jpg" alt="Malta">
+<picture>
+  <source srcset="SanPawl.webp" type="image/webp">
+  <img src="SanPawl.jpg" alt="Malta">
+</picture>
 <p>
 <em>I miss the glorious Mediterranean sun...</em>
 </div>
@@ -500,7 +500,7 @@ TRRS plug, the left and right channels switch to carrying
 the serial port's TX and RX channels.</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="feeding3V.png" alt="Sending 3.3V to the MIC input">
+<img src="feeding3V.jpg" alt="Sending 3.3V to the MIC input">
 </div>
 
 <p>I used my Raspberry PI TRRS-to-TV cable to get access to the 4 places
@@ -529,8 +529,8 @@ var hasWebM = element.canPlayType('video/webm');
 var hasMP4 = element.canPlayType('video/mp4');
 if (hasWebM || hasMP4) {
     var format = hasWebM?'webm':'mp4';
-    var width = hasWebM?320:320;
-    var height = hasWebM?240:240;
+    var width = 320;
+    var height = 240;
     document.write("<video controls poster='capacitance.jpg' " + 
                    "width='" + width + "' " +
                    "height='" + height + "'" +
@@ -538,13 +538,7 @@ if (hasWebM || hasMP4) {
                    "type='video/" + format + "'><" +
                    "/video>");
 } else {
-    // For the old generation, throw up a Flash control,
-    // offering the same MP4 content.
-    document.write(
-        "<embed src='flvplayer.swf' width='320' height='240' " +
-        "       bgcolor='#FFFFFF' type='application/x-shockwave-flash'" +
-        "       pluginspage='http://www.macromedia.com/go/getflashplayer' " +
-        "       flashvars='file=serialsignal.mp4&autostart=false' />");
+    document.write("<p>Your browser can't render mp4 or webm videos.");
 }
 </script>
 <p>
@@ -557,8 +551,7 @@ if (hasWebM || hasMP4) {
 
 <p>The signal also looked indecipherable, to my <em>"amateur at electronics"</em> eyes;
 the edges were surely too slow for any UART to pick up.
-<a href="http://electronics.stackexchange.com/questions/262853/noise-capacitance-related-in-serial-signal/"
-target="_blank">I asked the Electronics Stack Exchange</a> guys what they thought,
+<a href="https://electronics.stackexchange.com/questions/262853/noise-capacitance-related-in-serial-signal/" target="_blank">I asked the Electronics Stack Exchange</a> guys what they thought,
  and they recommended probing on the jack itself - so I stripped the tablet down to its PCB, and probed
 all over... Nope, same capacitance-riddled signal, and I couldn't
 find it anywhere else on the PCB.</p>
@@ -872,7 +865,7 @@ and after <code>fastboot</code>-ing with it, I saw this:</p>
 
 <p>What kind of a root user can't list a folder?!</p>
 
-<p>I <a href="http://android.stackexchange.com/questions/124857/selinux-and-chroot-system-call" target="_blank">
+<p>I <a href="https://android.stackexchange.com/questions/124857/selinux-and-chroot-system-call" target="_blank">
 asked the Gods again for inspiration</a> - but as usual, the Gods don't respond to mortals.</p>
 
 <h2>The capabilities bounding set</h2>
@@ -1173,11 +1166,11 @@ sacrificed forever in the delusionary altar of "safety-uber-alles".</p>
 <ol>
 <li><p>I wish the process was as smooth as I described it in the storyline above. In reality,
 as you can see in
-<a href="http://android.stackexchange.com/questions/124344/trying-to-flash-a-system-img-i-took-with-dd-failing">my</a>
+<a href="https://android.stackexchange.com/questions/124344/trying-to-flash-a-system-img-i-took-with-dd-failing">my</a>
 two
-<a href="http://android.stackexchange.com/questions/124857/selinux-and-chroot-system-call">questions</a>
+<a href="https://android.stackexchange.com/questions/124857/selinux-and-chroot-system-call">questions</a>
 to Android Stack Exchange, and the
-<a href="http://electronics.stackexchange.com/questions/262853/noise-capacitance-related-in-serial-signal/">one</a>
+<a href="https://electronics.stackexchange.com/questions/262853/noise-capacitance-related-in-serial-signal/">one</a>
 in Electronics Stack Exchange, the process is completely chaotic - there
 is no plan; you just try to make sense of all the complex factors that
 affect what is happening. As far as mental exercises go, <strong>this one was
@@ -1216,7 +1209,7 @@ Android 6.x.</p></li>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Jul 10 19:55:28 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 20:33:36 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

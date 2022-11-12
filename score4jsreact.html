@@ -9,17 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
 <title>Porting my Score4 game to React/TypeScript</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Porting my Score4 game to React/TypeScript</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(September 2015)</em></p>
 
@@ -53,7 +50,7 @@ The code can be downloaded from
 
 <p>Four years ago I implemented
 <a href="score4.html">the AI Minimax algorithm</a> and used it to play a game called
-<a href="http://en.wikipedia.org/wiki/Connect_Four">Score4 / ConnectFour</a>.
+<a href="https://en.wikipedia.org/wiki/Connect_Four">Score4 / ConnectFour</a>.
 <p>
 I did this after discovering the difference of doing things in functional
 (as opposed to imperative) style, coding it
@@ -67,7 +64,7 @@ to Rule Them All :-)
 <p>...which I wanted to put to the test.</p>
 
 <h3>GUIs are hard - meet
-    <a href="http://facebook.github.io/react/">React</a></h3>
+    <a href="https://reactjs.org/">React</a></h3>
 GUIs are very hard to code properly ; but can be
 created in an easier way, if you represent your user interface
 as a function, that gets your state as input. Whenever your state
@@ -83,7 +80,7 @@ the displayed parts <em>that were actually impacted</em> by
 your state changes.
 <p>Clearer code **and** faster execution - could it be true?
 <h3>Return of the Types - meet
-<a href="http://www.typescriptlang.org/">TypeScript</a>
+<a href="https://www.typescriptlang.org/">TypeScript</a>
 </h3>
 
 <p>I love <a href="python.html">Python</a> ; and appreciate Javascript
@@ -126,7 +123,7 @@ inspector... but all those tools still don't compare with what a language
 with a strong type system provides.
 <p>
 And as fate would have it, in the frontend,
-<a href="http://www.typescriptlang.org/">TypeScript</a> - an open-source
+<a href="https://www.typescriptlang.org/">TypeScript</a> - an open-source
 statically typed language that builds on top of Javascript,
 recently acquired support for a big part of React: JSX syntax.</p>
 
@@ -413,7 +410,7 @@ use of them.
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sun Feb 21 12:56:49 2016</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 11:41:25 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

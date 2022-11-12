@@ -9,23 +9,19 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Building a (fast) Wikipedia offline reader</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Building a (fast) Wikipedia offline reader</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
               <em>In two days... (August 2007)</em>
 <h2>Changelog:</h2>
 <table border="0" summary="Changelog">
-<tr valign="top"><td width="20%"><em>August 13, 2007:</em></td><td><A href="http://tech.slashdot.org/story/07/08/13/1939231/Building-a-Fast-Wikipedia-Offline-Reader">Slashdotted!</A></td></tr>
+<tr valign="top"><td width="20%"><em>August 13, 2007:</em></td><td><A href="https://tech.slashdot.org/story/07/08/13/1939231/Building-a-Fast-Wikipedia-Offline-Reader">Slashdotted!</A></td></tr>
 <tr valign="top"><td><em>August 22, 2007:</em></td><td>Fixed bugs with "extreme" links in some wiki text<br></td></tr>
 <tr valign="top"><td><em>September 9, 2007:</em></td><td>Introduced extra script to install the templates used by a page (improves rendering of some pages)<br></td></tr>
 <tr valign="top"><td><em>September 17, 2007:</em></td><td>It appears that woc.fslab.de (the site offering the standalone wiki renderer)
@@ -54,7 +50,7 @@ Here's a screenshot:
 <img src="offline.wikipedia.png" alt="screenshot" width="628" height="395">
 </div>
 <h2>What this is and why I built it</h2>
-  <a href="http://www.wikipedia.org">Wikipedia</a> needs no introductions: it is one of the best - if not the 
+  <a href="https://www.wikipedia.org">Wikipedia</a> needs no introductions: it is one of the best - if not the 
   best - encyclopedias, and it's freely available for everyone.
   <p><em>Everyone</em> can be a relative term, however... It implies availability of an Internet connection. 
   This is not always the case; for example, many people would love to have Wikipedia on their laptop, since
@@ -89,7 +85,7 @@ Here's a screenshot:
   <ul>
   <li><b>The "pages/articles" dump file</b>
   <br>Right now (August, 2007) the file is a 2.9GB download,
-  always available from <a href="http://download.wikimedia.org/enwiki/">here</a>. I set this to download overnight at 
+  always available from <a href="https://download.wikimedia.org/enwiki/">here</a>. I set this to download overnight at 
   my work, using wget and rate-limiting it to 80KB/sec - to keep my sysadmin at ease. It downloaded
   in 10 hours - I proceeded to burn it to a DVD and brought it back home.<br><br>
   <li><b>Parsing the dump</b><br>
@@ -148,7 +144,7 @@ Here's a screenshot:
   inside the small .bz2 file will take almost no time - it will decompress in less than half a second, since it is 
   very small!<p>
   How do we associate a set of words with a "target"? We need a custom search engine... Looking in 
-  <a href="http://www.freshmeat.net">freshmeat</a> for a search engine proved fruitful immediately: <b>Xapian</b>
+  <a href="https://www.freshmeat.net">freshmeat</a> for a search engine proved fruitful immediately: <b>Xapian</b>
   is a blindingly-fast, simple to use C++ engine. It took me 20 minutes to look in the code of its examples, 
   and I quickly realized that <a href="quickstartindex.cc">this code</a> fits the profile!
 
@@ -321,7 +317,7 @@ done | ../quickstartindex
   Fortunately, I can rely on others for this: the nice people over at woc.fslab.de have created
   a standalone wiki-markup parser which is ready for use! Checking out their code with Subversion...
 <pre class="o">
-<b>bash$</b> svn co http://fslab.de/svn/wpofflineclient/trunk/mediawiki_sa/ mediawiki_sa
+<b>bash$</b> svn co https://fslab.de/svn/wpofflineclient/trunk/mediawiki_sa/ mediawiki_sa
 </pre>
   ...allows a quick test:
 <pre class="o">
@@ -379,7 +375,7 @@ comment out the subversion checkout command from the Makefile, and just untar th
 <p>
 <em><b>Update, October 21, 2007:</b></em> I found an article whose wiki text caused the woc.fslab.de parser to abort - modified <tt>show.pl</tt> to use the plain wiki content in that case.<p>
 <em><b>Update, March 31, 2008:</b></em> According to Robin Paulson, the same process described here also works for Wiktionary. I didn't even know there was a Wiktionary!... Thanks, Robin!<p>
-<em><b>Update, February 27, 2012:</b></em> It is now almost 5 years since I published my technique for offline Wikipedia browsing... Other methods have surfaced in the meantime, and people from the Wikimedia foundation asked me to add a link to <a href="http://www.kiwix.org/">Kiwix</a>: an ongoing effort to create an easy to install, open-source, offline Wikipedia reader. Looks interesting...<p>
+<em><b>Update, February 27, 2012:</b></em> It is now almost 5 years since I published my technique for offline Wikipedia browsing... Other methods have surfaced in the meantime, and people from the Wikimedia foundation asked me to add a link to <a href="https://www.kiwix.org/">Kiwix</a>: an ongoing effort to create an easy to install, open-source, offline Wikipedia reader. Looks interesting...<p>
 <em>P.S. Isn't the world of Open Source amazing? I was able to build this in two days, most of which were spent
 searching for the appropriate tools. Simply unbelievable... toying around with these tools and writing less than 200
 lines of code, and... presto!</em>
@@ -405,7 +401,7 @@ lines of code, and... presto!</em>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Mar 8 22:58:16 2014</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

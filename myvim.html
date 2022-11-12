@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Why I use VIM</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Why I use VIM</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <a href="https://github.com/ttsiodras/dotvim"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a>
   <em>(March 2012)</em>
@@ -28,34 +24,35 @@
 <div class="tldr">
 <b>For the TL;DR crowd:</b> VIM is a great editor - and only programmable editors can truly be called "great". See...
 <ul>
-<li><a href="http://vimeo.com/37875339" target="_blank">how I edit C or C++</a> with VIM.
-<li>how I edit Python code with VIM and <a href="http://vimeo.com/37894593" target="_blank">incrementally test each function</a>.
+<li><a href="https://vimeo.com/37875339" target="_blank">how I edit C or C++</a> with VIM.
+<li>how I edit Python code with VIM and <a href="https://vimeo.com/37894593" target="_blank">incrementally test each function</a>.
 <li>Then check out my VIM settings and <a href="https://github.com/ttsiodras/dotvim" target="_blank">read the installation instructions</a>.
 </ul>
 </div>
 I've been programming for a living, for the better part of the last two decades - and in my experience as a programmer, <b>the editor I used <em>really</em> mattered</b>. A large part of my life passes working inside it - and the more I "invest" in learning it, the faster I code.
 <p>
-In what follows, I will try to explain why learning VIM has proven very beneficial to me. You can also read <a href="http://www.viemu.com/a-why-vi-vim.html">this</a> to see why VI/VIM can vastly improve your efficiency in editing files... or <a href="http://blog.superuser.com/2012/03/06/understanding-the-improved-in-vim/">this</a> post to see why <b>vim</b> is indeed an "improved" <b>vi</b>.
+In what follows, I will try to explain why learning VIM has proven very beneficial to me. You can also read <a href="https://web.archive.org/web/20110726054842/http://www.viemu.com/a-why-vi-vim.html">this</a> to see why VI/VIM can vastly improve your efficiency in editing files... or <a href="https://blog.superuser.com/2012/03/06/understanding-the-improved-in-vim/">this</a> post to see why <b>vim</b> is indeed an "improved" <b>vi</b>.
 <p>
-<em>(Caveat: I am not a VIM expert - even though I've worked with VIM for decades, I am only using a small part of its functionality, and only rarely do I write a function inside my <tt>.vimrc</tt>. Mostly I just <a href="http://www.vim.org/scripts/script_search_results.php?keywords=&amp;script_type=&amp;order_by=rating&amp;direction=descending&amp;search=search">stand on the shoulders of giants</a>. I only wrote this post because I keep seeing people "wow"-ed by the things I do within VIM - and wanted to share the marvelous things this gem of an editor can do. To any real VIM experts out there: I'd be grateful if you could review my <a href="https://github.com/ttsiodras/dotvim">setup</a> and tell me the things I am doing wrong...).</em>
+<em>(Caveat: I am not a VIM expert - even though I've worked with VIM for decades, I am only using a small part of its functionality, and only rarely do I write a function inside my <tt>.vimrc</tt>. Mostly I just <a href="https://www.vim.org/scripts/script_search_results.php?keywords=&amp;script_type=&amp;order_by=rating&amp;direction=descending&amp;search=search">stand on the shoulders of giants</a>. I only wrote this post because I keep seeing people "wow"-ed by the things I do within VIM - and wanted to share the marvelous things this gem of an editor can do. To any real VIM experts out there: I'd be grateful if you could review my <a href="https://github.com/ttsiodras/dotvim">setup</a> and tell me the things I am doing wrong...).</em>
 <h3>Working remotely</h3>
-In my work, I increasingly find myself doing things remotely - i.e. working over network links. By using VIM, I have a significant advantage: I can edit anything I want over e.g. SSH connections, with minimal bandwidth/latency requirements. To that end, whatever machine I am working on, I will always install an SSH server (<a href="http://www.cygwin.com/">even</a> under <a href="https://www.itefix.no/i2/copssh">Windows</a>) - and I can then edit stuff remotely, using VIM. To really understand the efficiency of this, try using any GUI over a slow VPN connection (e.g. using VNC or RemoteDesktop) - you will soon begin to appreciate a fast, console-based editor.
+In my work, I increasingly find myself doing things remotely - i.e. working over network links. By using VIM, I have a significant advantage: I can edit anything I want over e.g. SSH connections, with minimal bandwidth/latency requirements. To that end, whatever machine I am working on, I will always install an SSH server (even under Windows) - and I can then edit stuff remotely, using VIM. To really understand the efficiency of this, try using any GUI over a slow VPN connection (e.g. using VNC or RemoteDesktop) - you will soon begin to appreciate a fast, console-based editor.
 <h3>Programmable editors - VIM plugins</h3>
 Almost all professional editors are "tweakable" - e.g. they allow you to configure keyboard shortcuts. But that's not what I mean with "programmable editor"; I am referring to editors that allow you to <b>actually code (and therefore customize) significant parts of their behaviour</b>; only a handful fit this description.
 <p>
-If a large community of coders is using this customization facility for their professional endeavours... then there is a good chance that the things they build will apply to you, too.  For VIM, there are almost 4000 custom <a href="http://www.vim.org/scripts/script_search_results.php?keywords=&amp;script_type=&amp;order_by=rating&amp;direction=descending&amp;search=search">VIM scripts</a>, tailored to their creators' specific needs. Let's look at some of these, and how I am using them.
+If a large community of coders is using this customization facility for their professional endeavours... then there is a good chance that the things they build will apply to you, too.  For VIM, there are almost 4000 custom <a href="https://www.vim.org/scripts/script_search_results.php?keywords=&amp;script_type=&amp;order_by=rating&amp;direction=descending&amp;search=search">VIM scripts</a>, tailored to their creators' specific needs. Let's look at some of these, and how I am using them.
 <h3>Auto-completion / language-aware navigation</h3>
 <a name="vimeovim"></a>
 Some people still think that if you use a "spartan" editor like VIM, you lose all the auto-completion magic and language-aware navigation that modern IDEs offer. That is simply not true:<br>
 &nbsp;<br>
 <center>
-<iframe src="https://player.vimeo.com/video/37875339" width="640" height="464" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-<p><em>Some of the things I can do when I work with C or C++ code.</em>
+
+<style>.embed-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; } .embed-container iframe, .embed-container object, .embed-container embed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }</style><div class='embed-container'><iframe src='https://player.vimeo.com/video/37875339' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></div>
+<em>Working with C or C++ code.</em>
 </center>
 <p>
 Executive summary for C/C++ coders:
 <ul>
-<li>Add <a href="http://www.vim.org/scripts/script.php?script_id=3302">clang complete</a> to your installed VIM plugins, and install libclang in your machine. If your build process has "exotic" macros defined or needs "special" include flags, just add them in a <tt>.clang_complete</tt> file (which this VIM plugin reads).
+<li>Add <a href="https://www.vim.org/scripts/script.php?script_id=3302">clang complete</a> to your installed VIM plugins, and install libclang in your machine. If your build process has "exotic" macros defined or needs "special" include flags, just add them in a <tt>.clang_complete</tt> file (which this VIM plugin reads).
 <li>
 Become root and install your favourite tags tool - e.g. exuberant ctags. Then setup your "constant" tags database, e.g. for /usr/include:
 <pre class="o">
@@ -115,7 +112,7 @@ Whenever I find myself doing something over and over, I eventually automate it; 
 <h3>Using functions</h3>
 This can be far more complex than just keyboard shortcuts.
 <p>
-Say I want <a href="http://vim.wikia.com/wiki/Open_a_window_with_the_man_page_for_the_word_under_the_cursor">manpages displayed inside my editor</a>, so I can copy/paste "stuff" out of there easily:
+Say I want <a href="https://vim.wikia.com/wiki/Open_a_window_with_the_man_page_for_the_word_under_the_cursor">manpages displayed inside my editor</a>, so I can copy/paste "stuff" out of there easily:
 <pre>
 "
 " Smart in-line manpages with 'K' in command mode
@@ -196,7 +193,7 @@ Cool, it works... How nice, to have an interpreter! You suddenly realize how eas
 <p>
 But... you miss your editor. You want to be able to write the code in it, using all the customized power you have gathered there over the years - and then somehow "magically" transport functions (not complete files!) across to the interpreter. How can you do that? How can you incrementally build your code base, testing each function as you go along?
 <p>
-<a href="http://common-lisp.net/project/slime/">You may be lucky</a> enough, to be working with languages/tool that already offer this <a href="#emacs">[1]</a>. Usually, however, this is not the case. You could ask the company that builds your favourite IDE for this feature, but the time and money it will take to implement prohibit it. Instead, you combine the power of the tools you already have, by being a programmer that is not limited to a single company's IDE - here's how:
+<a href="https://slime.common-lisp.dev/">You may be lucky</a> enough, to be working with languages/tool that already offer this <a href="#emacs">[1]</a>. Usually, however, this is not the case. You could ask the company that builds your favourite IDE for this feature, but the time and money it will take to implement prohibit it. Instead, you combine the power of the tools you already have, by being a programmer that is not limited to a single company's IDE - here's how:
 <ul>
 <li>The <tt>screen</tt> tool allows one to create standalone command line sessions. It also allows creation of "windows" inside them, e.g. have VIM run in one window, and Python run in another.
 <li>More importantly, <tt>screen</tt> allows you to copy text <em>into</em> a screen session, via the "screen -S sessionName -p windowName -X stuff" command. You can therefore 'paste' anything you want inside a screen "window".
@@ -204,8 +201,8 @@ But... you miss your editor. You want to be able to write the code in it, using 
 <li>Why don't we add this gathering stage as a VIM function? And then have it send the data across to the "window" running the python interpreter?
 </ul>
 <center>
-<iframe src="https://player.vimeo.com/video/37894593" width="640" height="464" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-<p><em>Using screen and VIM to implement mini-SLIME for Python.</em>
+<style>.embed-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; } .embed-container iframe, .embed-container object, .embed-container embed { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }</style><div class='embed-container'><iframe src='https://player.vimeo.com/video/37894593' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></div>
+<em>Using screen/VIM to mini-SLIME in Python.</em>
 </center>
 <p>
 Here's how I did it for my Python work:
@@ -270,7 +267,7 @@ The algorithm is quite simple: When the user hits the "magic key combo" we need 
 <li>We now yank (i.e. "copy") all the lines from <tt>s:beginLineNumber</tt> to <tt>s:endLineNumber</tt> into register <tt>"r</tt>
 <li>And spawn "screen" with the '-X stuff' parameter - to paste the text in the Python interpreter (<em>Or use the SLIME plugin which I slightly customized to automatically target the Python window).</em>
 </ul>
-That's all. It's not bullet-proof, but it only took 20min to write and test, since I could already base my efforts on the <a href="http://technotales.wordpress.com/2007/10/03/like-slime-for-vim/">VIM slime</a> plugin. And most importantly, I will have this in my arsenal from now on, for any REPL-enabled language - where I will just have to modify the "find the function borders" algorithm.
+That's all. It's not bullet-proof, but it only took 20min to write and test, since I could already base my efforts on the <a href="https://technotales.wordpress.com/2007/10/03/like-slime-for-vim/">VIM slime</a> plugin. And most importantly, I will have this in my arsenal from now on, for any REPL-enabled language - where I will just have to modify the "find the function borders" algorithm.
 <p>
 I hope that you can now see how it pays to have a programmable editor... Whatever functionality you want, you can easily implement it inside it - especially if you adhere to the UNIX mentality, i.e. you use tools that do one thing and do it well. In this case, the <tt>screen</tt> tool allowed us to paste data in another window by a simple spawning - which we easily do inside VIM, by calling <tt>system</tt>.
 <h3>Executive summary</h3>
@@ -305,7 +302,7 @@ If you liked this article, you'll probably also appreciate <a href="regexp.html"
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Mar 16 08:45:21 2019</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

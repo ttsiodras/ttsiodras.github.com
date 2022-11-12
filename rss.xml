@@ -73,8 +73,8 @@
 
 <item>
 <title>Making Mandelbrot run in a 1.4$ microcontroller - and speeding up 100x with XaoS</title>
-<guid>https://github.com/ttsiodras/MandelbrotSSE</guid>
-<link>https://github.com/ttsiodras/MandelbrotSSE</link>
+<guid>https://github.com/ttsiodras/Blue_Pill_Mandelbrot</guid>
+<link>https://github.com/ttsiodras/Blue_Pill_Mandelbrot</link>
 <description>Making Mandelbrot run in a 1.4$ microcontroller - and speeding up 100x with XaoS</description>
 <author>ttsiodras@gmail.com (Thanassis Tsiodras)</author>
 <pubDate>30 Oct 2020 22:00:00 +0100</pubDate>

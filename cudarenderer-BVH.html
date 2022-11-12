@@ -9,7 +9,6 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
 <script type="text/javascript" src="prototype.js"></script>
 <script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
@@ -20,7 +19,7 @@
     <div class="well" id="Page">
         <div id="Banner">Renderer 2.x - Porting to CUDA (one month later)</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <a href="https://github.com/ttsiodras/renderer-cuda"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a>
 
@@ -43,15 +42,40 @@
 <li><a href="#bench">Benchmark results</a></li>
 </ul>
 </div>
-  <em>(February 2011, <a href="http://www.reddit.com/r/programming/comments/fgbfr/porting_my_renderer_from_c_to_cuda_a_journey/">Reddit-ed</a>)</em><br>
-  <em>(April 2011, <a href="http://www.nvidia.co.uk/object/cuda_apps_flash_new_uk.html#">In CUDA Zone showcase...</a>)</em>
+  <em>(February 2011, <a href="https://www.reddit.com/r/programming/comments/fgbfr/porting_my_renderer_from_c_to_cuda_a_journey/">Reddit-ed</a>)</em><br>
+  <em>(April 2011, <a href=""https://web.archive.org/web/20100214113434/http://www.nvidia.co.uk/object/cuda_apps_flash_new_uk.html>In CUDA Zone showcase...</a>)</em>
 <br>&nbsp;<br>
 It all started a month ago.<p>
 It was the week between Xmas and the New Year, and I was enjoying my free time, hacking on <a href="renderer.html">my renderer</a> (a life-time obsession). Up till then, my renderer only included rasterizers, with soft-shadows and pre-calculated ambient occlusion:
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/M2cFz6190ZM?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/M2cFz6190ZM?autoplay=1' class='full'>
+                <img src='M2cFz6190ZM.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
 I wanted more, however. I had more or less completed everything I ever wanted to do with my rasterizers, since (a)&nbsp;all the features I ever wanted to implement were done (b)&nbsp;the code used a common C++ template to create a "family" of rasterizers (since all rasterizers share the same trait: they interpolate "stuff" linearly across the scanlines, per-pixel).
 <p>
 Since CUDA <a href="mandelSSE.html">promised to give me enough power to do it in real-time</a>, I decided to try raytracing, something I had never done before.
@@ -75,7 +99,7 @@ for each screen pixel
 </pre>
 Raytracers can in fact work with more than just triangles - spheres and cylinders and other "perfect" objects can be traced. I have, however, always coded my renderer to work with triangle meshes - for a number of reasons (huge availability of ready-made 3D models being a good one). I therefore Googled for ray/triangle intersections. I knew I would need acceleration structures - if I was to make this run at real-time speeds, I had to avoid checking each ray against all the scene's triangles. 
 <p>
-A <a href="http://publications.lib.chalmers.se/records/fulltext/123790.pdf">thesis</a> drew my attention: two guys had implemented irregular Z-buffers in CUDA, using "bins" of triangle lists. It was simple enough: the screen was split in a grid of "bins", and after calculating the 2D bounding box of the projected (screen-space) triangle, we know which "bins" the triangle "spans" over...
+A <a href="https://publications.lib.chalmers.se/records/fulltext/123790.pdf">thesis</a> drew my attention: two guys had implemented irregular Z-buffers in CUDA, using "bins" of triangle lists. It was simple enough: the screen was split in a grid of "bins", and after calculating the 2D bounding box of the projected (screen-space) triangle, we know which "bins" the triangle "spans" over...
 
 <div class="scrollableContainer">
 <img hspace="20" vspace="20" alt="Triangle bin spanning" src="binSpanning.png"><br>
@@ -85,10 +109,35 @@ A <a href="http://publications.lib.chalmers.se/records/fulltext/123790.pdf">thes
 ...and we place the triangle in a simple <tt>std::list&lt;Triangle*&gt;</tt> (stored per each bin). When sending our rays, we only check for intersections with the triangles that belong in the ray's bin, not with all of them.
 <p>
 Well, CUDA didn't have STL lists of course, but I coped the old fashioned way, via heap (<tt>cudaMalloc</tt>-ed). And this worked - after about a day of coding, I had my first ever raycaster written:
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/0F1A3npCe4A?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/0F1A3npCe4A?autoplay=1' class='full'>
+                <img src='0F1A3npCe4A.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
 <div style="text-align: center">
   <em>A dragon... in C++ and in CUDA.</em>
 </div>
@@ -97,7 +146,7 @@ A 50K triangles "dragon" was raycasted at about 20 frames per second. Not bad fo
 <p>
 Unfortunately, as the video shows, the speed nose-dived from 20 to about 1.5 frames per second, as soon as I added shadows. I was aghast. Why? I was using the same trick, that is, "bins" that store triangle lists, only this time I was calculating them in "light-screen" space. The same algorithm, but speed was devastated... because CUDA1.2 (i.e. my 70$ GT240) has no cache, and also suffers a lot from <a href="cudarenderer.html#divergence">thread divergence</a>.
 <p>
-So I <A href="http://www.reddit.com/r/programming/comments/euxzx/porting_my_renderer_from_c_to_cuda_the_speed/">posted this to Reddit</A>, hoping for advice. In 2 days, it became the <a href="http://goo.gl/cmGmmn">most popular CUDA post ever</a> in Reddit/ programming :&#x2011;) To be honest, some people there wanted to skin me alive. "How dare you implement shadows without OpenGL, you bloody idiot!" (or something to that effect).
+So I <A href="https://www.reddit.com/r/programming/comments/euxzx/porting_my_renderer_from_c_to_cuda_the_speed/">posted this to Reddit</A>, hoping for advice. In 2 days, it became the <a href="https://goo.gl/cmGmmn">most popular CUDA post ever</a> in Reddit/ programming :&#x2011;) To be honest, some people there wanted to skin me alive. "How dare you implement shadows without OpenGL, you bloody idiot!" (or something to that effect).
 <p>
 But I persevered :&#x2011;)
 <p>
@@ -110,17 +159,42 @@ So I went back to the code, and tried to make my global memory accesses more coa
 And at that point, I realized it - I was doing raycasting, with Phong lighting and shadows, rendering a colorful train object at 21 frames per second!
 <p>
 Oh, the joy! :&#x2011;)
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Qzn0Ep4tvSI?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/Qzn0Ep4tvSI?autoplay=1' class='full'>
+                <img src='Qzn0Ep4tvSI.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
 <a name="phase2"></a>
 <h2>Phase 2: Raytracing</h2>
 Two weeks passed. And as you can probably guess, I wanted more. Again :)
 <p>
 It turned out, that the "bins" trick is not good enough. After all, a raytracer doesn't stop at the first intersection. It casts <a href="chessRaytraced.jpg" rel="lightbox" title="Reflections">reflected</a>, <a href="chessRefraction.jpg"  rel="lightbox" title="Refractions">refracted</a> and my favourite, <a href="ambientSponza.gif" rel="lightbox" title="Ambient occlusion">ambient occlusion rays</a>. Bins can't accomodate that. I needed a better data structure, a space partitioning scheme.
 <p>
-So I Googled again... and read about the <a href="http://en.wikipedia.org/wiki/Bounding_volume_hierarchy">Bounding Volume Hierarchy</a>, and how it can be used to accelerate any ray-intersection checking in world space. As I always do with a new graphics algorithm, I first coded it in my <a href="renderer.html">SW-only</a> version of the renderer. Furious coding ensued... and the results were beautiful, <a href="conference.jpg" rel="lightbox" title="Ambient occlusion slideshow">beyond</a> <a href="ambientSponza.gif" rel="lightbox" title="Ambient occlusion slideshow">anything</a> my rasterizers ever did. Were these images really created by my renderer? I couldn't believe it.
+So I Googled again... and read about the <a href="https://en.wikipedia.org/wiki/Bounding_volume_hierarchy">Bounding Volume Hierarchy</a>, and how it can be used to accelerate any ray-intersection checking in world space. As I always do with a new graphics algorithm, I first coded it in my <a href="renderer.html">SW-only</a> version of the renderer. Furious coding ensued... and the results were beautiful, <a href="conference.jpg" rel="lightbox" title="Ambient occlusion slideshow">beyond</a> <a href="ambientSponza.gif" rel="lightbox" title="Ambient occlusion slideshow">anything</a> my rasterizers ever did. Were these images really created by my renderer? I couldn't believe it.
 <p>
 What I could believe, unfortunately, was the speed. Abysmal. The pure-C++ version gave me one frame per second on the train object (sigh).
 <p>
@@ -168,10 +242,35 @@ Looking at the code, I remembered about textures again. I had tried them in the 
 And at each step... Oh... my... God.
 <p>
 The speed was increasing by more than 50% each time I stored a new category of data in textures! I have no explanation as to why it had failed so miserably when I tried it with the bins - maybe I goofed somehow (most probably). The point is, that I finally had it - I had a raytracer running in real-time, showing me reflections and shadows, at about 15 frames per second!
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/1o8HM11h8fc?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/1o8HM11h8fc?autoplay=1' class='full'>
+                <img src='1o8HM11h8fc.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
 <a name="recursion"></a>
 <h3>CUDA recursion via C++ templates</h3>
 So far, I was using a stack-based recursion for traversing the BVH, but I was NOT using anything similar for the raytracer itself. I had something else in mind: C++ template meta-programming.
@@ -302,14 +401,39 @@ For those of you that skipped the developer gobbledygook above, here's a short l
   <li>Screen and keyboard handling is done via libSDL, for portability (runs fine under Windows/Linux/etc)</li>
   <li>The code is GPL, and uses autoconf/automake for easy builds under Linux. For windows, the required MSVC project files are included, so the build is just as easy (see instructions below).
   </ul>
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/1o8HM11h8fc?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/1o8HM11h8fc?autoplay=1' class='full'>
+                <img src='1o8HM11h8fc.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
 <a name="downloads"></a>
 <h2>Downloads</h2>
 The code is under the GPL, and lives in <a href="https://github.com/ttsiodras/renderer-cuda">GitHub</a>. Here's <a href="https://github.com/ttsiodras/renderer-cuda/archive/v2.1k.tar.gz">a tarball with the latest source code</a> (<em>last update: 2.1k, December 2015 - made it work with CUDA toolset version 6.0.37)</em>.<p>
-<a href="cudarenderer-2.x.latest-win32.7z">Win32 binaries</a> are also available (compressed <a href="http://www.7-zip.org/">with 7-zip</a>), with 2 sample 3D objects bundled. For more 3D objects, download the source tarball of my <a href="renderer.html">SW-only version</a>.
+<a href="cudarenderer-2.x.latest-win32.7z">Win32 binaries</a> are also available (compressed <a href="https://www.7-zip.org/">with 7-zip</a>), with 2 sample 3D objects bundled. For more 3D objects, download the source tarball of my <a href="renderer.html">SW-only version</a>.
 <a name="compile1"></a>
 <h3>Compilation under Linux</h3>
 The code has 3 dependencies: You must have installed OpenGL (with GLEW and GLUT), libSDL and the CUDA toolkit.
@@ -392,7 +516,7 @@ You can navigate in realtime:
   </ul>
 <a name="bench"></a>
 <h3>Benchmark results</h3>
-Some results <a href="http://forums.nvidia.com/index.php?showtopic=192596">sent by users of the raytracer</a> on the chess scene. Note that speed depends on many factors, not just the chip used (e.g. memory clock speed, etc).
+Some results <a href="https://web.archive.org/web/20120126155429/http://forums.nvidia.com/index.php?showtopic=192596">sent by users of the raytracer</a> on the chess scene. Note that speed depends on many factors, not just the chip used (e.g. memory clock speed, etc).
 <ul>
 <li>Quadro FX 580 (Cuda 1.1): 3 fps 
 <li>GTS 250 (Cuda 1.1): 11.9 fps
@@ -428,7 +552,7 @@ Keep them coming!
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Oct 21 20:14:05 2017</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

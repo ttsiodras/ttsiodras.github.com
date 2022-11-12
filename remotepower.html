@@ -9,7 +9,6 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
 <script type="text/javascript" src="prototype.js"></script>
 <script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
@@ -20,7 +19,7 @@
     <div class="well" id="Page">
         <div id="Banner">Remote power on/off and remote serial via ESP8266</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(July 2019)</em></p>
 
@@ -38,11 +37,34 @@
 <li>By far the most important: <em>because I enjoyed doing it :-)</em><br>
 <li>It allows me to fully administrate the machine remotely (BIOS settings, power, etc)
 </ul>
-<div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/6m-Zd31SrOE?rel=0" frame border="0" allowfullscreen>
-</iframe>
-</div>
 
+<center>
+<div class="video-container">
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/6m-Zd31SrOE?autoplay=1' class='full'>
+                <img src='6m-Zd31SrOE.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
+</div>
+</center>
 <div style="text-align: center">
   <em>My custom-programmed ESP-01 controls a relay,<br>
 and allows me to remotely poweron/poweroff my AtomicPI</em>
@@ -50,10 +72,33 @@ and allows me to remotely poweron/poweroff my AtomicPI</em>
 
 <p>&nbsp;<br></p>
 
+<center>
 <div class="video-container">
-<iframe width="720" height="720" src="https://www.youtube.com/embed/kPj1apA3Yo0?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/kPj1apA3Yo0?autoplay=1' class='full'>
+                <img src='kPj1apA3Yo0.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <div style="text-align: center">
   <em>It also allows me to connect remotely to the Atomic PI's serial port.</em>
@@ -84,7 +129,10 @@ with many features. Amongst them: 2GB of RAM, 16GB of EMMC storage and a 4-core 
 
 <div style="clear:both; text-align:center; margin: 0 auto; max-width: 90%">
 <a href="remotePowerModule.jpg" title="Stealing 80mA, but giving a remotely-controlled 5V supply.">
-<img src="remotePowerModule.jpg" alt="Stealing 80mA, but giving a remotely-controlled 5V supply."></a><p>
+<picture>
+  <source srcset="remotePowerModule.webp" type="image/webp">
+  <img src="remotePowerModule.jpg" alt="Stealing 80mA, but giving a remotely-controlled 5V supply."></a><p>
+</picture>
 <em>Stealing 80mA, but giving a remotely-controlled 5V supply.</em>
 </div>
 
@@ -165,10 +213,33 @@ In case it's not clear, the IP address is not accessible from the outside; this 
 
 <p><strong>Executive summary</strong>: Here's a video with the whole thing in action.</p>
 
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/6m-Zd31SrOE?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/6m-Zd31SrOE?autoplay=1' class='full'>
+                <img src='6m-Zd31SrOE.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <p><a name="remoteserial"></a></p>
 
@@ -178,28 +249,60 @@ In case it's not clear, the IP address is not accessible from the outside; this 
 
 <div style="clear:both; text-align:center; margin: 0 auto; max-width: 90%;">
 <a href="remoteSerial1.jpg" title="The ESP01 now plugs in my perfboard - which plugs in the module.">
-<img src="remoteSerial1.jpg" alt="The ESP01 now plugs in my perfboard - which plugs in the module."></a><p>
+<picture>
+  <source srcset="remoteSerial1.webp" type="image/webp">
+  <img src="remoteSerial1.jpg" alt="The ESP01 now plugs in my perfboard - which plugs in the module."></a><p>
+</picture>
 <em>The ESP01 now plugs in my perfboard - which plugs in the module.</em>
 </div>
 
 <div style="clear:both; text-align:center; margin: 0 auto; max-width: 90%;">
 <a href="remoteSerial2.jpg" title="The perfboard from a different angle.">
-<img src="remoteSerial2.jpg" alt="The perfboard from a different angle."></a><p>
+<picture>
+  <source srcset="remoteSerial2.webp" type="image/webp">
+  <img src="remoteSerial2.jpg" alt="The perfboard from a different angle."></a><p>
+</picture>
 <em>The perfboard from a different angle.</em>
 </div>
 
 <div style="clear:both; text-align:center; margin: 0 auto; max-width: 90%;">
 <a href="remoteSerial3.jpg" title="The TX/RX/GND signals from the ESP end up on the CN10 connector of the Atomic PI.">
-<img src="remoteSerial3.jpg" alt="The TX/RX/GND signals from the ESP end up on the CN10 connector of the Atomic PI."></a><p>
+<picture>
+  <source srcset="remoteSerial3.webp" type="image/webp">
+  <img src="remoteSerial3.jpg" alt="The TX/RX/GND signals from the ESP end up on the CN10 connector of the Atomic PI."></a><p>
+</picture>
 <em>The TX/RX/GND signals from the ESP end up on the CN10 connector of the Atomic PI.</em>
 </div>
 
 <p>This allowed me to enjoy a remote serial port!<br> And be able to fully control the booting process and the BIOS:</p>
 
+<center>
 <div class="video-container">
-<iframe width="720" height="720" src="https://www.youtube.com/embed/kPj1apA3Yo0?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/kPj1apA3Yo0?autoplay=1' class='full'>
+                <img src='kPj1apA3Yo0.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
 
 <p>...which in turn allowed me to perform an OpenBSD installation over this remote serial!</p>
 
@@ -248,7 +351,7 @@ And for anyone else that is interested in reproducing this, the code I hacked to
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Apr 17 21:45:15 2021</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 20:33:36 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

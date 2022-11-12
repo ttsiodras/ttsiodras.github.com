@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Offline rsync</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Offline rsync</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
               <em>(March 2007)</em>
 
@@ -42,7 +38,7 @@
 
   <p>Of course, if this developer had a fast Internet access at
   home, he could use <a href=
-  "http://www.samba.org/rsync">rsync</a>; that is, provided that
+  "https://rsync.samba.org/">rsync</a>; that is, provided that
   the company allows remote access at all - but does it?</p>
 
   <p>And, naturally, the changes he makes daily couldn't
@@ -60,7 +56,7 @@
   the work machine and the home machine are connected on a network.
   The rsync algorithm, however, is quite ingenious. You can read
   all about it 
-  <a href="http://www.samba.org/rsync/tech_report/">here</a>. The
+  <a href="https://rsync.samba.org/tech_report/">here</a>. The
   amazing thing is, that <b>simultaneous access to both "files to
   synchronize" is not necessary</b>. The algorithm takes a
   "snapshot" of file A stored in machine 1, in terms of block-based
@@ -75,7 +71,7 @@
 
   <p>That's exactly the idea that rdiff implements. You can
   download the source code and compile it for yourself 
-  <a href="http://librsync.sourceforge.net/">here</a> (as part of
+  <a href="https://librsync.sourceforge.net/">here</a> (as part of
   librsync), or get it pre-compiled for your platform (under
   Debian, <tt>apt-get install rdiff</tt> is enough).</p>
 
@@ -176,7 +172,7 @@ can revert to your old versions if you so wish.
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Wed Oct 22 13:47:23 2008</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

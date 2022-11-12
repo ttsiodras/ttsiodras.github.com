@@ -9,23 +9,19 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>Programming AI using functional and imperative languages</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">Programming AI using functional and imperative languages</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <a href="https://github.com/ttsiodras/Score4"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a>
 <p><em>(July 2011)</em><br>
 &nbsp;<br>
-Posted on <a href="http://www.reddit.com/r/programming/comments/imfqd/ai_playing_score4_in_functional_and_imperative/">Reddit</a> and <a href="http://news.ycombinator.com/item?id=2750894">Hacker News</a>.<br>&nbsp;<br>
+Posted on <a href="https://www.reddit.com/r/programming/comments/imfqd/ai_playing_score4_in_functional_and_imperative/">Reddit</a> and <a href="https://news.ycombinator.com/item?id=2750894">Hacker News</a>.<br>&nbsp;<br>
 <h2>Implementing a Score4 (Connect Four) engine</h2>
 <div class="tldr">
 <b>For the TL;DR crowd:</b>
@@ -38,20 +34,45 @@ Posted on <a href="http://www.reddit.com/r/programming/comments/imfqd/ai_playing
 <p>
 I recently took a one week vacation and went to my parent's village. My niece Theodora was there (she is 7 years old), spending a fortnight with her grandparents. Naturally, in my duties as her uncle, I read her fairy tales when she went to sleep; gave her my phone so she could snap photos and play mobile games; and when she got tired of running around in the garden, we played two-player board and card games. 
 <p>
-She particularly enjoyed playing <em>Score4</em>, a tic-tac-toe where you drop chips from the top: the goal is to align a series of 4 of the same color (horizontally, vertically or diagonally) to win. The game is also known as <a href="http://en.wikipedia.org/wiki/Connect_Four">Connect Four</a> in other countries.
+She particularly enjoyed playing <em>Score4</em>, a tic-tac-toe where you drop chips from the top: the goal is to align a series of 4 of the same color (horizontally, vertically or diagonally) to win. The game is also known as <a href="https://en.wikipedia.org/wiki/Connect_Four">Connect Four</a> in other countries.
 <p>
 Since I always try to find ways to "lure" my nephews and nieces <a href="games.html">towards science and engineering</a>, I saw an opportunity here: after a number of <em>Score4</em> rounds (seeing her brain adapt and learn patterns was quite a sight in itself), I told Theodora that by being an engineer, her uncle could create a "magical" program on her laptop: one that would play <em>Score4</em> so well, that it would beat her, me, and every other human she knows.
 <p>
 She smiled and said "<em>I'd like to see that, uncle!</em>"... and that's when this story started.
+
+<center>
 <div class="video-container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/kHJRdHCSQLE?rel=0" frame border="0" allowfullscreen>
-</iframe>
+    <iframe
+        srcdoc="
+            <style>
+                body, .full {
+                    height: 100%;
+                    width: 100%;
+                    margin: 0;
+                    position: absolute;
+                    display: flex;
+                    justify-content: center;
+                    object-fit: cover;
+                }
+            </style>
+            <a href='https://www.youtube.com/embed/kHJRdHCSQLE?autoplay=1' class='full'>
+                <img src='kHJRdHCSQLE.jpg' class='full'/>
+                <svg version='1.1' viewBox='0 0 68 48' width='68px' style='position: relative;'>
+                    <path d='M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z' fill='#f00'></path>
+                    <path d='M 45,24 27,14 27,34' fill='#fff'></path>
+                </svg>
+            </a>"
+        style="max-width: 40em; width: 100%; justify-content: center;"
+        frameborder="0" allowfullscreen>
+    </iframe>
 </div>
+</center>
+
 <div style="text-align: center">
   <em>My Score4 Windows implementation (executed under Wine)</em>
 </div>
 <h2>Minimax</h2>
-One of the AI algorithms extensively used in two-player games is <a href="http://en.wikipedia.org/wiki/Minimax">Minimax</a>. The Wikipedia article has all the information one needs, but let's review the main idea:
+One of the AI algorithms extensively used in two-player games is <a href="https://en.wikipedia.org/wiki/Minimax">Minimax</a>. The Wikipedia article has all the information one needs, but let's review the main idea:
 
 <div class="scrollableContainer">
 <img alt="Minimax algorithm" hspace="20" vspace="10" src="Minimax.png"><br>
@@ -69,7 +90,7 @@ When we reach the maximum depth level, we apply the scoring function. This creat
 </ul>
 This process creates the scores you see in the diagram above. When the recursion has calculated all the scores at depth 1 - right below the root - then the final decision is taken: the move is chosen that leads to the child with the optimum score.
 <h2>First attempt: Coding Minimax in functional languages (OCaml/F#)</h2>
-Functional languages (like LISP, OCaml, Haskell, etc) are reputed to allow concise, expressive solutions to artificial intelligence problems. Having little to no experience with these languages, I decided to verify this claim on my own little experiment, using <a href="http://caml.inria.fr/">OCaml</a> and <a href="http://research.microsoft.com/en-us/um/cambridge/projects/fsharp/">F#</a> on <em>Score4</em> and Minimax. In "Phase 2" below, I moved on to imperative constructs and languages, and the differences are indeed striking.
+Functional languages (like LISP, OCaml, Haskell, etc) are reputed to allow concise, expressive solutions to artificial intelligence problems. Having little to no experience with these languages, I decided to verify this claim on my own little experiment, using <a href="https://caml.inria.fr/">OCaml</a> and <a href="https://research.microsoft.com/en-us/um/cambridge/projects/fsharp/">F#</a> on <em>Score4</em> and Minimax. In "Phase 2" below, I moved on to imperative constructs and languages, and the differences are indeed striking.
 <p>
 But let's take this one step at a time.
 <p>
@@ -568,9 +589,9 @@ Enjoy!
 <li>Haskell (Hacker News/phnguyen)
 <li>Go (HackerNews/supersillyus)
 </ul>
-<b>Update, July 22</b>: Thomas and Daniel from <a href="http://stackoverflow.com/questions/6794138/f-seems-slower-than-other-languages-what-can-i-do-to-speed-it-up">StackOverflow</a> helped improve F# speed to within 30% of C#. Thanks, guys!
+<b>Update, July 22</b>: Thomas and Daniel from <a href="https://stackoverflow.com/questions/6794138/f-seems-slower-than-other-languages-what-can-i-do-to-speed-it-up">StackOverflow</a> helped improve F# speed to within 30% of C#. Thanks, guys!
 <p>
-<b>Update, July 24</b>: Dr Jon Harrop <a href="http://stackoverflow.com/questions/6794138/f-seems-slower-than-other-languages-what-can-i-do-to-speed-it-up">joined in</a> and improved the speed of the F# version of ScoreBoard... by 70%! <a href="http://stackoverflow.com/questions/5850243/fsharp-runs-my-algorithm-slower-than-python">Just as in my first F# endeavour</a>, his help was invaluable.
+<b>Update, July 24</b>: Dr Jon Harrop <a href="https://stackoverflow.com/questions/6794138/f-seems-slower-than-other-languages-what-can-i-do-to-speed-it-up">joined in</a> and improved the speed of the F# version of ScoreBoard... by 70%! <a href="https://stackoverflow.com/questions/5850243/fsharp-runs-my-algorithm-slower-than-python">Just as in my first F# endeavour</a>, his help was invaluable.
 <p>
 <b>Update, July 26</b>: Javascript <a href="score4js.html">port</a>, play Score4 in the browser!
 <p>
@@ -735,7 +756,7 @@ Lisp macros are amazing.
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Sat Oct 21 20:14:05 2017</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

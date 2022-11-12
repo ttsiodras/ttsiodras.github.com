@@ -9,18 +9,14 @@
 <meta name="author" content="ttsiod">
 <meta name="author" content="ttsiodras">
 <link type="text/css" rel="stylesheet" href="final-code-wavetheory-lightbox.css">
-<link rel="stylesheet" type="text/css" href="asciinema-player.css">
 <link type="application/rss+xml" rel="alternate" href="rss.xml" title="Coding and administration articles by ttsiodras">
-<script type="text/javascript" src="prototype.js"></script>
-<script type="text/javascript" src="scriptaculous.js?load=effects,builder"></script>
-<script type="text/javascript" src="lightbox.js"></script>
 <title>UNIX/Linux tips (potpourri)</title>
 </head>
 <body>
     <div class="well" id="Page">
         <div id="Banner">UNIX/Linux tips (potpourri)</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" alt="submit to programming reddit" border="0"> </a>
+            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <em>(Started: August 2006)</em><p>
   I've been using Linux for almost a decade now, so over the
@@ -903,7 +899,7 @@ ControlMaster auto
 ControlPath /tmp/ssh_mux_%h_%p_%r
 ControlPersist 4h
 </pre>
-More SSH tips are <a href="http://blogs.perl.org/users/smylers/2011/08/ssh-productivity-tips.html">here</a>.
+More SSH tips are <a href="https://blogs.perl.org/users/smylers/2011/08/ssh-productivity-tips.html">here</a>.
     <li><b><a name="centosrpm"></a>CentOS RPM build from source:<br></b>
 <pre class="o">
 <b>bash$</b> cd /usr/src/redhat/SOURCES/
@@ -990,7 +986,7 @@ Inside your .bashrc, add these:
 
     set -o vi
     # Read my comment in this SO post for explanation:
-    #    http://stackoverflow.com/questions/6839273/
+    #    https://stackoverflow.com/questions/6839273/
     bind -m vi-command ".":insert-last-argument
     # Restore Ctrl-L, Ctrl-A, Ctrl-E, Ctrl-W
     bind -m vi-insert "\C-l.":clear-screen
@@ -1090,7 +1086,7 @@ after setting the env to the same as the normal one (most likely, missing tty-st
 sudo ./doit.sh
 </pre>
     <li><b><a name="vim"></a>CLang,NERDTree,EasyMotion for VIM:<br></b>
-Install NERDtree and EasyMotion, by downloading from http://vim.org and unzip-ing
+Install NERDtree and EasyMotion, by downloading from https://www.vim.org and unzip-ing
 inside your .vim/ folder. For CLang autocompletion it's the same process,
 with the added caveat that under Arch, I had to use the "libclang" based
 mode of operation (spawning didn't work for some reason).<p>
@@ -1569,7 +1565,7 @@ You can then have the nice tab-completion and colored syntax output of IPython d
 </pre>
     </li>
     <li><b><a name="cyield"></a>Yield (coroutines) in C:<br></b>
-<a href="http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html">Excellent article by Simon Tatham</a>.
+<a href="https://www.chiark.greenend.org.uk/~sgtatham/coroutines.html">Excellent article by Simon Tatham</a>.
     </li>
     <li><b><a name="mingwdll"></a>Creating a MinGW import library from a .dll:<br></b>
 Method 1:
@@ -1704,7 +1700,7 @@ set tags+=/usr/include/tags
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Back to index</a>&nbsp;&nbsp;<a href="cv.pdf">My CV</a></td><td align="right"><em>Last update on: Mon Jun 6 19:40:59 2016</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">
