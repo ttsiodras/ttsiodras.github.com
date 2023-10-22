@@ -16,7 +16,7 @@
     <div class="well" id="Page">
         <div id="Banner">A circuit to charge a LiPo and drive a load at the same time</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
+            <a href="https://www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <p><em>(August 2022)</em></p>
 
@@ -77,13 +77,9 @@ drive your load... well, the chip is getting the wrong kind of feedback!</p></li
 <li><p>For example: let's say that normally, the TP4056 module will use the
 two MOSFETs to disconnect your battery's "B-" when the charge current
 falls below 10mA. If your load pulls, say, 15mA...  the chip
-will never disconnect your battery! You will end up over-charging
-your LiPo...</p></li>
+will never disconnect your battery! You will end up "trickle-charging" 
+your LiPo <em>forever</em>.</p></li>
 </ul>
-
-<p>You thought you were safe, and left your circuit in this
-"combo-charging-load-running" configuration overnight, only to be woken 
-up by a fire alarm...</p>
 
 <h1>Solution - a P-channel MOSFET, setup in reverse</h1>
 
@@ -121,8 +117,7 @@ story for V<em>(GS)</em> - it sees the drop of the Schottky! It therefore doesn'
 conduct, <strong>and the battery gets completely cut off</strong>. Our 4.7V go
 on to power our load, and at the same time, our completely isolated
 LiPo gets charged by the TP4056. When that charge current goes below our
-configured threshold, the battery's B- will be properly disconnected.
-<strong>Simply put - no fire</strong> :&#x2011;)</p></li>
+configured threshold, the battery's B- will be properly disconnected.</p></li>
 </ul>
 
 <h1>Put to use</h1>
@@ -203,7 +198,7 @@ and many interesting discussions he has with people that doubt his design.</p>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 20:33:36 2022</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Thu Dec 15 07:03:11 2022</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">

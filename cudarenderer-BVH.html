@@ -19,7 +19,7 @@
     <div class="well" id="Page">
         <div id="Banner">Renderer 2.x - Porting to CUDA (one month later)</div>
         <div id="MainContent">
-            <a href="//www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
+            <a href="https://www.reddit.com/r/programming/submit" onclick="window.location = window.location.protocol + '//www.reddit.com/r/programming/submit?url=' + encodeURIComponent(window.location); return false"> <img src="spreddit7.gif" width="75" height="17" alt="submit to programming reddit" border="0"> </a>
             <br>&nbsp;<br>
             <a href="https://github.com/ttsiodras/renderer-cuda"><img src="forkme_right_darkblue_121621.png" style="position: fixed; right: 0; top: 0;" alt="Fork me on GitHub"></a>
 
@@ -42,7 +42,7 @@
 <li><a href="#bench">Benchmark results</a></li>
 </ul>
 </div>
-  <em>(February 2011, <a href="https://www.reddit.com/r/programming/comments/fgbfr/porting_my_renderer_from_c_to_cuda_a_journey/">Reddit-ed</a>)</em><br>
+  <em>(February 2011, <a href="https://web.archive.org/web/20221004203839/https://www.reddit.com/r/programming/comments/fgbfr/porting_my_renderer_from_c_to_cuda_a_journey/">Reddit-ed</a>)</em><br>
   <em>(April 2011, <a href=""https://web.archive.org/web/20100214113434/http://www.nvidia.co.uk/object/cuda_apps_flash_new_uk.html>In CUDA Zone showcase...</a>)</em>
 <br>&nbsp;<br>
 It all started a month ago.<p>
@@ -146,7 +146,7 @@ A 50K triangles "dragon" was raycasted at about 20 frames per second. Not bad fo
 <p>
 Unfortunately, as the video shows, the speed nose-dived from 20 to about 1.5 frames per second, as soon as I added shadows. I was aghast. Why? I was using the same trick, that is, "bins" that store triangle lists, only this time I was calculating them in "light-screen" space. The same algorithm, but speed was devastated... because CUDA1.2 (i.e. my 70$ GT240) has no cache, and also suffers a lot from <a href="cudarenderer.html#divergence">thread divergence</a>.
 <p>
-So I <A href="https://www.reddit.com/r/programming/comments/euxzx/porting_my_renderer_from_c_to_cuda_the_speed/">posted this to Reddit</A>, hoping for advice. In 2 days, it became the <a href="https://goo.gl/cmGmmn">most popular CUDA post ever</a> in Reddit/ programming :&#x2011;) To be honest, some people there wanted to skin me alive. "How dare you implement shadows without OpenGL, you bloody idiot!" (or something to that effect).
+So I <A href="https://web.archive.org/web/20110105115630/http://www.reddit.com/r/programming/comments/euxzx/porting_my_renderer_from_c_to_cuda_the_speed">posted this to Reddit</A>, hoping for advice. In 2 days, it became the <a href="https://goo.gl/cmGmmn">most popular CUDA post ever</a> in Reddit/ programming :&#x2011;) To be honest, some people there wanted to skin me alive. "How dare you implement shadows without OpenGL, you bloody idiot!" (or something to that effect).
 <p>
 But I persevered :&#x2011;)
 <p>
@@ -552,7 +552,7 @@ Keep them coming!
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Sat Oct 8 12:33:59 2022</em></td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td><a href="index.html">Index</a>&nbsp;&nbsp;<a href="cv.pdf">CV</a></td><td align="right"><em>Updated: Tue Jun 13 21:43:21 2023</em></td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">
