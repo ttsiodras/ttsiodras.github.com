@@ -78,7 +78,10 @@ ignoring the SW aspects.</p>
 <p>I ended up with this:</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="memopad.jpg" alt="My tablet">
+<picture>
+  <source srcset="memopad.webp" type="image/webp">
+  <img src="memopad.jpg" alt="My tablet">
+</picture>
 <p>
 <em>Asus MemoPad 10" ME103K</em>
 </div>
@@ -197,7 +200,10 @@ you to hijack the process, and boot your own <code>boot</code> image, using...</
 </div>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="bootloader.png" alt="Bootloader snapshot">
+<picture>
+  <source srcset="bootloader.webp" type="image/webp">
+  <img src="bootloader.png" alt="Bootloader snapshot">
+</picture>
 </div>
 
 <div class='codegenWrapper'>
@@ -499,7 +505,10 @@ TRRS plug, the left and right channels switch to carrying
 the serial port's TX and RX channels.</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="feeding3V.jpg" alt="Sending 3.3V to the MIC input">
+<picture>
+  <source srcset="feeding3V.webp" type="image/webp">
+  <img src="feeding3V.jpg" alt="Sending 3.3V to the MIC input">
+</picture>
 </div>
 
 <p>I used my Raspberry PI TRRS-to-TV cable to get access to the 4 places
@@ -530,7 +539,7 @@ if (hasWebM || hasMP4) {
     var format = hasWebM?'webm':'mp4';
     var width = 320;
     var height = 240;
-    document.write("<video controls poster='capacitance.jpg' " + 
+    document.write("<video controls poster='capacitance.webp' " + 
                    "width='" + width + "' " +
                    "height='" + height + "'" +
                    "src='serialsignal." + format + "'" +
@@ -567,7 +576,10 @@ then all was crystal clear - nice square pulses:</p>
 <p><p></p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="9600.jpg" alt="Much better at low frequencies">
+<picture>
+  <source srcset="9600.webp" type="image/webp">
+  <img src="9600.jpg" alt="Much better at low frequencies">
+</picture>
 </div>
 
 <p>I considered giving up, but Chris Stratton, in one of the few Stack
@@ -588,13 +600,19 @@ and a level shifter: a BSS138.</p>
 heart beating unusually fast, I tried spawning <code>minicom</code>...</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="breadboard.jpg" alt="Adding a shifter">
+<picture>
+  <source srcset="breadboard.webp" type="image/webp">
+  <img src="breadboard.jpg" alt="Adding a shifter">
+</picture>
 </div>
 
 <p>...and to my utter amazement, I saw this:</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="serialdata.jpg" alt="Data at last">
+<picture>
+  <source srcset="serialdata.webp" type="image/webp">
+  <img src="serialdata.jpg" alt="Data at last">
+</picture>
 </div>
 
 <p>Unbelievable - after BSS138 "lifted" the signal from 1.8 up to 3.3V,
@@ -609,7 +627,10 @@ used a voltage divider to create 1.8V out of the PL2303HX's 3.3V
 output - and fed it in the LV input of the BSS138.</em></p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="breadboard-cleanedUp.jpg" alt="Cleaned-up breadboard">
+<picture>
+  <source srcset="breadboard-cleanedUp.webp" type="image/webp">
+  <img src="breadboard-cleanedUp.jpg" alt="Cleaned-up breadboard">
+</picture>
 </div>
 
 <h2>Back to software hacking</h2>
@@ -781,7 +802,10 @@ Cross-compiled it, and placed it (with the proper <code>setuid</code> bit set) u
 <h2>The 800-pound gorilla</h2>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="bouncer.jpg" alt="SELinux - the 800 pound gorilla">
+<picture>
+  <source srcset="bouncer.webp" type="image/webp">
+  <img src="bouncer.jpg" alt="SELinux - the 800 pound gorilla">
+</picture>
 </div>
 
 <p>Reading some more, I realized that SELinux was standing in my way:</p>
@@ -933,7 +957,10 @@ a pristine boot image).</em></p>
 </div>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="finally.jpg" alt="Root at last">
+<picture>
+  <source srcset="finally.webp" type="image/webp">
+  <img src="finally.jpg" alt="Root at last">
+</picture>
 </div>
 
 <p>If you are wondering how the <code>/data/debian</code> came to be, I first created
@@ -979,7 +1006,10 @@ with ImageMagick and <code>ffmpeg</code> and <code>mkvmerge</code>, and...</p>
 <p>The camera isn't working?!?!</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="cameraoff.jpg" alt="What?! No camera?!?!">
+<picture>
+  <source srcset="cameraoff.webp" type="image/webp">
+  <img src="cameraoff.jpg" alt="What?! No camera?!?!">
+</picture>
 </div>
 
 <p>Googling about it... and look, I am not alone: tons of people all over the world
@@ -1097,7 +1127,10 @@ and rebooted:</p>
 <p>Finally!</p>
 
 <div style="clear:both; text-align:center; margin: 0em 0em 0em 0em">
-<img src="MacGyverClass.jpg" alt="I WIN">
+<picture>
+  <source srcset="MacGyverClass.webp" type="image/webp">
+  <img src="MacGyverClass.jpg" alt="I WIN">
+</picture>
 <br>&nbsp;
 <br><em>Oh God, no one will get the reference - I am too old... :-)</em>
 <br>&nbsp;
@@ -1208,7 +1241,7 @@ Android 6.x.</p></li>
     <div style='clear:both; margin-bottom:0.5em'></div>
 
 <!-- Used to do this with float:right, but Opera Mini shows nothing with it... back to tables :-( -->
-<table summary="Footer" width="100%" border="0"><tr><td>&nbsp;<br><a href="index.html">Index</a><br>&nbsp;</td><td>&nbsp;<br><a href="cv.pdf">CV</a><br>&nbsp;</td><td align="right">&nbsp;<br><em>Updated: Tue Jun 13 21:03:03 2023</em><br>&nbsp;</td></tr></table>
+<table summary="Footer" width="100%" border="0"><tr><td>&nbsp;<br><a href="index.html">Index</a><br>&nbsp;</td><td>&nbsp;<br><a href="cv.pdf">CV</a><br>&nbsp;</td><td align="right">&nbsp;<br><em>Updated: Wed Nov 15 20:33:06 2023</em><br>&nbsp;</td></tr></table>
 
             <hr style="margin-bottom: 1em">
             <p id="disqus_thread">
